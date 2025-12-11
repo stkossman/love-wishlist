@@ -1,0 +1,48 @@
+---
+import type { WishListItem } from '../data/items';
+
+interface Props {
+  item: WishListItem;
+}
+
+const { item } = Astro.props;
+---
+
+<article class="group relative flex flex-col gap-4 py-6 border-t border-luxury-black/10 hover:border-luxury-black transition-colors duration-500 ease-out">
+    <div class="flex justify-between items-start text-xs font-sans tracking-widest text-luxury-black/60 uppercase">
+        <span>{item.brand}</span>
+        <span class={`
+            px-1 border border-luxury-black/20 
+            ${item.status === 'purchased' ? 'bg-luxury-black text-luxury-white border-transparent' : ''}
+        `}>
+            {item.status}
+        </span>
+    </div>
+
+    <div class="space-y-1">
+        <h2 class="text-3xl font-serif italic font-light leading-none text-luxury-black">
+            {item.url ? (
+                <a href={item.url} target="_blank" rel="noopener noreferrer" class="hover:underline decoration-1 underline-offset-4">
+                    {item.name}
+                </a>
+            ) : (
+                item.name
+            )}
+        </h2>
+        
+        {item.price && (
+            <p class="font-sans text-sm font-medium">{item.price}</p>
+        )}
+    </div>
+
+    {item.specs.length > 0 && (
+        <div class="mt-auto pt-4 grid grid-cols-2 gap-y-2 gap-x-4 opacity-60 group-hover:opacity-100 transition-opacity">
+            {item.specs.map(spec => (
+                <div class="flex flex-col">
+                    <span class="text-[10px] uppercase tracking-wider text-luxury-black/50">{spec.label}</span>
+                    <span class="text-xs font-mono border-b border-luxury-black/10 pb-1">{spec.value}</span>
+                </div>
+            ))}
+        </div>
+    )}
+</article>

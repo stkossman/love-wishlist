@@ -1,0 +1,34 @@
+---
+import Layout from '../layouts/Layout.astro';
+import WishListItem from '../components/WishListItem.astro';
+import { items } from '../data/items';
+
+const sortedItems = items.sort((a, b) => (a.status === 'purchased' ? 1 : -1));
+---
+
+<Layout title="WISHLIST INDEX">
+    <main class="w-full max-w-2xl">
+        
+        <header class="mb-24 flex justify-between items-end border-b-2 border-luxury-black pb-4">
+            <div>
+                <h1 class="font-serif italic text-5xl md:text-6xl text-luxury-black">Index</h1>
+                <p class="font-sans text-xs mt-2 tracking-widest uppercase opacity-50">My wishlist / Ref. 01</p>
+            </div>
+            <div class="text-right hidden sm:block">
+                <p class="font-mono text-xs">{items.length} UNITS</p>
+            </div>
+        </header>
+
+        <section class="flex flex-col">
+            {sortedItems.map((item) => (
+                <WishListItem item={item} />
+            ))}
+            <div class="border-t border-luxury-black/10 w-full"></div>
+        </section>
+
+        <footer class="mt-32 text-center">
+            <p class="font-serif italic text-luxury-black/40 text-lg">love you, my world.</p>
+        </footer>
+
+    </main>
+</Layout>
