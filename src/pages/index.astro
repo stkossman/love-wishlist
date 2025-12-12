@@ -1,9 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import WishListItem from '../components/WishListItem.astro';
-import { items } from '../data/items';
+import { db } from "../lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import type { WishlistItem } from '../data/types';
 
-const sortedItems = items.sort((a, b) => (a.status === 'purchased' ? 1 : -1));
+const querySnapshot = await getDocs(collection(db, "items"));
+
+const items: WishlistItem[] = querySnapshot.docs.map((doc) => {
+    const data = doc.data();
+    
+    return {
+        id: doc.id,
+        topic: data.topic || data.brand || 'General', 
+        name: data.name || 'Untitled',
+        owner: data.owner || 'me',
+        price: data.price,
+        url: data.url,
+        status: data.status || 'wanted',
+        specs: data.specs || [],
+        priority: data.priority,
+        createdAt: data.createdAt
+    } as WishlistItem;
+});
+
+const sortedItems = items.sort((a, b) => {
+    if (a.status === 'acquired' && b.status !== 'acquired') return 1;
+    if (a.status !== 'acquired' && b.status === 'acquired') return -1;
+    return 0;
+});
 ---
 
 <Layout title="WISHLIST INDEX">
@@ -12,7 +37,7 @@ const sortedItems = items.sort((a, b) => (a.status === 'purchased' ? 1 : -1));
         <header class="mb-24 flex justify-between items-end border-b-2 border-luxury-black pb-4">
             <div>
                 <h1 class="font-serif italic text-5xl md:text-6xl text-luxury-black">Index</h1>
-                <p class="font-sans text-xs mt-2 tracking-widest uppercase opacity-50">My wishlist / Ref. 01</p>
+                <p class="font-sans text-xs mt-2 tracking-widest uppercase opacity-50">Collection 2025 / Firebase Ed.</p>
             </div>
             <div class="text-right hidden sm:block">
                 <p class="font-mono text-xs">{items.length} UNITS</p>
@@ -20,14 +45,21 @@ const sortedItems = items.sort((a, b) => (a.status === 'purchased' ? 1 : -1));
         </header>
 
         <section class="flex flex-col">
-            {sortedItems.map((item) => (
-                <WishListItem item={item} />
-            ))}
+            {sortedItems.length > 0 ? (
+                sortedItems.map((item) => (
+                    <WishListItem item={item} />
+                ))
+            ) : (
+                <div class="py-10 text-center text-luxury-black/40 font-serif italic">
+                    Database is empty...
+                </div>
+            )}
+            
             <div class="border-t border-luxury-black/10 w-full"></div>
         </section>
 
-        <footer class="mt-32 text-center">
-            <p class="font-serif italic text-luxury-black/40 text-lg">love you, my world.</p>
+        <footer class="mt-32 text-center pb-10">
+            <p class="font-serif italic text-luxury-black/40 text-lg">Fin.</p>
         </footer>
 
     </main>

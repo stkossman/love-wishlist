@@ -1,19 +1,27 @@
 ---
-import type { WishListItem } from '../data/items';
+import type { WishlistItem } from '../data/types';
 
 interface Props {
-  item: WishListItem;
+  item: WishlistItem;
 }
 
 const { item } = Astro.props;
+
+const ownerLabel = item.owner === 'me' ? 'M' : 'H';
 ---
 
 <article class="group relative flex flex-col gap-4 py-6 border-t border-luxury-black/10 hover:border-luxury-black transition-colors duration-500 ease-out">
     <div class="flex justify-between items-start text-xs font-sans tracking-widest text-luxury-black/60 uppercase">
-        <span>{item.brand}</span>
+        <div class="flex gap-2 items-center">
+            <span class="w-5 h-5 flex items-center justify-center border border-luxury-black/20 text-[10px] rounded-full">
+                {ownerLabel}
+            </span>
+            <span>{item.topic}</span>
+        </div>
+
         <span class={`
             px-1 border border-luxury-black/20 
-            ${item.status === 'purchased' ? 'bg-luxury-black text-luxury-white border-transparent' : ''}
+            ${item.status === 'acquired' ? 'bg-luxury-black text-luxury-white border-transparent' : ''}
         `}>
             {item.status}
         </span>
@@ -35,7 +43,7 @@ const { item } = Astro.props;
         )}
     </div>
 
-    {item.specs.length > 0 && (
+    {item.specs && item.specs.length > 0 && (
         <div class="mt-auto pt-4 grid grid-cols-2 gap-y-2 gap-x-4 opacity-60 group-hover:opacity-100 transition-opacity">
             {item.specs.map(spec => (
                 <div class="flex flex-col">
