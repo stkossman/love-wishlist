@@ -3,10 +3,14 @@ import Layout from '../layouts/Layout.astro';
 import WishlistItemComponent from '../components/WishListItem.astro';
 import Button from '../components/ui/Button.astro';
 import { db } from "../lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import type { WishlistItem } from '../data/types';
 
-const q = query(collection(db, "items"), where("owner", "==", "me"));
+const q = query(
+    collection(db, "items"), 
+    where("owner", "==", "me"), 
+    orderBy("createdAt", "desc")
+);
 const querySnapshot = await getDocs(q);
 const items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WishlistItem));
 ---

@@ -8,5 +8,5 @@ import vercel from "@astrojs/vercel";
 export default defineConfig({
   output: "server",
   vite: { plugins: [tailwindcss()] },
-  adapter: vercel()
+  adapter: vercel(),
 });
