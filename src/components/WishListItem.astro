@@ -10,27 +10,28 @@ const { item } = Astro.props;
 const ownerLabel = item.owner === 'me' ? 'M' : 'H';
 ---
 
-<article class="group relative flex flex-col gap-4 py-6 border-t border-luxury-black/10 hover:border-luxury-black transition-colors duration-500 ease-out">
-    <div class="flex justify-between items-start text-xs font-sans tracking-widest text-luxury-black/60 uppercase">
-        <div class="flex gap-2 items-center">
-            <span class="w-5 h-5 flex items-center justify-center border border-luxury-black/20 text-[10px] rounded-full">
+<article class="group relative flex flex-col gap-4 py-6 border-t border-[var(--color-theme-border)] hover:border-[var(--color-theme-text)] transition-colors duration-500 ease-out">
+    
+    <div class="flex justify-between items-start text-xs font-sans tracking-widest opacity-60 uppercase">
+        <div class="flex gap-2 items-center text-[var(--color-theme-text)]">
+            <span class="w-5 h-5 flex items-center justify-center border border-[var(--color-theme-text)] text-[10px] rounded-full opacity-60">
                 {ownerLabel}
             </span>
             <span>{item.topic}</span>
         </div>
 
         <span class={`
-            px-1 border border-luxury-black/20 
-            ${item.status === 'acquired' ? 'bg-luxury-black text-luxury-white border-transparent' : ''}
+            px-1 border border-[var(--color-theme-border)] 
+            ${item.status === 'acquired' ? 'bg-[var(--color-theme-text)] text-[var(--color-theme-bg)] border-transparent' : ''}
         `}>
             {item.status}
         </span>
     </div>
 
     <div class="space-y-1">
-        <h2 class="text-3xl font-serif italic font-light leading-none text-luxury-black">
+        <h2 class="text-3xl font-serif italic font-light leading-none text-[var(--color-theme-text)]">
             {item.url ? (
-                <a href={item.url} target="_blank" rel="noopener noreferrer" class="hover:underline decoration-1 underline-offset-4">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" class="hover:underline decoration-1 underline-offset-4 decoration-[var(--color-theme-accent)]">
                     {item.name}
                 </a>
             ) : (
@@ -39,7 +40,7 @@ const ownerLabel = item.owner === 'me' ? 'M' : 'H';
         </h2>
         
         {item.price && (
-            <p class="font-sans text-sm font-medium">{item.price}</p>
+            <p class="font-sans text-sm font-medium opacity-80">{item.price}</p>
         )}
     </div>
 
@@ -47,8 +48,8 @@ const ownerLabel = item.owner === 'me' ? 'M' : 'H';
         <div class="mt-auto pt-4 grid grid-cols-2 gap-y-2 gap-x-4 opacity-60 group-hover:opacity-100 transition-opacity">
             {item.specs.map(spec => (
                 <div class="flex flex-col">
-                    <span class="text-[10px] uppercase tracking-wider text-luxury-black/50">{spec.label}</span>
-                    <span class="text-xs font-mono border-b border-luxury-black/10 pb-1">{spec.value}</span>
+                    <span class="text-[10px] uppercase tracking-wider opacity-50">{spec.label}</span>
+                    <span class="text-xs font-mono border-b border-[var(--color-theme-border)] pb-1">{spec.value}</span>
                 </div>
             ))}
         </div>

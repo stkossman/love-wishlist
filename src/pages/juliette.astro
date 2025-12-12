@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import WishlistItemComponent from '../components/WishListItem.astro';
+import Button from '../components/ui/Button.astro';
+import { db } from "../lib/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import type { WishlistItem } from '../data/types';
+
+const q = query(collection(db, "items"), where("owner", "==", "her"));
+const querySnapshot = await getDocs(q);
+const items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WishlistItem));
+---
+
+<Layout title="JULIETTE / WISHLIST">
+    <style slot="head">
+        :root {
+            --color-theme-bg: #234f1e;
+            --color-theme-text: #f5f5f5;
+            --color-theme-accent: #e6b8af; /* Powder Pink */
+            --color-theme-border: rgba(245, 245, 245, 0.2);
+        }
+    </style>
+
+    <main class="w-full max-w-2xl mx-auto">
+        <header class="mb-24 mt-10 border-b border-[var(--color-theme-accent)] pb-4 flex justify-between items-end">
+            <div>
+                <Button href="/" variant="outline" class="mb-6 text-xs px-3 py-1 border-opacity-30">← Back</Button>
+                <h1 class="font-serif italic text-5xl text-[var(--color-theme-accent)]">Juliette</h1>
+            </div>
+            <p class="font-mono text-xs opacity-50">HER COLLECTION</p>
+        </header>
+
+        <section class="flex flex-col">
+            {items.map((item) => <WishlistItemComponent item={item} />)}
+            {items.length === 0 && <p class="opacity-50 text-center py-10">No items found.</p>}
+        </section>
+
+        <div class="fixed bottom-10 right-10 z-50">
+             <Button 
+                href="/add" 
+                class="shadow-2xl rounded-full w-14 h-14 !p-0 flex items-center justify-center text-xl !bg-[var(--color-theme-accent)] !text-[var(--color-theme-bg)] border-none"
+             >
+                +
+             </Button>
+        </div>
+    </main>
+</Layout>

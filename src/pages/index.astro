@@ -1,66 +1,43 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import WishListItem from '../components/WishListItem.astro';
+import WishlistItemComponent from '../components/WishListItem.astro';
+import Button from '../components/ui/Button.astro';
 import { db } from "../lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, limit, query, orderBy } from "firebase/firestore";
 import type { WishlistItem } from '../data/types';
 
-const querySnapshot = await getDocs(collection(db, "items"));
+const q = query(collection(db, "items"), limit(10)); 
+const querySnapshot = await getDocs(q);
 
-const items: WishlistItem[] = querySnapshot.docs.map((doc) => {
-    const data = doc.data();
-    
-    return {
-        id: doc.id,
-        topic: data.topic || data.brand || 'General', 
-        name: data.name || 'Untitled',
-        owner: data.owner || 'me',
-        price: data.price,
-        url: data.url,
-        status: data.status || 'wanted',
-        specs: data.specs || [],
-        priority: data.priority,
-        createdAt: data.createdAt
-    } as WishlistItem;
-});
-
-const sortedItems = items.sort((a, b) => {
-    if (a.status === 'acquired' && b.status !== 'acquired') return 1;
-    if (a.status !== 'acquired' && b.status === 'acquired') return -1;
-    return 0;
-});
+const items: WishlistItem[] = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data()
+} as WishlistItem));
 ---
 
-<Layout title="WISHLIST INDEX">
-    <main class="w-full max-w-2xl">
+<Layout title="WISHLIST / INDEX">
+    <main class="w-full max-w-2xl mx-auto">
         
-        <header class="mb-24 flex justify-between items-end border-b-2 border-luxury-black pb-4">
-            <div>
-                <h1 class="font-serif italic text-5xl md:text-6xl text-luxury-black">Index</h1>
-                <p class="font-sans text-xs mt-2 tracking-widest uppercase opacity-50">Collection 2025 / Firebase Ed.</p>
-            </div>
-            <div class="text-right hidden sm:block">
-                <p class="font-mono text-xs">{items.length} UNITS</p>
-            </div>
+        <nav class="flex justify-center gap-4 mb-20 pt-10">
+            <Button href="/andrii" variant="outline">Andrii</Button>
+            <Button href="/juliette" variant="outline">Juliette</Button>
+        </nav>
+
+        <header class="mb-12 text-center">
+            <h1 class="font-serif italic text-4xl opacity-80">Latest Additions</h1>
         </header>
 
-        <section class="flex flex-col">
-            {sortedItems.length > 0 ? (
-                sortedItems.map((item) => (
-                    <WishListItem item={item} />
-                ))
-            ) : (
-                <div class="py-10 text-center text-luxury-black/40 font-serif italic">
-                    Database is empty...
-                </div>
-            )}
-            
-            <div class="border-t border-luxury-black/10 w-full"></div>
+        <section class="flex flex-col min-h-[50vh]">
+            {items.map((item) => (
+                <WishlistItemComponent item={item} />
+            ))}
         </section>
 
-        <footer class="mt-32 text-center pb-10">
-            <p class="font-serif italic text-luxury-black/40 text-lg">Fin.</p>
-        </footer>
+        <div class="fixed bottom-10 right-10 z-50">
+             <Button href="/add" class="shadow-2xl rounded-full w-14 h-14 !p-0 flex items-center justify-center text-xl">
+                +
+             </Button>
+        </div>
 
     </main>
 </Layout>
