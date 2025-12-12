@@ -15,7 +15,9 @@ body {
   color: var(--color-theme-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
 }
 
 ::-webkit-scrollbar {
@@ -26,6 +28,12 @@ body {
   opacity: 0.2;
 }
 
-.text-theme-main { color: var(--color-theme-text); }
-.text-theme-accent { color: var(--color-theme-accent); }
-.border-theme { border-color: var(--color-theme-border); }
+.text-theme-main {
+  color: var(--color-theme-text);
+}
+.text-theme-accent {
+  color: var(--color-theme-accent);
+}
+.border-theme {
+  border-color: var(--color-theme-border);
+}
