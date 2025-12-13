@@ -2,7 +2,6 @@ import type { Timestamp } from 'firebase/firestore';
 
 export type Owner = 'me' | 'her';
 
-// Те, що лежить в БД
 export interface WishlistItem {
   id: string;
   topic: string;

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { WishlistService } from '../../modules/wishlist/wishlist.service';
+import { WishlistService } from '@/modules/wishlist/wishlist.service';
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);

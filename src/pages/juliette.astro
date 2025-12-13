@@ -1,10 +1,10 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import WishlistItemComponent from '../components/WishListItem.astro';
-import Button from '../components/ui/Button.astro';
-import { db } from '../lib/firebase';
+import Layout from '@/layouts/Layout.astro';
+import WishlistItemComponent from '@/components/WishListItem.astro';
+import Button from '@/components/ui/Button.astro';
+import { db } from '@/lib/firebase';
 import { collection, getDocs, query, limit, orderBy, where } from 'firebase/firestore';
-import type { WishlistItem } from '../data/types';
+import type { WishlistItem } from '@/data/types';
 
 const pageSize = 6;
 const q = query(
@@ -82,7 +82,7 @@ const initialCursor = items.length > 0 ? items[items.length - 1].createdAt : nul
 </Layout>
 
 <script>
-  import { WishlistFeedHandler } from '../modules/wishlist/wishlist.feed';
+  import { WishlistFeedHandler } from '@/modules/wishlist/wishlist.feed';
 
   new WishlistFeedHandler('her');
 </script>
