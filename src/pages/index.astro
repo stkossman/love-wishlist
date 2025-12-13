@@ -23,17 +23,20 @@ const items: WishlistItem[] = querySnapshot.docs.map(
     <nav class="mb-20 flex justify-center gap-4 pt-10">
       <Button href="/andrii" variant="outline">Andrii</Button>
       <Button href="/juliette" variant="outline">Juliette</Button>
+      <Button href="/sizes" variant="outline">Sizes</Button>
     </nav>
 
-    <header class="mb-12 md:mb-24 mt-4 md:mt-10 text-center">
-      <h1 class="font-serif italic text-4xl md:text-6xl text-[var(--color-theme-accent)]">Latest Additions</h1>
+    <header class="mt-4 mb-12 text-center md:mt-10 md:mb-24">
+      <h1 class="font-serif text-4xl text-[var(--color-theme-accent)] italic md:text-6xl">
+        Latest Additions
+      </h1>
     </header>
 
     <section class="flex min-h-[50vh] flex-col">
       {items.map((item) => <WishlistItemComponent item={item} />)}
     </section>
 
-    <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50">
+    <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
       <Button
         href="/add"
         class="flex h-14 w-14 items-center justify-center rounded-full !p-0 text-xl shadow-2xl"

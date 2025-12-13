@@ -22,7 +22,7 @@ const specs = item.specs || [];
 ---
 
 <Layout title={`EDIT / ${item.name.toUpperCase()}`}>
-  <main class="full max-w-xl mx-auto mt-4 md:mt-10 mb-20 px-4 relative">
+  <main class="full relative mx-auto mt-4 mb-20 max-w-xl px-4 md:mt-10">
     <div
       id="security-overlay"
       class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#f5f5f5] p-4 transition-opacity duration-500"
@@ -44,8 +44,8 @@ const specs = item.specs || [];
       </div>
     </div>
 
-    <header class="mb-8 border-b border-[#1a1a1a] pb-4 flex justify-between items-end">
-      <h1 class="font-serif italic text-3xl md:text-4xl text-[#1a1a1a]">Edit Entry</h1>
+    <header class="mb-8 flex items-end justify-between border-b border-[#1a1a1a] pb-4">
+      <h1 class="font-serif text-3xl text-[#1a1a1a] italic md:text-4xl">Edit Entry</h1>
       <Button
         href="/"
         variant="outline"
@@ -57,7 +57,7 @@ const specs = item.specs || [];
 
     <form
       id="edit-item-form"
-      class="pointer-events-none flex flex-col gap-8 md:gap-12 blur-sm transition-all duration-700"
+      class="pointer-events-none flex flex-col gap-8 blur-sm transition-all duration-700 md:gap-12"
       data-id={id}
     >
       <div class="flex flex-col gap-4">
