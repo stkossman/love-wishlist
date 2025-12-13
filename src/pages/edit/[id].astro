@@ -1,0 +1,232 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Button from '../../components/ui/Button.astro';
+import { db } from "../../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/');
+}
+
+const docRef = doc(db, "items", id);
+const docSnap = await getDoc(docRef);
+
+if (!docSnap.exists()) {
+  return Astro.redirect('/');
+}
+
+const item = docSnap.data();
+const specs = item.specs || [];
+---
+
+<Layout title={`EDIT / ${item.name.toUpperCase()}`}>
+    <main class="w-full max-w-xl mx-auto mt-10 mb-20 px-4 relative">
+        
+        <div id="security-overlay" class="fixed inset-0 z-[100] bg-[#f5f5f5] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
+            <div class="max-w-xs w-full text-center space-y-6">
+                <h2 class="font-serif italic text-3xl text-[#1a1a1a]">Restricted Access</h2>
+                <p class="font-mono text-xs tracking-widest uppercase opacity-50">Enter Access Code</p>
+                <input type="password" id="pin-input" placeholder="****" maxlength="4" autofocus
+                    class="w-full text-center text-4xl font-serif tracking-[0.5em] bg-transparent border-b border-[#1a1a1a] py-2 focus:outline-none text-[#1a1a1a] placeholder:opacity-20" />
+                <p id="error-msg" class="text-red-700 text-xs font-mono opacity-0 transition-opacity">INVALID CREDENTIALS</p>
+            </div>
+        </div>
+
+        <header class="mb-12 border-b border-[#1a1a1a] pb-4 flex justify-between items-end">
+            <h1 class="font-serif italic text-4xl text-[#1a1a1a]">Edit Entry</h1>
+            <Button href="/" variant="outline" class="text-xs px-3 py-1 border-opacity-30 !text-[#1a1a1a] !border-[#1a1a1a] hover:!bg-[#1a1a1a] hover:!text-[#f5f5f5]">
+                Cancel
+            </Button>
+        </header>
+
+        <form id="edit-item-form" class="flex flex-col gap-12 blur-sm transition-all duration-700 pointer-events-none" data-id={id}>
+            
+            <div class="flex flex-col gap-4">
+                <span class="text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase">Owner / Beneficiary</span>
+                <div class="flex gap-8">
+                    <label class="cursor-pointer flex items-center gap-3 group">
+                        <input type="radio" name="owner" value="me" checked={item.owner === 'me'} class="accent-[#1a1a1a] w-4 h-4 cursor-pointer" />
+                        <span class="font-serif italic text-xl text-[#1a1a1a] group-hover:opacity-70 transition-opacity">Andrii</span>
+                    </label>
+                    <label class="cursor-pointer flex items-center gap-3 group">
+                        <input type="radio" name="owner" value="her" checked={item.owner === 'her'} class="accent-[#234f1e] w-4 h-4 cursor-pointer" />
+                        <span class="font-serif italic text-xl text-[#1a1a1a] group-hover:opacity-70 transition-opacity">Juliette</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="group">
+                    <label for="topic" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Topic / Brand</label>
+                    <input type="text" id="topic" name="topic" required value={item.topic}
+                        class="w-full bg-transparent border-b border-neutral-400 py-2 font-sans text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-400" />
+                </div>
+                
+                <div class="group">
+                    <label for="price" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Price Estimate</label>
+                    <input type="text" id="price" name="price" value={item.price}
+                        class="w-full bg-transparent border-b border-neutral-400 py-2 font-sans text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-400" />
+                </div>
+            </div>
+
+            <div class="group">
+                <label for="name" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Item Name</label>
+                <input type="text" id="name" name="name" required value={item.name}
+                    class="w-full bg-transparent border-b border-neutral-400 py-2 font-serif italic text-3xl text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-300" />
+            </div>
+
+            <div class="group">
+                <label for="url" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Reference URL</label>
+                <input type="url" id="url" name="url" value={item.url}
+                    class="w-full bg-transparent border-b border-neutral-400 py-2 font-sans text-sm text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-400" />
+            </div>
+
+            <div class="flex flex-col gap-5 border-t border-neutral-200 pt-8">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase">Specifications</span>
+                    <button type="button" id="add-spec-btn" class="text-xs underline hover:no-underline font-mono text-[#1a1a1a] hover:opacity-70 transition-opacity cursor-pointer">
+                        + ADD ROW
+                    </button>
+                </div>
+                
+                <div id="specs-container" class="space-y-4">
+                    {specs.map((spec: any) => (
+                        <div class="grid grid-cols-[1fr_2fr_auto] gap-4 items-end spec-row">
+                            <input type="text" value={spec.label} placeholder="LABEL" class="bg-transparent border-b border-neutral-300 py-1 text-xs font-mono uppercase text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
+                            <input type="text" value={spec.value} placeholder="VALUE" class="bg-transparent border-b border-neutral-300 py-1 text-sm text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
+                            <button type="button" class="remove-spec text-neutral-400 hover:text-red-700 pb-1 text-xl leading-none transition-colors cursor-pointer">&times;</button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div class="pt-8">
+                <button type="submit" id="submit-btn" class="w-full bg-[#1a1a1a] text-[#f5f5f5] py-5 font-sans uppercase tracking-[0.2em] text-sm hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg">
+                    Update Entry
+                </button>
+            </div>
+
+        </form>
+    </main>
+</Layout>
+
+<script>
+    import { db } from "../../lib/firebase";
+    import { doc, updateDoc } from "firebase/firestore";
+
+    const SECRET_PIN = import.meta.env.PUBLIC_SECRET_PIN;
+
+    const overlay = document.getElementById('security-overlay');
+    const pinInput = document.getElementById('pin-input') as HTMLInputElement;
+    const errorMsg = document.getElementById('error-msg');
+    const form = document.getElementById('edit-item-form') as HTMLFormElement;
+
+    if (sessionStorage.getItem('auth_token') === 'valid') {
+        unlockForm();
+    }
+
+    pinInput?.addEventListener('input', (e) => {
+        const val = (e.target as HTMLInputElement).value;
+        if (!SECRET_PIN) return;
+
+        if (val.length === SECRET_PIN.length) {
+            if (val === SECRET_PIN) {
+                sessionStorage.setItem('auth_token', 'valid');
+                unlockForm();
+            } else {
+                showError();
+                pinInput.value = '';
+            }
+        }
+    });
+
+    function unlockForm() {
+        if(overlay && form) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                form.classList.remove('blur-sm', 'pointer-events-none');
+            }, 500);
+        }
+    }
+
+    function showError() {
+        if(errorMsg) {
+            errorMsg.style.opacity = '1';
+            setTimeout(() => {
+                errorMsg.style.opacity = '0';
+            }, 2000);
+        }
+    }
+
+    const specsContainer = document.getElementById('specs-container');
+    const addSpecBtn = document.getElementById('add-spec-btn');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    
+    addSpecBtn?.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-[1fr_2fr_auto] gap-4 items-end spec-row animate-fade-in';
+        row.innerHTML = `
+            <input type="text" placeholder="LABEL" class="bg-transparent border-b border-neutral-300 py-1 text-xs font-mono uppercase text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
+            <input type="text" placeholder="VALUE" class="bg-transparent border-b border-neutral-300 py-1 text-sm text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
+            <button type="button" class="remove-spec text-neutral-400 hover:text-red-700 pb-1 text-xl leading-none transition-colors cursor-pointer">&times;</button>
+        `;
+        specsContainer?.appendChild(row);
+    });
+
+    specsContainer?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('remove-spec')) {
+            target.closest('.spec-row')?.remove();
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const itemId = form.dataset.id;
+        if (!itemId) return;
+
+        if(submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+            submitBtn.classList.add('opacity-70');
+        }
+
+        const formData = new FormData(form);
+        const specs: {label: string, value: string}[] = [];
+        document.querySelectorAll('.spec-row').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            const label = inputs[0].value.trim();
+            const value = inputs[1].value.trim();
+            if (label && value) specs.push({ label, value });
+        });
+
+        const updatedItem = {
+            owner: formData.get('owner') as string,
+            topic: (formData.get('topic') as string).trim(),
+            name: (formData.get('name') as string).trim(),
+            price: (formData.get('price') as string).trim(),
+            url: (formData.get('url') as string).trim(),
+            specs: specs,
+        };
+
+        try {
+            const docRef = doc(db, "items", itemId);
+            await updateDoc(docRef, updatedItem);
+            
+            const targetPage = updatedItem.owner === 'me' ? '/andrii' : '/juliette';
+            window.location.href = targetPage;
+        } catch (error) {
+            console.error(error);
+            alert("Error updating");
+            if(submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Entry';
+                submitBtn.classList.remove('opacity-70');
+            }
+        }
+    });
+</script>

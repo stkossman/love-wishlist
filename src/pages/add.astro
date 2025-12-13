@@ -187,7 +187,6 @@ import Button from '../components/ui/Button.astro';
             name: (formData.get('name') as string).trim(),
             price: (formData.get('price') as string).trim(),
             url: (formData.get('url') as string).trim(),
-            status: 'wanted',
             specs: specs,
             createdAt: serverTimestamp()
         };

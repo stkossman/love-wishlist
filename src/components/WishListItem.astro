@@ -7,34 +7,42 @@ interface Props {
 
 const { item } = Astro.props;
 
-const ownerLabel = item.owner === 'me' ? 'M' : 'H';
+const ownerLabel = item.owner === 'me' ? 'A' : 'J';
 ---
 
 <article class="group relative flex flex-col gap-4 py-6 border-t border-[var(--color-theme-border)] hover:border-[var(--color-theme-text)] transition-colors duration-500 ease-out">
     
-    <button 
-        class="delete-btn absolute top-4 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[var(--color-theme-text)] hover:text-red-700 font-mono text-xl leading-none cursor-pointer p-2 z-10"
-        data-id={item.id}
-        aria-label="Delete item"
-        title="Delete item"
-    >
-        &times; </button>
+    <div class="absolute top-4 right-0 z-20">
+        <button 
+            class="menu-btn opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[var(--color-theme-text)] hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)] rounded-full w-8 h-8 flex items-center justify-center cursor-pointer"
+            aria-label="Options"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+            </svg>
+        </button>
 
-    <div class="flex justify-between items-start text-xs font-sans tracking-widest opacity-60 uppercase pr-8">
+        <div class="menu-dropdown hidden absolute right-0 mt-2 w-32 bg-white border border-[#1a1a1a] shadow-xl py-1 z-30 fade-in">
+            <a href={`/edit/${item.id}`} class="block w-full text-left px-4 py-2 text-xs font-mono uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                Edit
+            </a>
+            <button 
+                class="delete-btn block w-full text-left px-4 py-2 text-xs font-mono uppercase tracking-widest text-red-700 hover:bg-red-700 hover:text-white transition-colors cursor-pointer"
+                data-id={item.id}
+            >
+                Delete
+            </button>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-start text-xs font-sans tracking-widest opacity-60 uppercase pr-10">
         <div class="flex gap-2 items-center text-[var(--color-theme-text)]">
-            <span class="w-5 h-5 flex items-center justify-center border border-[var(--color-theme-text)] text-[10px] rounded-full opacity-60">
+            <span class="w-5 h-5 flex items-center justify-center border border-[var(--color-theme-text)] text-[10px] rounded-full opacity-60 font-serif italic">
                 {ownerLabel}
             </span>
             <span>{item.topic}</span>
         </div>
-
-        <span class={`
-            px-1 border border-[var(--color-theme-border)] 
-            ${item.status === 'acquired' ? 'bg-[var(--color-theme-text)] text-[var(--color-theme-bg)] border-transparent' : ''}
-        `}>
-            {item.status}
-        </span>
-    </div>
+        </div>
 
     <div class="space-y-1">
         <h2 class="text-3xl font-serif italic font-light leading-none text-[var(--color-theme-text)]">
@@ -68,9 +76,33 @@ const ownerLabel = item.owner === 'me' ? 'M' : 'H';
     import { doc, deleteDoc } from "firebase/firestore";
     import { db } from "../lib/firebase";
 
-    const buttons = document.querySelectorAll('.delete-btn');
+    document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const isMenuBtn = target.closest('.menu-btn');
+        const isDropdown = target.closest('.menu-dropdown');
 
-    buttons.forEach(button => {
+        if (!isMenuBtn && !isDropdown) {
+            document.querySelectorAll('.menu-dropdown').forEach(el => el.classList.add('hidden'));
+        }
+    });
+
+    const menuButtons = document.querySelectorAll('.menu-btn');
+    menuButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = btn.nextElementSibling as HTMLElement;
+
+            document.querySelectorAll('.menu-dropdown').forEach(el => {
+                if (el !== dropdown) el.classList.add('hidden');
+            });
+
+            dropdown.classList.toggle('hidden');
+        });
+    });
+
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+
+    deleteButtons.forEach(button => {
         button.addEventListener('click', async (e) => {
             e.stopPropagation();
 

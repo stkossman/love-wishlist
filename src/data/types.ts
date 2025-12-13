@@ -1,5 +1,4 @@
 export type Owner = "me" | "her";
-export type ItemStatus = "wanted" | "ordered" | "acquired" | "archived";
 
 export interface WishlistItem {
   id?: string;
@@ -9,7 +8,6 @@ export interface WishlistItem {
   price?: string;
   url?: string;
   priority?: number;
-  status: ItemStatus;
 
   specs?: {
     label: string;
