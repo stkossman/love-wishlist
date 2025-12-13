@@ -214,9 +214,6 @@ const specs = item.specs || [];
 </Layout>
 
 <script>
-  import { db } from '../../lib/firebase';
-  import { doc, updateDoc } from 'firebase/firestore';
-
   const SECRET_PIN = import.meta.env.PUBLIC_SECRET_PIN;
 
   const overlay = document.getElementById('security-overlay');
@@ -224,8 +221,10 @@ const specs = item.specs || [];
   const errorMsg = document.getElementById('error-msg');
   const form = document.getElementById('edit-item-form') as HTMLFormElement;
 
+  let currentPin = '';
+
   if (sessionStorage.getItem('auth_token') === 'valid') {
-    unlockForm();
+    sessionStorage.removeItem('auth_token');
   }
 
   pinInput?.addEventListener('input', (e) => {
@@ -286,7 +285,6 @@ const specs = item.specs || [];
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const itemId = form.dataset.id;
     if (!itemId) return;
 
@@ -305,7 +303,7 @@ const specs = item.specs || [];
       if (label && value) specs.push({ label, value });
     });
 
-    const updatedItem = {
+    const payload = {
       owner: formData.get('owner') as string,
       topic: (formData.get('topic') as string).trim(),
       name: (formData.get('name') as string).trim(),
@@ -315,10 +313,18 @@ const specs = item.specs || [];
     };
 
     try {
-      const docRef = doc(db, 'items', itemId);
-      await updateDoc(docRef, updatedItem);
+      const response = await fetch(`/api/items/${itemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-pin': currentPin,
+        },
+        body: JSON.stringify(payload),
+      });
 
-      const targetPage = updatedItem.owner === 'me' ? '/andrii' : '/juliette';
+      if (!response.ok) throw new Error('Update failed');
+
+      const targetPage = payload.owner === 'me' ? '/andrii' : '/juliette';
       window.location.href = targetPage;
     } catch (error) {
       console.error(error);

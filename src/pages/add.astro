@@ -189,9 +189,6 @@ import Button from '../components/ui/Button.astro';
 </Layout>
 
 <script>
-  import { db } from '../lib/firebase';
-  import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
   const SECRET_PIN = import.meta.env.PUBLIC_SECRET_PIN;
 
   const overlay = document.getElementById('security-overlay');
@@ -199,16 +196,19 @@ import Button from '../components/ui/Button.astro';
   const errorMsg = document.getElementById('error-msg');
   const form = document.getElementById('add-item-form') as HTMLFormElement;
 
+  let currentPin = '';
+
   if (sessionStorage.getItem('auth_token') === 'valid') {
-    unlockForm();
+    sessionStorage.removeItem('auth_token');
   }
 
   pinInput?.addEventListener('input', (e) => {
     const val = (e.target as HTMLInputElement).value;
+    if (!SECRET_PIN) return;
 
     if (val.length === SECRET_PIN.length) {
       if (val === SECRET_PIN) {
-        sessionStorage.setItem('auth_token', 'valid');
+        currentPin = val;
         unlockForm();
       } else {
         showError();
@@ -260,9 +260,10 @@ import Button from '../components/ui/Button.astro';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Saving...';
+      submitBtn.textContent = 'Processing...';
       submitBtn.classList.add('opacity-70');
     }
 
@@ -275,23 +276,34 @@ import Button from '../components/ui/Button.astro';
       if (label && value) specs.push({ label, value });
     });
 
-    const newItem = {
+    const payload = {
       owner: formData.get('owner') as string,
       topic: (formData.get('topic') as string).trim(),
       name: (formData.get('name') as string).trim(),
       price: (formData.get('price') as string).trim(),
       url: (formData.get('url') as string).trim(),
       specs: specs,
-      createdAt: serverTimestamp(),
     };
 
     try {
-      await addDoc(collection(db, 'items'), newItem);
-      const targetPage = newItem.owner === 'me' ? '/andrii' : '/juliette';
+      const response = await fetch('/api/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-pin': currentPin,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Server returned error');
+      }
+
+      const targetPage = payload.owner === 'me' ? '/andrii' : '/juliette';
       window.location.href = targetPage;
     } catch (error) {
       console.error(error);
-      alert('Error');
+      alert('Error saving item. Check console.');
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Confirm Entry';

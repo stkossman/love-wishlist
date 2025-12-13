@@ -100,9 +100,6 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
 </article>
 
 <script>
-  import { doc, deleteDoc } from 'firebase/firestore';
-  import { db } from '../lib/firebase';
-
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     const isMenuBtn = target.closest('.menu-btn');
@@ -141,7 +138,10 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
       }
 
       try {
-        await deleteDoc(doc(db, 'items', id));
+        const response = await fetch(`/api/items/${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Delete failed');
         card?.remove();
       } catch (error) {
         console.error('Error deleting: ', error);
