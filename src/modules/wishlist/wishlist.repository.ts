@@ -6,6 +6,7 @@ import {
   updateDoc,
   doc,
   getDocs,
+  getDoc,
   query,
   where,
   orderBy,
@@ -46,6 +47,20 @@ export class WishlistRepository {
     const nextCursor = items.length === pageSize ? items[items.length - 1].createdAt : null;
 
     return { items, nextCursor };
+  }
+
+  static async findById(id: string): Promise<WishlistItem | null> {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    const snapshot = await getDoc(docRef);
+
+    if (!snapshot.exists()) return null;
+
+    const data = snapshot.data();
+    return {
+      id: snapshot.id,
+      ...data,
+      createdAt: data.createdAt?.toDate().toISOString(),
+    } as WishlistItem;
   }
 
   static async create(data: CreateItemDTO) {

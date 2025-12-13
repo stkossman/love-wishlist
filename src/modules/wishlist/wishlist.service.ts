@@ -1,30 +1,54 @@
 import { WishlistRepository } from './wishlist.repository';
-import type { CreateItemDTO } from './wishlist.types';
+import type { CreateItemDTO, WishlistItem } from './wishlist.types';
 import { Telegraf } from 'telegraf';
 
 export class WishlistService {
-  private static async sendTelegramNotification(item: CreateItemDTO) {
+  private static getBot() {
     const token = import.meta.env.TELEGRAM_BOT_TOKEN;
     const chatId = import.meta.env.TELEGRAM_CHAT_ID;
+    if (!token || !chatId) return null;
+    return { bot: new Telegraf(token), chatId };
+  }
 
-    if (!token || !chatId) return;
+  private static async sendTelegramCreateNotification(item: CreateItemDTO) {
+    const config = this.getBot();
+    if (!config) return;
 
     try {
-      const bot = new Telegraf(token);
       const ownerEmoji = item.owner === 'me' ? '🤵‍♂️ Andrii' : '💃 Juliette';
-      const message = `<b>New Item!</b>\n👤 ${ownerEmoji}\n🏷 ${item.name}`;
+      const linkText = item.url ? `\n🔗 <a href="${item.url}">Link</a>` : '';
 
-      await bot.telegram.sendMessage(chatId, message, { parse_mode: 'HTML' });
+      const message = `<b>New Item!</b> 🎁\n\n👤 <b>For:</b> ${ownerEmoji}\n🏷 <b>Item:</b> ${item.name}${linkText}`;
+
+      await config.bot.telegram.sendMessage(config.chatId, message, { parse_mode: 'HTML' });
     } catch (e) {
-      console.error('Telegram failed', e);
+      console.error('Telegram create notify failed', e);
+    }
+  }
+
+  private static async sendTelegramDeleteNotification(item: WishlistItem) {
+    const config = this.getBot();
+    if (!config) return;
+
+    try {
+      const ownerEmoji = item.owner === 'me' ? '🤵‍♂️ Andrii' : '💃 Juliette';
+
+      const message = `
+<b>Item Removed!</b> 🗑️
+
+👤 <b>From:</b> ${ownerEmoji}
+❌ <b>Item:</b> <s>${item.name}</s>
+      `;
+
+      await config.bot.telegram.sendMessage(config.chatId, message, { parse_mode: 'HTML' });
+    } catch (e) {
+      console.error('Telegram delete notify failed', e);
     }
   }
 
   static async createItem(data: CreateItemDTO) {
     const id = await WishlistRepository.create(data);
-
-    void this.sendTelegramNotification(data);
-
+    void this.sendTelegramCreateNotification(data);
     return id;
   }
 
@@ -33,7 +57,11 @@ export class WishlistService {
   }
 
   static async deleteItem(id: string) {
-    return await WishlistRepository.delete(id);
+    const item = await WishlistRepository.findById(id);
+    await WishlistRepository.delete(id);
+    if (item) {
+      void this.sendTelegramDeleteNotification(item);
+    }
   }
 
   static async updateItem(id: string, data: Partial<CreateItemDTO>) {
