@@ -12,6 +12,7 @@ import {
   startAfter,
   Timestamp,
 } from 'firebase/firestore';
+import { Telegraf } from 'telegraf';
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
@@ -62,6 +63,39 @@ export const GET: APIRoute = async ({ request }) => {
   }
 };
 
+async function sendTelegramNotification(item: any) {
+  const token = import.meta.env.TELEGRAM_BOT_TOKEN;
+  const chatId = import.meta.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId) {
+    console.warn('Telegram credentials missing');
+    return;
+  }
+
+  try {
+    const bot = new Telegraf(token);
+
+    const ownerEmoji = item.owner === 'me' ? '🤵‍♂️ Andrii' : '💃 Juliette';
+    const priceText = item.price ? `💰 Price: ${item.price}` : '';
+    const linkText = item.url ? `🔗 (${item.url})` : '';
+
+    const message = `
+<b>New Wishlist Item!</b> 🎁
+
+👤 <b>For:</b> ${ownerEmoji}
+🏷 <b>Item:</b> ${item.name}
+${item.topic ? `📌 <b>Topic:</b> ${item.topic}` : ''}
+${priceText}
+${linkText}
+`;
+
+    await bot.telegram.sendMessage(chatId, message, { parse_mode: 'HTML' });
+    console.log('Telegram notification sent!');
+  } catch (error) {
+    console.error('Telegram Error:', error);
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
@@ -85,6 +119,8 @@ export const POST: APIRoute = async ({ request }) => {
       ...data,
       createdAt: serverTimestamp(),
     });
+
+    await sendTelegramNotification(data);
 
     return new Response(
       JSON.stringify({
