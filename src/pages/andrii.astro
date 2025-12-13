@@ -3,12 +3,28 @@ import Layout from '../layouts/Layout.astro';
 import WishlistItemComponent from '../components/WishListItem.astro';
 import Button from '../components/ui/Button.astro';
 import { db } from '../lib/firebase';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, limit, orderBy, where } from 'firebase/firestore';
 import type { WishlistItem } from '../data/types';
 
-const q = query(collection(db, 'items'), where('owner', '==', 'me'), orderBy('createdAt', 'desc'));
+const pageSize = 6;
+const q = query(
+  collection(db, 'items'),
+  where('owner', '==', 'me'),
+  orderBy('createdAt', 'desc'),
+  limit(pageSize)
+);
 const querySnapshot = await getDocs(q);
-const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as WishlistItem);
+
+const items: WishlistItem[] = querySnapshot.docs.map((doc) => {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    ...data,
+    createdAt: data.createdAt?.toDate().toISOString(),
+  } as WishlistItem;
+});
+
+const initialCursor = items.length > 0 ? items[items.length - 1].createdAt : null;
 ---
 
 <Layout title="ANDRII / WISHLIST">
@@ -34,10 +50,25 @@ const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as
       <p class="font-mono text-xs opacity-50">HIS COLLECTION</p>
     </header>
 
-    <section class="flex flex-col">
+    <section id="feed-container" class="flex flex-col">
       {items.map((item) => <WishlistItemComponent item={item} />)}
       {items.length === 0 && <p class="py-10 text-center opacity-50">No items found.</p>}
     </section>
+
+    <div class="flex justify-center py-12">
+      {
+        items.length === pageSize && (
+          <button
+            id="load-more-btn"
+            class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
+            data-cursor={initialCursor}
+          >
+            Load More
+          </button>
+        )
+      }
+      <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">No more items</p>
+    </div>
 
     <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
       <Button
@@ -49,3 +80,130 @@ const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as
     </div>
   </main>
 </Layout>
+
+<script>
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  const container = document.getElementById('feed-container');
+  const endMessage = document.getElementById('end-message');
+
+  loadMoreBtn?.addEventListener('click', async () => {
+    const cursor = loadMoreBtn.getAttribute('data-cursor');
+    if (!cursor) return;
+
+    loadMoreBtn.textContent = 'Loading...';
+    (loadMoreBtn as HTMLButtonElement).disabled = true;
+
+    try {
+      const res = await fetch(`/api/items?owner=me&cursor=${cursor}`);
+      const data = await res.json();
+
+      if (data.items.length > 0) {
+        data.items.forEach((item: any) => {
+          const html = createItemHTML(item);
+          container?.insertAdjacentHTML('beforeend', html);
+        });
+
+        if (data.nextCursor) {
+          loadMoreBtn.setAttribute('data-cursor', data.nextCursor);
+          loadMoreBtn.textContent = 'Load More';
+          (loadMoreBtn as HTMLButtonElement).disabled = false;
+        } else {
+          hideButton();
+        }
+      } else {
+        hideButton();
+      }
+    } catch (e) {
+      console.error(e);
+      loadMoreBtn.textContent = 'Error';
+    }
+  });
+
+  function hideButton() {
+    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+    if (endMessage) endMessage.classList.remove('hidden');
+  }
+
+  function createItemHTML(item: any) {
+    const ownerLabel = item.owner === 'me' ? 'A' : 'J';
+    let specsHTML = '';
+    if (item.specs && item.specs.length > 0) {
+      specsHTML = `<div class="mt-auto pt-3 grid grid-cols-2 gap-y-2 gap-x-4 opacity-80 lg:opacity-60 lg:group-hover:opacity-100 transition-opacity">
+                ${item.specs
+                  .map(
+                    (s: any) => `
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] uppercase tracking-wider opacity-50">${s.label}</span>
+                        <span class="text-xs font-mono border-b border-[var(--color-theme-border)] pb-1">${s.value}</span>
+                    </div>
+                `
+                  )
+                  .join('')}
+            </div>`;
+    }
+
+    return `
+        <article class="group relative flex flex-col gap-3 py-5 md:py-6 border-t border-[var(--color-theme-border)] hover:border-[var(--color-theme-text)] transition-colors duration-500 ease-out animate-fade-in">
+            <div class="absolute top-3 right-0 z-20">
+                <button class="menu-btn opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 text-[var(--color-theme-text)] hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)] rounded-full w-8 h-8 flex items-center justify-center cursor-pointer">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                </button>
+                 <div class="menu-dropdown hidden absolute right-0 mt-2 w-32 bg-white border border-[#1a1a1a] shadow-xl py-1 z-30">
+                    <a href="/edit/${item.id}" class="block w-full text-left px-4 py-3 md:py-2 text-sm md:text-xs font-mono uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors">Edit</a>
+                    <button class="delete-btn block w-full text-left px-4 py-3 md:py-2 text-sm md:text-xs font-mono uppercase tracking-widest text-red-700 hover:bg-red-700 hover:text-white transition-colors cursor-pointer" data-id="${item.id}">Delete</button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-start text-[10px] md:text-xs font-sans tracking-widest opacity-60 uppercase pr-10">
+                <div class="flex gap-2 items-center text-[var(--color-theme-text)]">
+                    <span class="w-5 h-5 flex items-center justify-center border border-[var(--color-theme-text)] text-[10px] rounded-full opacity-60 font-serif italic">${ownerLabel}</span>
+                    <span>${item.topic}</span>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <h2 class="text-2xl md:text-3xl font-serif italic font-light leading-none text-[var(--color-theme-text)]">
+                    ${item.url ? `<a href="${item.url}" target="_blank" class="underline decoration-1 underline-offset-4 decoration-[var(--color-theme-border)] hover:decoration-[var(--color-theme-accent)] transition-all">${item.name}</a>` : item.name}
+                </h2>
+                ${item.price ? `<p class="font-sans text-sm font-medium opacity-80">${item.price}</p>` : ''}
+            </div>
+
+            ${specsHTML}
+        </article>
+        `;
+  }
+
+  container?.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement;
+
+    const menuBtn = target.closest('.menu-btn');
+    if (menuBtn) {
+      e.stopPropagation();
+      const dropdown = menuBtn.nextElementSibling;
+      document.querySelectorAll('.menu-dropdown').forEach((el) => {
+        if (el !== dropdown) el.classList.add('hidden');
+      });
+      dropdown?.classList.toggle('hidden');
+      return;
+    }
+
+    const deleteBtn = target.closest('.delete-btn') as HTMLButtonElement;
+    if (deleteBtn) {
+      e.stopPropagation();
+      if (!confirm('Delete item?')) return;
+
+      const id = deleteBtn.dataset.id;
+      const card = deleteBtn.closest('article') as HTMLElement;
+
+      if (card) card.style.opacity = '0.3';
+
+      try {
+        await fetch(`/api/items/${id}`, { method: 'DELETE' });
+        card?.remove();
+      } catch (err) {
+        alert('Error');
+        if (card) card.style.opacity = '1';
+      }
+    }
+  });
+</script>
