@@ -3,6 +3,7 @@
 A minimalist, dual-user wishlist. Designed for sharing and managing desired items between two users with distinct visual profiles.
 
 ## Tech Stack
+
 - **Framework:** Astro (SSR mode)
 - **Styling:** TailwindCSS v4
 - **Language:** TypeScript
@@ -11,6 +12,7 @@ A minimalist, dual-user wishlist. Designed for sharing and managing desired item
 - **Deployment:** Vercel
 
 ## Features
+
 - **Server-Side Rendering (SSR):** Instant data updates and SEO optimization via Vercel Adapter.
 - **Custom REST API:** Internal Node.js endpoints (`/api/items`) handling all write operations with server-side validation.
 - **Dynamic Theming:** Context-aware design system that adapts color palettes based on the active user profile.
