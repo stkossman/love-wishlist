@@ -1,43 +1,19 @@
-# Astro Starter Kit: Minimal
+# Shared Wishlist
 
-```sh
-npm create astro@latest -- --template minimal
-```
+A minimalist, dual-user wishlist. Designed for sharing and managing desired items between two users with distinct visual profiles.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Tech Stack
+- **Framework:** Astro (SSR mode)
+- **Styling:** TailwindCSS v4
+- **Language:** TypeScript
+- **Backend/DB:** Firebase Firestore
+- **API:** Node.js (Astro API Routes)
+- **Deployment:** Vercel
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Features
+- **Server-Side Rendering (SSR):** Instant data updates and SEO optimization via Vercel Adapter.
+- **Custom REST API:** Internal Node.js endpoints (`/api/items`) handling all write operations with server-side validation.
+- **Dynamic Theming:** Context-aware design system that adapts color palettes based on the active user profile.
+- **Cursor-Based Pagination:** Efficient "Load More" functionality for managing large lists.
+- **Secure Input System:** PIN-protected interface for creating and editing items to prevent unauthorized changes.
+- **Full CRUD:** Create, Read, Update, and Delete capabilities with a custom UI menu.
