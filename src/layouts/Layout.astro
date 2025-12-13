@@ -2,28 +2,33 @@
 import '../styles/global.css';
 
 interface Props {
-	title: string;
+  title: string;
 }
 
 const { title } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
 
     <title>{title}</title>
 
     <slot name="head" />
-</head>
-<body class="min-h-screen flex flex-col py-10 px-4 selection:bg-[var(--color-theme-accent)] selection:text-[var(--color-theme-bg)]">
+  </head>
+  <body
+    class="flex min-h-screen flex-col px-4 py-10 selection:bg-[var(--color-theme-accent)] selection:text-[var(--color-theme-bg)]"
+  >
     <slot />
-</body>
+  </body>
 </html>

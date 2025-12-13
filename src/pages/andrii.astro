@@ -2,50 +2,50 @@
 import Layout from '../layouts/Layout.astro';
 import WishlistItemComponent from '../components/WishListItem.astro';
 import Button from '../components/ui/Button.astro';
-import { db } from "../lib/firebase";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { db } from '../lib/firebase';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import type { WishlistItem } from '../data/types';
 
-const q = query(
-    collection(db, "items"), 
-    where("owner", "==", "me"), 
-    orderBy("createdAt", "desc")
-);
+const q = query(collection(db, 'items'), where('owner', '==', 'me'), orderBy('createdAt', 'desc'));
 const querySnapshot = await getDocs(q);
-const items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WishlistItem));
+const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as WishlistItem);
 ---
 
 <Layout title="ANDRII / WISHLIST">
-    <style slot="head">
-        :root {
-            --color-theme-bg: #1a1a1a;
-            --color-theme-text: #f5f5f5;
-            --color-theme-accent: #C02026;
-            --color-theme-border: rgba(245, 245, 245, 0.2);
-        }
-    </style>
+  <style slot="head">
+    :root {
+      --color-theme-bg: #1a1a1a;
+      --color-theme-text: #f5f5f5;
+      --color-theme-accent: #c02026;
+      --color-theme-border: rgba(245, 245, 245, 0.2);
+    }
+  </style>
 
-    <main class="w-full max-w-2xl mx-auto">
-        <header class="mb-24 mt-10 border-b border-[var(--color-theme-accent)] pb-4 flex justify-between items-end">
-            <div>
-                <Button href="/" variant="outline" class="mb-6 text-xs px-3 py-1 border-opacity-30">← Back</Button>
-                <h1 class="font-serif italic text-5xl text-[var(--color-theme-accent)]">Andrii</h1>
-            </div>
-            <p class="font-mono text-xs opacity-50">PERSONAL ARCHIVE</p>
-        </header>
+  <main class="mx-auto w-full max-w-2xl">
+    <header
+      class="mt-10 mb-24 flex items-end justify-between border-b border-[var(--color-theme-accent)] pb-4"
+    >
+      <div>
+        <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs"
+          >← Back</Button
+        >
+        <h1 class="font-serif text-5xl text-[var(--color-theme-accent)] italic">Andrii</h1>
+      </div>
+      <p class="font-mono text-xs opacity-50">PERSONAL ARCHIVE</p>
+    </header>
 
-        <section class="flex flex-col">
-            {items.map((item) => <WishlistItemComponent item={item} />)}
-            {items.length === 0 && <p class="opacity-50 text-center py-10">No items found.</p>}
-        </section>
-        
-        <div class="fixed bottom-10 right-10 z-50">
-             <Button 
-                href="/add" 
-                class="shadow-2xl shadow-red-900/20 rounded-full w-14 h-14 !p-0 flex items-center justify-center text-xl !bg-[var(--color-theme-accent)] !text-white border-none"
-             >
-                +
-             </Button>
-        </div>
-    </main>
+    <section class="flex flex-col">
+      {items.map((item) => <WishlistItemComponent item={item} />)}
+      {items.length === 0 && <p class="py-10 text-center opacity-50">No items found.</p>}
+    </section>
+
+    <div class="fixed right-10 bottom-10 z-50">
+      <Button
+        href="/add"
+        class="flex h-14 w-14 items-center justify-center rounded-full border-none !bg-[var(--color-theme-accent)] !p-0 text-xl !text-white shadow-2xl shadow-red-900/20"
+      >
+        +
+      </Button>
+    </div>
+  </main>
 </Layout>

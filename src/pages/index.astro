@@ -2,46 +2,44 @@
 import Layout from '../layouts/Layout.astro';
 import WishlistItemComponent from '../components/WishListItem.astro';
 import Button from '../components/ui/Button.astro';
-import { db } from "../lib/firebase";
-import { collection, getDocs, limit, query, orderBy } from "firebase/firestore";
+import { db } from '../lib/firebase';
+import { collection, getDocs, limit, query, orderBy } from 'firebase/firestore';
 import type { WishlistItem } from '../data/types';
 
-const q = query(
-    collection(db, "items"), 
-    orderBy("createdAt", "desc"), 
-    limit(20)
-);
+const q = query(collection(db, 'items'), orderBy('createdAt', 'desc'), limit(20));
 const querySnapshot = await getDocs(q);
 
-const items: WishlistItem[] = querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data()
-} as WishlistItem));
+const items: WishlistItem[] = querySnapshot.docs.map(
+  (doc) =>
+    ({
+      id: doc.id,
+      ...doc.data(),
+    }) as WishlistItem
+);
 ---
 
 <Layout title="WISHLIST / INDEX">
-    <main class="w-full max-w-2xl mx-auto">
-        
-        <nav class="flex justify-center gap-4 mb-20 pt-10">
-            <Button href="/andrii" variant="outline">Andrii</Button>
-            <Button href="/juliette" variant="outline">Juliette</Button>
-        </nav>
+  <main class="mx-auto w-full max-w-2xl">
+    <nav class="mb-20 flex justify-center gap-4 pt-10">
+      <Button href="/andrii" variant="outline">Andrii</Button>
+      <Button href="/juliette" variant="outline">Juliette</Button>
+    </nav>
 
-        <header class="mb-12 text-center">
-            <h1 class="font-serif italic text-4xl opacity-80">Latest Additions</h1>
-        </header>
+    <header class="mb-12 text-center">
+      <h1 class="font-serif text-4xl italic opacity-80">Latest Additions</h1>
+    </header>
 
-        <section class="flex flex-col min-h-[50vh]">
-            {items.map((item) => (
-                <WishlistItemComponent item={item} />
-            ))}
-        </section>
+    <section class="flex min-h-[50vh] flex-col">
+      {items.map((item) => <WishlistItemComponent item={item} />)}
+    </section>
 
-        <div class="fixed bottom-10 right-10 z-50">
-             <Button href="/add" class="shadow-2xl rounded-full w-14 h-14 !p-0 flex items-center justify-center text-xl">
-                +
-             </Button>
-        </div>
-
-    </main>
+    <div class="fixed right-10 bottom-10 z-50">
+      <Button
+        href="/add"
+        class="flex h-14 w-14 items-center justify-center rounded-full !p-0 text-xl shadow-2xl"
+      >
+        +
+      </Button>
+    </div>
+  </main>
 </Layout>

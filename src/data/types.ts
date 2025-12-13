@@ -1,4 +1,4 @@
-export type Owner = "me" | "her";
+export type Owner = 'me' | 'her';
 
 export interface WishlistItem {
   id?: string;

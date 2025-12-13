@@ -8,15 +8,15 @@ interface Props {
 const { href, variant = 'solid', class: className } = Astro.props;
 ---
 
-<a 
+<a
   href={href}
   class:list={[
-    "inline-flex items-center justify-center px-6 py-3 text-sm tracking-widest uppercase transition-all duration-300 font-sans cursor-pointer",
+    'inline-flex cursor-pointer items-center justify-center px-6 py-3 font-sans text-sm tracking-widest uppercase transition-all duration-300',
     variant === 'solid'
-        ? "bg-[var(--color-theme-text)] text-[var(--color-theme-bg)] hover:opacity-80"
-        : "border border-[var(--color-theme-text)] text-[var(--color-theme-text)] hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)]",
-    className
+      ? 'bg-[var(--color-theme-text)] text-[var(--color-theme-bg)] hover:opacity-80'
+      : 'border border-[var(--color-theme-text)] text-[var(--color-theme-text)] hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)]',
+    className,
   ]}
-  >
-    <slot />
+>
+  <slot />
 </a>

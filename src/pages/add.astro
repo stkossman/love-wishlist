@@ -4,205 +4,299 @@ import Button from '../components/ui/Button.astro';
 ---
 
 <Layout title="ADD ITEM / NEW ENTRY">
-    <main class="w-full max-w-xl mx-auto mt-10 mb-20 px-4 relative">
-        
-        <div id="security-overlay" class="fixed inset-0 z-[100] bg-[#f5f5f5] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
-            <div class="max-w-xs w-full text-center space-y-6">
-                <h2 class="font-serif italic text-3xl text-[#1a1a1a]">Restricted Access</h2>
-                <p class="font-mono text-xs tracking-widest uppercase opacity-50">Enter Access Code</p>
-                
-                <input type="password" id="pin-input" placeholder="****" maxlength="4" autofocus
-                    class="w-full text-center text-4xl font-serif tracking-[0.5em] bg-transparent border-b border-[#1a1a1a] py-2 focus:outline-none text-[#1a1a1a] placeholder:opacity-20" />
-                
-                <p id="error-msg" class="text-red-700 text-xs font-mono opacity-0 transition-opacity">INVALID CREDENTIALS</p>
-            </div>
+  <main class="relative mx-auto mt-10 mb-20 w-full max-w-xl px-4">
+    <div
+      id="security-overlay"
+      class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#f5f5f5] p-4 transition-opacity duration-500"
+    >
+      <div class="w-full max-w-xs space-y-6 text-center">
+        <h2 class="font-serif text-3xl text-[#1a1a1a] italic">Restricted Access</h2>
+        <p class="font-mono text-xs tracking-widest uppercase opacity-50">Enter Access Code</p>
+
+        <input
+          type="password"
+          id="pin-input"
+          placeholder="****"
+          maxlength="4"
+          autofocus
+          class="w-full border-b border-[#1a1a1a] bg-transparent py-2 text-center font-serif text-4xl tracking-[0.5em] text-[#1a1a1a] placeholder:opacity-20 focus:outline-none"
+        />
+
+        <p id="error-msg" class="font-mono text-xs text-red-700 opacity-0 transition-opacity">
+          INVALID CREDENTIALS
+        </p>
+      </div>
+    </div>
+
+    <header class="mb-12 flex items-end justify-between border-b border-[#1a1a1a] pb-4">
+      <h1 class="font-serif text-4xl text-[#1a1a1a] italic">New Entry</h1>
+      <Button
+        href="/"
+        variant="outline"
+        class="border-opacity-30 !border-[#1a1a1a] px-3 py-1 text-xs !text-[#1a1a1a] hover:!bg-[#1a1a1a] hover:!text-[#f5f5f5]"
+      >
+        Cancel
+      </Button>
+    </header>
+
+    <form
+      id="add-item-form"
+      class="pointer-events-none flex flex-col gap-12 blur-sm transition-all duration-700"
+    >
+      <div class="flex flex-col gap-4">
+        <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+          >Owner / Beneficiary</span
+        >
+        <div class="flex gap-8">
+          <label class="group flex cursor-pointer items-center gap-3">
+            <input
+              type="radio"
+              name="owner"
+              value="me"
+              checked
+              class="h-4 w-4 cursor-pointer accent-[#1a1a1a]"
+            />
+            <span
+              class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
+              >Andrii</span
+            >
+          </label>
+          <label class="group flex cursor-pointer items-center gap-3">
+            <input
+              type="radio"
+              name="owner"
+              value="her"
+              class="h-4 w-4 cursor-pointer accent-[#234f1e]"
+            />
+            <span
+              class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
+              >Juliette</span
+            >
+          </label>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div class="group">
+          <label
+            for="topic"
+            class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+            >Topic / Brand</label
+          >
+          <input
+            type="text"
+            id="topic"
+            name="topic"
+            required
+            placeholder="e.g. CP COMPANY"
+            class="w-full border-b border-neutral-400 bg-transparent py-2 font-sans text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+          />
         </div>
 
-        <header class="mb-12 border-b border-[#1a1a1a] pb-4 flex justify-between items-end">
-            <h1 class="font-serif italic text-4xl text-[#1a1a1a]">New Entry</h1>
-            <Button href="/" variant="outline" class="text-xs px-3 py-1 border-opacity-30 !text-[#1a1a1a] !border-[#1a1a1a] hover:!bg-[#1a1a1a] hover:!text-[#f5f5f5]">
-                Cancel
-            </Button>
-        </header>
+        <div class="group">
+          <label
+            for="price"
+            class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+            >Price Estimate</label
+          >
+          <input
+            type="text"
+            id="price"
+            name="price"
+            placeholder="e.g. 150 EUR"
+            class="w-full border-b border-neutral-400 bg-transparent py-2 font-sans text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+          />
+        </div>
+      </div>
 
-        <form id="add-item-form" class="flex flex-col gap-12 blur-sm transition-all duration-700 pointer-events-none">
-            
-            <div class="flex flex-col gap-4">
-                <span class="text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase">Owner / Beneficiary</span>
-                <div class="flex gap-8">
-                    <label class="cursor-pointer flex items-center gap-3 group">
-                        <input type="radio" name="owner" value="me" checked class="accent-[#1a1a1a] w-4 h-4 cursor-pointer" />
-                        <span class="font-serif italic text-xl text-[#1a1a1a] group-hover:opacity-70 transition-opacity">Andrii</span>
-                    </label>
-                    <label class="cursor-pointer flex items-center gap-3 group">
-                        <input type="radio" name="owner" value="her" class="accent-[#234f1e] w-4 h-4 cursor-pointer" />
-                        <span class="font-serif italic text-xl text-[#1a1a1a] group-hover:opacity-70 transition-opacity">Juliette</span>
-                    </label>
-                </div>
-            </div>
+      <div class="group">
+        <label
+          for="name"
+          class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+          >Item Name</label
+        >
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          placeholder="e.g. Goggle Jacket Chrome-R"
+          class="w-full border-b border-neutral-400 bg-transparent py-2 font-serif text-3xl text-[#1a1a1a] italic transition-colors placeholder:text-neutral-300 focus:border-[#1a1a1a] focus:outline-none"
+        />
+      </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="group">
-                    <label for="topic" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Topic / Brand</label>
-                    <input type="text" id="topic" name="topic" required placeholder="e.g. CP COMPANY" 
-                        class="w-full bg-transparent border-b border-neutral-400 py-2 font-sans text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-400" />
-                </div>
-                
-                <div class="group">
-                    <label for="price" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Price Estimate</label>
-                    <input type="text" id="price" name="price" placeholder="e.g. 150 EUR" 
-                        class="w-full bg-transparent border-b border-neutral-400 py-2 font-sans text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-400" />
-                </div>
-            </div>
+      <div class="group">
+        <label
+          for="url"
+          class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+          >Reference URL</label
+        >
+        <input
+          type="url"
+          id="url"
+          name="url"
+          placeholder="https://..."
+          class="w-full border-b border-neutral-400 bg-transparent py-2 font-sans text-sm text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+        />
+      </div>
 
-            <div class="group">
-                <label for="name" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Item Name</label>
-                <input type="text" id="name" name="name" required placeholder="e.g. Goggle Jacket Chrome-R" 
-                    class="w-full bg-transparent border-b border-neutral-400 py-2 font-serif italic text-3xl text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-300" />
-            </div>
+      <div class="flex flex-col gap-5 border-t border-neutral-200 pt-8">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+            >Specifications</span
+          >
+          <button
+            type="button"
+            id="add-spec-btn"
+            class="cursor-pointer font-mono text-xs text-[#1a1a1a] underline transition-opacity hover:no-underline hover:opacity-70"
+          >
+            + ADD ROW
+          </button>
+        </div>
 
-            <div class="group">
-                <label for="url" class="block text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase mb-2">Reference URL</label>
-                <input type="url" id="url" name="url" placeholder="https://..." 
-                    class="w-full bg-transparent border-b border-neutral-400 py-2 font-sans text-sm text-[#1a1a1a] focus:outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-neutral-400" />
-            </div>
+        <div id="specs-container" class="space-y-4">
+          <div class="spec-row grid grid-cols-[1fr_2fr_auto] items-end gap-4">
+            <input
+              type="text"
+              placeholder="LABEL (e.g. SIZE)"
+              class="border-b border-neutral-300 bg-transparent py-1 font-mono text-xs text-[#1a1a1a] uppercase placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+            />
+            <input
+              type="text"
+              placeholder="VALUE (e.g. XL)"
+              class="border-b border-neutral-300 bg-transparent py-1 text-sm text-[#1a1a1a] placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+            />
+            <button
+              type="button"
+              class="remove-spec cursor-pointer pb-1 text-xl leading-none text-neutral-400 transition-colors hover:text-red-700"
+              >&times;</button
+            >
+          </div>
+        </div>
+      </div>
 
-            <div class="flex flex-col gap-5 border-t border-neutral-200 pt-8">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-mono tracking-widest text-[#1a1a1a] opacity-60 uppercase">Specifications</span>
-                    <button type="button" id="add-spec-btn" class="text-xs underline hover:no-underline font-mono text-[#1a1a1a] hover:opacity-70 transition-opacity cursor-pointer">
-                        + ADD ROW
-                    </button>
-                </div>
-                
-                <div id="specs-container" class="space-y-4">
-                    <div class="grid grid-cols-[1fr_2fr_auto] gap-4 items-end spec-row">
-                        <input type="text" placeholder="LABEL (e.g. SIZE)" class="bg-transparent border-b border-neutral-300 py-1 text-xs font-mono uppercase text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
-                        <input type="text" placeholder="VALUE (e.g. XL)" class="bg-transparent border-b border-neutral-300 py-1 text-sm text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
-                        <button type="button" class="remove-spec text-neutral-400 hover:text-red-700 pb-1 text-xl leading-none transition-colors cursor-pointer">&times;</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-8">
-                <button type="submit" id="submit-btn" class="w-full bg-[#1a1a1a] text-[#f5f5f5] py-5 font-sans uppercase tracking-[0.2em] text-sm hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg">
-                    Confirm Entry
-                </button>
-            </div>
-
-        </form>
-    </main>
+      <div class="pt-8">
+        <button
+          type="submit"
+          id="submit-btn"
+          class="w-full cursor-pointer bg-[#1a1a1a] py-5 font-sans text-sm tracking-[0.2em] text-[#f5f5f5] uppercase shadow-lg transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Confirm Entry
+        </button>
+      </div>
+    </form>
+  </main>
 </Layout>
 
 <script>
-    import { db } from "../lib/firebase";
-    import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+  import { db } from '../lib/firebase';
+  import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-    const SECRET_PIN = import.meta.env.PUBLIC_SECRET_PIN;
-    
-    const overlay = document.getElementById('security-overlay');
-    const pinInput = document.getElementById('pin-input') as HTMLInputElement;
-    const errorMsg = document.getElementById('error-msg');
-    const form = document.getElementById('add-item-form') as HTMLFormElement;
+  const SECRET_PIN = import.meta.env.PUBLIC_SECRET_PIN;
 
-    if (sessionStorage.getItem('auth_token') === 'valid') {
+  const overlay = document.getElementById('security-overlay');
+  const pinInput = document.getElementById('pin-input') as HTMLInputElement;
+  const errorMsg = document.getElementById('error-msg');
+  const form = document.getElementById('add-item-form') as HTMLFormElement;
+
+  if (sessionStorage.getItem('auth_token') === 'valid') {
+    unlockForm();
+  }
+
+  pinInput?.addEventListener('input', (e) => {
+    const val = (e.target as HTMLInputElement).value;
+
+    if (val.length === SECRET_PIN.length) {
+      if (val === SECRET_PIN) {
+        sessionStorage.setItem('auth_token', 'valid');
         unlockForm();
+      } else {
+        showError();
+        pinInput.value = '';
+      }
     }
+  });
 
-    pinInput?.addEventListener('input', (e) => {
-        const val = (e.target as HTMLInputElement).value;
-
-        if (val.length === SECRET_PIN.length) {
-            if (val === SECRET_PIN) {
-                sessionStorage.setItem('auth_token', 'valid');
-                unlockForm();
-            } else {
-                showError();
-                pinInput.value = '';
-            }
-        }
-    });
-
-    function unlockForm() {
-        if(overlay && form) {
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                form.classList.remove('blur-sm', 'pointer-events-none');
-            }, 500);
-        }
+  function unlockForm() {
+    if (overlay && form) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        form.classList.remove('blur-sm', 'pointer-events-none');
+      }, 500);
     }
+  }
 
-    function showError() {
-        if(errorMsg) {
-            errorMsg.style.opacity = '1';
-            setTimeout(() => {
-                errorMsg.style.opacity = '0';
-            }, 2000);
-        }
+  function showError() {
+    if (errorMsg) {
+      errorMsg.style.opacity = '1';
+      setTimeout(() => {
+        errorMsg.style.opacity = '0';
+      }, 2000);
     }
+  }
 
-    const specsContainer = document.getElementById('specs-container');
-    const addSpecBtn = document.getElementById('add-spec-btn');
-    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-    
-    addSpecBtn?.addEventListener('click', () => {
-        const row = document.createElement('div');
-        row.className = 'grid grid-cols-[1fr_2fr_auto] gap-4 items-end spec-row animate-fade-in';
-        row.innerHTML = `
+  const specsContainer = document.getElementById('specs-container');
+  const addSpecBtn = document.getElementById('add-spec-btn');
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+  addSpecBtn?.addEventListener('click', () => {
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-[1fr_2fr_auto] gap-4 items-end spec-row animate-fade-in';
+    row.innerHTML = `
             <input type="text" placeholder="LABEL" class="bg-transparent border-b border-neutral-300 py-1 text-xs font-mono uppercase text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
             <input type="text" placeholder="VALUE" class="bg-transparent border-b border-neutral-300 py-1 text-sm text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
             <button type="button" class="remove-spec text-neutral-400 hover:text-red-700 pb-1 text-xl leading-none transition-colors cursor-pointer">&times;</button>
         `;
-        specsContainer?.appendChild(row);
+    specsContainer?.appendChild(row);
+  });
+
+  specsContainer?.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('remove-spec')) {
+      target.closest('.spec-row')?.remove();
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+      submitBtn.classList.add('opacity-70');
+    }
+
+    const formData = new FormData(form);
+    const specs: { label: string; value: string }[] = [];
+    document.querySelectorAll('.spec-row').forEach((row) => {
+      const inputs = row.querySelectorAll('input');
+      const label = inputs[0].value.trim();
+      const value = inputs[1].value.trim();
+      if (label && value) specs.push({ label, value });
     });
 
-    specsContainer?.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        if (target.classList.contains('remove-spec')) {
-            target.closest('.spec-row')?.remove();
-        }
-    });
+    const newItem = {
+      owner: formData.get('owner') as string,
+      topic: (formData.get('topic') as string).trim(),
+      name: (formData.get('name') as string).trim(),
+      price: (formData.get('price') as string).trim(),
+      url: (formData.get('url') as string).trim(),
+      specs: specs,
+      createdAt: serverTimestamp(),
+    };
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if(submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
-            submitBtn.classList.add('opacity-70');
-        }
-
-        const formData = new FormData(form);
-        const specs: {label: string, value: string}[] = [];
-        document.querySelectorAll('.spec-row').forEach(row => {
-            const inputs = row.querySelectorAll('input');
-            const label = inputs[0].value.trim();
-            const value = inputs[1].value.trim();
-            if (label && value) specs.push({ label, value });
-        });
-
-        const newItem = {
-            owner: formData.get('owner') as string,
-            topic: (formData.get('topic') as string).trim(),
-            name: (formData.get('name') as string).trim(),
-            price: (formData.get('price') as string).trim(),
-            url: (formData.get('url') as string).trim(),
-            specs: specs,
-            createdAt: serverTimestamp()
-        };
-
-        try {
-            await addDoc(collection(db, "items"), newItem);
-            const targetPage = newItem.owner === 'me' ? '/andrii' : '/juliette';
-            window.location.href = targetPage;
-        } catch (error) {
-            console.error(error);
-            alert("Error");
-            if(submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Confirm Entry';
-                submitBtn.classList.remove('opacity-70');
-            }
-        }
-    });
+    try {
+      await addDoc(collection(db, 'items'), newItem);
+      const targetPage = newItem.owner === 'me' ? '/andrii' : '/juliette';
+      window.location.href = targetPage;
+    } catch (error) {
+      console.error(error);
+      alert('Error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirm Entry';
+        submitBtn.classList.remove('opacity-70');
+      }
+    }
+  });
 </script>
