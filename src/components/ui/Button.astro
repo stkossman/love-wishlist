@@ -13,8 +13,8 @@ const { href, variant = 'solid', class: className } = Astro.props;
   class:list={[
     'inline-flex cursor-pointer items-center justify-center px-6 py-3 font-sans text-sm tracking-widest uppercase transition-all duration-300',
     variant === 'solid'
-      ? 'bg-[var(--color-theme-text)] text-[var(--color-theme-bg)] hover:opacity-80'
-      : 'border border-[var(--color-theme-text)] text-[var(--color-theme-text)] hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)]',
+      ? 'text-theme-bg bg-(--color-theme-text) hover:opacity-80'
+      : 'hover:bg (--color-theme-text) hover:text-theme-bg border border-(--color-theme-text) text-(--color-theme-text)',
     className,
   ]}
 >

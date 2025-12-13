@@ -11,11 +11,11 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
 ---
 
 <article
-  class="group relative flex flex-col gap-3 border-t border-[var(--color-theme-border)] py-5 transition-colors duration-500 ease-out hover:border-[var(--color-theme-text)] md:py-6"
+  class="group border-theme-border hover:border-theme-text relative flex flex-col gap-3 border-t py-5 transition-colors duration-500 ease-out md:py-6"
 >
   <div class="absolute top-3 right-0 z-20">
     <button
-      class="menu-btn flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[var(--color-theme-text)] opacity-100 transition-opacity duration-300 hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)] active:bg-[var(--color-theme-text)] active:text-[var(--color-theme-bg)] lg:opacity-0 lg:group-hover:opacity-100"
+      class="menu-btn text-theme-text hover:bg-theme-text hover:text-theme-bg active:bg-theme-text active:text-theme-bg flex h-8 w-8 cursor-pointer items-center justify-center rounded-full opacity-100 transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100"
       aria-label="Options"
     >
       <svg
@@ -52,9 +52,9 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
   <div
     class="flex items-start justify-between pr-10 font-sans text-[10px] tracking-widest uppercase opacity-60 md:text-xs"
   >
-    <div class="flex items-center gap-2 text-[var(--color-theme-text)]">
+    <div class="text-theme-text flex items-center gap-2">
       <span
-        class="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-theme-text)] font-serif text-[10px] italic opacity-60"
+        class="border-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-60"
       >
         {ownerLabel}
       </span>
@@ -63,16 +63,14 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
   </div>
 
   <div class="space-y-1">
-    <h2
-      class="font-serif text-2xl leading-none font-light text-[var(--color-theme-text)] italic md:text-3xl"
-    >
+    <h2 class="text-theme-text font-serif text-2xl leading-none font-light italic md:text-3xl">
       {
         item.url ? (
           <a
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="underline decoration-[var(--color-theme-border)] decoration-1 underline-offset-4 transition-all hover:decoration-[var(--color-theme-accent)]"
+            class="decoration-theme-border hover:decoration-theme-accent underline decoration-1 underline-offset-4 transition-all"
           >
             {item.name}
           </a>
@@ -93,9 +91,7 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
             <span class="text-[9px] tracking-wider uppercase opacity-50 md:text-[10px]">
               {spec.label}
             </span>
-            <span class="border-b border-[var(--color-theme-border)] pb-1 font-mono text-xs">
-              {spec.value}
-            </span>
+            <span class="border-theme-border border-b pb-1 font-mono text-xs">{spec.value}</span>
           </div>
         ))}
       </div>

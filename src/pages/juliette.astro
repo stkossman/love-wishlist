@@ -23,15 +23,13 @@ const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as
 
   <main class="mx-auto w-full max-w-2xl">
     <header
-      class="mt-4 mb-12 flex items-end justify-between border-b border-[var(--color-theme-accent)] pb-4 md:mt-10 md:mb-24"
+      class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-24"
     >
       <div>
         <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs"
           >← Back</Button
         >
-        <h1 class="font-serif text-4xl text-[var(--color-theme-accent)] italic md:text-6xl">
-          Juliette
-        </h1>
+        <h1 class="text-theme-accent font-serif text-4xl italic md:text-6xl">Juliette</h1>
       </div>
       <p class="font-mono text-xs opacity-50">HER COLLECTION</p>
     </header>
@@ -44,7 +42,7 @@ const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as
     <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
       <Button
         href="/add"
-        class="flex h-14 w-14 items-center justify-center rounded-full border-none !bg-[var(--color-theme-accent)] !p-0 text-xl !text-[var(--color-theme-bg)] shadow-2xl"
+        class="!bg-theme-accent !text-theme-bg flex h-14 w-14 items-center justify-center rounded-full border-none !p-0 text-xl shadow-2xl"
       >
         +
       </Button>
