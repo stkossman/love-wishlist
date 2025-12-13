@@ -25,15 +25,15 @@ const items: WishlistItem[] = querySnapshot.docs.map(
       <Button href="/juliette" variant="outline">Juliette</Button>
     </nav>
 
-    <header class="mb-12 text-center">
-      <h1 class="font-serif text-4xl italic opacity-80">Latest Additions</h1>
+    <header class="mb-12 md:mb-24 mt-4 md:mt-10 text-center">
+      <h1 class="font-serif italic text-4xl md:text-6xl text-[var(--color-theme-accent)]">Latest Additions</h1>
     </header>
 
     <section class="flex min-h-[50vh] flex-col">
       {items.map((item) => <WishlistItemComponent item={item} />)}
     </section>
 
-    <div class="fixed right-10 bottom-10 z-50">
+    <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50">
       <Button
         href="/add"
         class="flex h-14 w-14 items-center justify-center rounded-full !p-0 text-xl shadow-2xl"
