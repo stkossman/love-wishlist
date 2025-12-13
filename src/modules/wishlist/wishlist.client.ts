@@ -26,6 +26,20 @@ export class WishlistClient {
     return res.json();
   }
 
+  static async update(id: string, data: UpdateItemDTO, pin: string) {
+    const res = await fetch(`${this.BASE_URL}/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-pin': pin,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) throw new Error('Failed to update');
+    return res.json();
+  }
+
   static async delete(id: string) {
     const res = await fetch(`${this.BASE_URL}/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete');

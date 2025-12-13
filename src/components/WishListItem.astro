@@ -1,5 +1,5 @@
 ---
-import type { WishlistItem } from '@/data/types';
+import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
 
 interface Props {
   item: WishlistItem;
@@ -98,59 +98,3 @@ const ownerLabel = item.owner === 'me' ? 'A' : 'J';
     )
   }
 </article>
-
-<script>
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const isMenuBtn = target.closest('.menu-btn');
-    const isDropdown = target.closest('.menu-dropdown');
-    if (!isMenuBtn && !isDropdown) {
-      document.querySelectorAll('.menu-dropdown').forEach((el) => el.classList.add('hidden'));
-    }
-  });
-
-  const menuButtons = document.querySelectorAll('.menu-btn');
-  menuButtons.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const dropdown = btn.nextElementSibling as HTMLElement;
-      document.querySelectorAll('.menu-dropdown').forEach((el) => {
-        if (el !== dropdown) el.classList.add('hidden');
-      });
-      dropdown.classList.toggle('hidden');
-    });
-  });
-
-  const deleteButtons = document.querySelectorAll('.delete-btn');
-  deleteButtons.forEach((button) => {
-    button.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      if (!confirm('Are you sure you want to delete this item?')) return;
-
-      const btn = e.target as HTMLButtonElement;
-      const id = btn.dataset.id;
-      const card = btn.closest('article');
-
-      if (!id) return;
-      if (card) {
-        card.style.opacity = '0.3';
-        card.style.pointerEvents = 'none';
-      }
-
-      try {
-        const response = await fetch(`/api/items/${id}`, {
-          method: 'DELETE',
-        });
-        if (!response.ok) throw new Error('Delete failed');
-        card?.remove();
-      } catch (error) {
-        console.error('Error deleting: ', error);
-        alert('Error deleting item');
-        if (card) {
-          card.style.opacity = '1';
-          card.style.pointerEvents = 'auto';
-        }
-      }
-    });
-  });
-</script>

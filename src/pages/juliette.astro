@@ -2,29 +2,9 @@
 import Layout from '@/layouts/Layout.astro';
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, limit, orderBy, where } from 'firebase/firestore';
-import type { WishlistItem } from '@/data/types';
+import { WishlistService } from '@/modules/wishlist/wishlist.service';
 
-const pageSize = 6;
-const q = query(
-  collection(db, 'items'),
-  where('owner', '==', 'her'),
-  orderBy('createdAt', 'desc'),
-  limit(pageSize)
-);
-const querySnapshot = await getDocs(q);
-
-const items: WishlistItem[] = querySnapshot.docs.map((doc) => {
-  const data = doc.data();
-  return {
-    id: doc.id,
-    ...data,
-    createdAt: data.createdAt?.toDate().toISOString(),
-  } as WishlistItem;
-});
-
-const initialCursor = items.length > 0 ? items[items.length - 1].createdAt : null;
+const { items, nextCursor } = await WishlistService.getItems('her');
 ---
 
 <Layout title="JULIETTE / WISHLIST">
@@ -57,11 +37,11 @@ const initialCursor = items.length > 0 ? items[items.length - 1].createdAt : nul
 
     <div class="flex justify-center py-12">
       {
-        items.length === pageSize && (
+        items.length >= 6 && (
           <button
             id="load-more-btn"
             class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
-            data-cursor={initialCursor}
+            data-cursor={nextCursor}
           >
             Load More
           </button>
