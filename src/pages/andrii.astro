@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
+import { ArrowLeft, Asterisk } from '@lucide/astro';
 const { items, nextCursor } = await WishlistService.getItems('me');
 ---
 
@@ -22,7 +23,7 @@ const { items, nextCursor } = await WishlistService.getItems('me');
     >
       <div>
         <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs"
-          >← Back</Button
+          ><ArrowLeft class="mr-1 h-4 w-4" /> Back</Button
         >
         <h1 class="text-theme-accent font-serif text-4xl italic md:text-6xl">Andrii</h1>
       </div>
@@ -54,7 +55,7 @@ const { items, nextCursor } = await WishlistService.getItems('me');
         href="/add"
         class="!bg-theme-accent flex h-14 w-14 items-center justify-center rounded-full border-none !p-0 text-xl !text-white shadow-2xl shadow-red-900/20"
       >
-        +
+        <Asterisk class="h-6 w-6" />
       </Button>
     </div>
   </main>

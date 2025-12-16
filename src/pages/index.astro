@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
+import { Asterisk } from '@lucide/astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
 
 const { items, nextCursor } = await WishlistService.getItems();
@@ -45,7 +46,7 @@ const { items, nextCursor } = await WishlistService.getItems();
         href="/add"
         class="flex h-14 w-14 items-center justify-center rounded-full !p-0 text-xl shadow-2xl"
       >
-        +
+        <Asterisk class="h-6 w-6" />
       </Button>
     </div>
   </main>
