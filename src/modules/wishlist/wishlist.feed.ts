@@ -128,33 +128,40 @@ export class WishlistFeedHandler {
       const rows = item.specs
         .map(
           (s: any) => `
-                <div class="flex flex-col">
-                    <span class="text-[9px] md:text-[10px] uppercase tracking-wider opacity-50">${s.label}</span>
-                    <span class="text-xs font-mono border-b border-[var(--color-theme-border)] pb-1">${s.value}</span>
+                <div class="flex flex-col gap-1">
+                    <span class="font-mono text-[9px] uppercase tracking-widest text-theme-text opacity-40">${s.label}</span>
+                    <span class="font-mono text-xs text-theme-text">${s.value}</span>
                 </div>
             `
         )
         .join('');
 
       specsHTML = `
-            <div class="mt-auto pt-3 grid grid-cols-2 gap-y-2 gap-x-4 opacity-80 lg:opacity-60 lg:group-hover:opacity-100 transition-opacity">
+            <div class="mt-2 flex flex-wrap gap-x-8 gap-y-4 opacity-70 transition-opacity lg:opacity-50 lg:group-hover:opacity-100">
                 ${rows}
             </div>`;
     }
 
     const priceHTML = item.price
-      ? `<p class="font-sans text-sm font-medium opacity-80">${item.price}</p>`
+      ? `<p class="font-mono text-xs tracking-wide text-theme-text opacity-60 mt-1">${item.price}</p>`
       : '';
 
+    const arrowIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block w-4 h-4 ml-0.5 mb-2 transition-transform duration-300 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>`;
+
     const nameHTML = item.url
-      ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="underline decoration-1 underline-offset-4 decoration-[var(--color-theme-border)] hover:decoration-[var(--color-theme-accent)] transition-all">${item.name}</a>`
+      ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="group/link hover:text-theme-accent transition-colors duration-300">
+                ${item.name}
+                ${arrowIcon}
+               </a>`
       : item.name;
 
     return `
-        <article class="group relative flex flex-col gap-3 py-5 md:py-6 border-t border-[var(--color-theme-border)] hover:border-[var(--color-theme-text)] transition-colors duration-500 ease-out animate-fade-in">
+        <article class="group relative flex flex-col gap-6 py-8 transition-opacity duration-500 ease-out md:py-10 animate-fade-in">
             
-            <div class="absolute top-3 right-0 z-20">
-                <button class="menu-btn opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 text-[var(--color-theme-text)] hover:bg-[var(--color-theme-text)] hover:text-[var(--color-theme-bg)] rounded-full w-8 h-8 flex items-center justify-center cursor-pointer">
+            <div class="absolute top-0 left-0 w-full h-px bg-theme-border opacity-20 transition-opacity duration-300 group-hover:bg-theme-text group-hover:opacity-100"></div>
+
+            <div class="absolute top-4 right-0 z-20">
+                <button class="menu-btn text-theme-text hover:bg-theme-text hover:text-theme-bg active:bg-theme-text active:text-theme-bg flex h-8 w-8 cursor-pointer items-center justify-center rounded-full opacity-100 transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100">
                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
                 </button>
                  <div class="menu-dropdown hidden absolute right-0 mt-2 w-32 bg-white border border-[#1a1a1a] shadow-xl py-1 z-30">
@@ -163,15 +170,17 @@ export class WishlistFeedHandler {
                 </div>
             </div>
 
-            <div class="flex justify-between items-start text-[10px] md:text-xs font-sans tracking-widest opacity-60 uppercase pr-10">
-                <div class="flex gap-2 items-center text-[var(--color-theme-text)]">
-                    <span class="w-5 h-5 flex items-center justify-center border border-[var(--color-theme-text)] text-[10px] rounded-full opacity-60 font-serif italic">${ownerLabel}</span>
-                    <span>${item.topic}</span>
-                </div>
+            <div class="flex items-center gap-3">
+                <span class="flex h-5 w-5 items-center justify-center rounded-full border border-theme-text font-serif text-[10px] italic text-theme-text opacity-50">
+                    ${ownerLabel}
+                </span>
+                <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-theme-text opacity-40">
+                    ${item.topic}
+                </span>
             </div>
 
-            <div class="space-y-1">
-                <h2 class="text-2xl md:text-3xl font-serif italic font-light leading-none text-[var(--color-theme-text)]">
+            <div class="flex flex-col gap-1">
+                <h2 class="font-serif text-3xl font-light italic leading-tight text-theme-text md:text-4xl">
                     ${nameHTML}
                 </h2>
                 ${priceHTML}
