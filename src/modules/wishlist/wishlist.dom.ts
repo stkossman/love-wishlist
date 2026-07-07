@@ -1,5 +1,6 @@
 import { WishlistClient } from './wishlist.client';
-import type { Owner } from './wishlist.types';
+import type { WishlistSpec } from './wishlist.types';
+import { getOwnerPath, isOwner } from './wishlist.utils';
 
 export class WishlistFormHandler {
   private form: HTMLFormElement;
@@ -112,7 +113,9 @@ export class WishlistFormHandler {
       this.setLoading(true);
 
       const formData = new FormData(this.form);
-      const specs: { label: string; value: string }[] = [];
+      const ownerValue = formData.get('owner');
+      const owner = isOwner(ownerValue) ? ownerValue : 'me';
+      const specs: WishlistSpec[] = [];
 
       this.form.querySelectorAll('.spec-row').forEach((row) => {
         const inputs = row.querySelectorAll('input');
@@ -122,7 +125,7 @@ export class WishlistFormHandler {
       });
 
       const payload = {
-        owner: formData.get('owner') as Owner,
+        owner,
         topic: (formData.get('topic') as string).trim(),
         name: (formData.get('name') as string).trim(),
         price: (formData.get('price') as string).trim(),
@@ -136,15 +139,11 @@ export class WishlistFormHandler {
         } else {
           const id = this.form.dataset.id;
           if (id) {
-            await fetch(`/api/items/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json', 'x-auth-pin': pin },
-              body: JSON.stringify(payload),
-            });
+            await WishlistClient.update(id, payload, pin);
           }
         }
 
-        window.location.href = payload.owner === 'me' ? '/andrii' : '/juliette';
+        window.location.href = getOwnerPath(payload.owner);
       } catch (err) {
         console.error(err);
         alert('Error operation failed');

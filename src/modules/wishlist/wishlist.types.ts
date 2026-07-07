@@ -1,6 +1,10 @@
-import type { Timestamp } from 'firebase/firestore';
-
 export type Owner = 'me' | 'her';
+export type OwnerFilter = Owner | null;
+
+export interface WishlistSpec {
+  label: string;
+  value: string;
+}
 
 export interface WishlistItem {
   id: string;
@@ -9,7 +13,7 @@ export interface WishlistItem {
   owner: Owner;
   price?: string;
   url?: string;
-  specs?: { label: string; value: string }[];
+  specs?: WishlistSpec[];
   createdAt: string;
 }
 
@@ -19,7 +23,7 @@ export interface CreateItemDTO {
   owner: Owner;
   price?: string;
   url?: string;
-  specs?: { label: string; value: string }[];
+  specs?: WishlistSpec[];
 }
 
 export interface UpdateItemDTO extends Partial<CreateItemDTO> {}

@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Button from '../../components/ui/Button.astro';
 import { db } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import type { WishlistSpec } from '../../modules/wishlist/wishlist.types';
 
 const { id } = Astro.params;
 
@@ -18,7 +19,7 @@ if (!docSnap.exists()) {
 }
 
 const item = docSnap.data();
-const specs = item.specs || [];
+const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
 ---
 
 <Layout title={`EDIT / ${item.name.toUpperCase()}`}>
@@ -174,7 +175,7 @@ const specs = item.specs || [];
 
         <div id="specs-container" class="space-y-4">
           {
-            specs.map((spec: any) => (
+            specs.map((spec) => (
               <div class="spec-row grid grid-cols-[1fr_2fr_auto] items-end gap-4">
                 <input
                   type="text"

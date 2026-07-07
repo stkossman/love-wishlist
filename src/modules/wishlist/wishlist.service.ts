@@ -1,5 +1,6 @@
 import { WishlistRepository } from './wishlist.repository';
-import type { CreateItemDTO, WishlistItem } from './wishlist.types';
+import type { CreateItemDTO, Owner, WishlistItem } from './wishlist.types';
+import { escapeHtml, getOwnerTelegramLabel, getSafeHttpUrl } from './wishlist.utils';
 import { Telegraf } from 'telegraf';
 
 export class WishlistService {
@@ -15,10 +16,12 @@ export class WishlistService {
     if (!config) return;
 
     try {
-      const ownerEmoji = item.owner === 'me' ? '🤵‍♂️ Andrii' : '💃 Juliette';
-      const linkText = item.url ? `\n🔗 <a href="${item.url}">Link</a>` : '';
+      const ownerEmoji = getOwnerTelegramLabel(item.owner);
+      const safeUrl = getSafeHttpUrl(item.url);
+      const linkText = safeUrl ? `\n🔗 <a href="${escapeHtml(safeUrl)}">Link</a>` : '';
+      const itemName = escapeHtml(item.name);
 
-      const message = `<b>New Item!</b> 🎁\n\n👤 <b>For:</b> ${ownerEmoji}\n🏷 <b>Item:</b> ${item.name}${linkText}`;
+      const message = `<b>New Item!</b> 🎁\n\n👤 <b>For:</b> ${ownerEmoji}\n🏷 <b>Item:</b> ${itemName}${linkText}`;
 
       await config.bot.telegram.sendMessage(config.chatId, message, { parse_mode: 'HTML' });
     } catch (e) {
@@ -31,13 +34,14 @@ export class WishlistService {
     if (!config) return;
 
     try {
-      const ownerEmoji = item.owner === 'me' ? '🤵‍♂️ Andrii' : '💃 Juliette';
+      const ownerEmoji = getOwnerTelegramLabel(item.owner);
+      const itemName = escapeHtml(item.name);
 
       const message = `
 <b>Item Removed!</b> 🗑️
 
 👤 <b>From:</b> ${ownerEmoji}
-❌ <b>Item:</b> <s>${item.name}</s>
+❌ <b>Item:</b> <s>${itemName}</s>
       `;
 
       await config.bot.telegram.sendMessage(config.chatId, message, { parse_mode: 'HTML' });
@@ -52,7 +56,7 @@ export class WishlistService {
     return id;
   }
 
-  static async getItems(owner?: string, cursor?: string) {
+  static async getItems(owner?: Owner, cursor?: string) {
     return await WishlistRepository.findAll(owner, cursor);
   }
 

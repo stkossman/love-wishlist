@@ -1,9 +1,11 @@
 import type { APIRoute } from 'astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
+import { isOwner } from '@/modules/wishlist/wishlist.utils';
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
-  const owner = url.searchParams.get('owner') || undefined;
+  const ownerParam = url.searchParams.get('owner');
+  const owner = isOwner(ownerParam) ? ownerParam : undefined;
   const cursor = url.searchParams.get('cursor') || undefined;
 
   try {

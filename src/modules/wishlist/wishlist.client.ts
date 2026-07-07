@@ -1,9 +1,9 @@
-import type { CreateItemDTO, UpdateItemDTO } from './wishlist.types';
+import type { CreateItemDTO, Owner, UpdateItemDTO } from './wishlist.types';
 
 export class WishlistClient {
   private static BASE_URL = '/api/items';
 
-  static async getAll(owner?: 'me' | 'her', cursor?: string) {
+  static async getAll(owner?: Owner, cursor?: string) {
     const params = new URLSearchParams();
     if (owner) params.append('owner', owner);
     if (cursor) params.append('cursor', cursor);
