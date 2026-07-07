@@ -32,6 +32,7 @@ export class WishlistCardEvents {
       if (!confirm('Are you sure you want to delete this item?')) return;
 
       const id = deleteBtn.dataset.id;
+      const redirectTo = deleteBtn.dataset.redirectTo;
       const card = deleteBtn.closest('article') as HTMLElement;
 
       if (!id) return;
@@ -43,6 +44,11 @@ export class WishlistCardEvents {
 
       try {
         await WishlistClient.delete(id);
+        if (redirectTo) {
+          window.location.href = redirectTo;
+          return;
+        }
+
         card?.remove();
       } catch (error) {
         console.error('Error deleting:', error);

@@ -1,7 +1,8 @@
 ---
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
 import { getOwnerInitial, getOwnerItemPath } from '@/modules/wishlist/wishlist.utils';
-import { ArrowUpRight, Ellipsis } from '@lucide/astro';
+import WishlistItemActions from '@/modules/wishlist/components/WishlistItemActions.astro';
+import { ArrowUpRight } from '@lucide/astro';
 
 interface Props {
   item: WishlistItem;
@@ -25,31 +26,7 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
   >
   </div>
 
-  <div class="absolute top-4 right-0 z-20">
-    <button
-      class="menu-btn text-theme-text hover:bg-theme-text hover:text-theme-bg active:bg-theme-text active:text-theme-bg flex h-8 w-8 cursor-pointer items-center justify-center rounded-full opacity-100 transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100"
-      aria-label="Options"
-    >
-      <Ellipsis class="h-4 w-4" />
-    </button>
-
-    <div
-      class="menu-dropdown fade-in absolute right-0 z-30 mt-2 hidden w-32 border border-[#1a1a1a] bg-white py-1 shadow-xl"
-    >
-      <a
-        href={`/edit/${item.id}`}
-        class="block w-full px-4 py-3 text-left font-mono text-sm tracking-widest text-[#1a1a1a] uppercase transition-colors hover:bg-[#1a1a1a] hover:text-white md:py-2 md:text-xs"
-      >
-        Edit
-      </a>
-      <button
-        class="delete-btn block w-full cursor-pointer px-4 py-3 text-left font-mono text-sm tracking-widest text-red-700 uppercase transition-colors hover:bg-red-700 hover:text-white md:py-2 md:text-xs"
-        data-id={item.id}
-      >
-        Delete
-      </button>
-    </div>
-  </div>
+  <WishlistItemActions itemId={item.id} />
 
   <div class="flex items-center gap-3">
     <span

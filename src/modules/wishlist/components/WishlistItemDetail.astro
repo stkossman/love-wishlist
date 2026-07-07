@@ -1,5 +1,6 @@
 ---
 import Button from '@/components/ui/Button.astro';
+import WishlistItemActions from '@/modules/wishlist/components/WishlistItemActions.astro';
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
 import { getOwnerName, getOwnerPath } from '@/modules/wishlist/wishlist.utils';
 import { ArrowLeft, ArrowUpRight } from '@lucide/astro';
@@ -26,7 +27,15 @@ const description = item.description?.trim();
         {ownerName} / Wishlist
       </p>
     </div>
-    <p class="font-mono text-xs opacity-50">ITEM DETAILS</p>
+    <div class="flex flex-col items-end gap-4">
+      <p class="font-mono text-xs opacity-50">ITEM DETAILS</p>
+      <WishlistItemActions
+        itemId={item.id}
+        redirectTo={ownerPath}
+        alwaysVisible
+        class="relative z-20"
+      />
+    </div>
   </header>
 
   <article
