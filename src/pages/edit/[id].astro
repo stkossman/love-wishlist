@@ -157,6 +157,23 @@ const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
 
       <div class="group">
         <label
+          for="description"
+          class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+          >Description / Notes</label
+        >
+        <textarea
+          id="description"
+          name="description"
+          maxlength="255"
+          rows="3"
+          placeholder="Optional details, sizing notes, or preferences"
+          class="w-full resize-none border-b border-neutral-400 bg-transparent py-2 font-sans text-sm leading-relaxed text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+          >{item.description ?? ''}</textarea
+        >
+      </div>
+
+      <div class="group">
+        <label
           for="url"
           class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
           >Reference URL</label

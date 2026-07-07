@@ -61,6 +61,10 @@ export class WishlistService {
     return await WishlistRepository.findAll(owner, cursor);
   }
 
+  static async getItem(id: string) {
+    return await WishlistRepository.findById(id);
+  }
+
   static async deleteItem(id: string) {
     const item = await WishlistRepository.findById(id);
     await WishlistRepository.delete(id);

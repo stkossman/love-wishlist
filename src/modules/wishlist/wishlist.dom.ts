@@ -6,7 +6,12 @@ import type {
   WishlistImageMetadata,
   WishlistSpec,
 } from './wishlist.types';
-import { getOwnerPath, isOwner } from './wishlist.utils';
+import {
+  getDescriptionValidationError,
+  getOwnerPath,
+  isOwner,
+  normalizeDescription,
+} from './wishlist.utils';
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -244,7 +249,15 @@ export class WishlistFormHandler {
       const formData = new FormData(this.form);
       const ownerValue = formData.get('owner');
       const owner = isOwner(ownerValue) ? ownerValue : 'me';
+      const description = normalizeDescription(formData.get('description')) ?? '';
+      const descriptionError = getDescriptionValidationError(description);
       const specs: WishlistSpec[] = [];
+
+      if (descriptionError) {
+        alert(descriptionError);
+        this.setLoading(false);
+        return;
+      }
 
       this.form.querySelectorAll('.spec-row').forEach((row) => {
         const inputs = row.querySelectorAll('input');
@@ -259,6 +272,7 @@ export class WishlistFormHandler {
         name: (formData.get('name') as string).trim(),
         price: (formData.get('price') as string).trim(),
         url: (formData.get('url') as string).trim(),
+        description,
         specs: specs,
       };
 

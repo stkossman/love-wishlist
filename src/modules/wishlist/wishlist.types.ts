@@ -31,6 +31,7 @@ export interface WishlistItem extends WishlistImageFields {
   owner: Owner;
   price?: string;
   url?: string;
+  description?: string;
   specs?: WishlistSpec[];
   createdAt: string;
 }
@@ -41,6 +42,7 @@ export interface CreateItemDTO extends WishlistImageFields {
   owner: Owner;
   price?: string;
   url?: string;
+  description?: string;
   specs?: WishlistSpec[];
 }
 

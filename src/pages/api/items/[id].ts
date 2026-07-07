@@ -1,5 +1,9 @@
 import type { APIRoute } from 'astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
+import {
+  getDescriptionValidationError,
+  normalizePayloadDescription,
+} from '@/modules/wishlist/wishlist.utils';
 
 export const DELETE: APIRoute = async ({ params }) => {
   const { id } = params;
@@ -25,6 +29,9 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
   try {
     const data = await request.json();
+    const descriptionError = getDescriptionValidationError(
+      data && typeof data === 'object' ? (data as Record<string, unknown>).description : undefined
+    );
 
     const providedPin = request.headers.get('x-auth-pin');
     const secretPin = import.meta.env.PUBLIC_SECRET_PIN;
@@ -33,7 +40,11 @@ export const PUT: APIRoute = async ({ params, request }) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    await WishlistService.updateItem(id, data);
+    if (descriptionError) {
+      return new Response(JSON.stringify({ error: descriptionError }), { status: 400 });
+    }
+
+    await WishlistService.updateItem(id, normalizePayloadDescription(data));
 
     return new Response(JSON.stringify({ message: 'Item updated' }), { status: 200 });
   } catch (error) {

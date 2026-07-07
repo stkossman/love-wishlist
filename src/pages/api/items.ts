@@ -1,6 +1,10 @@
 import type { APIRoute } from 'astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
-import { isOwner } from '@/modules/wishlist/wishlist.utils';
+import {
+  getDescriptionValidationError,
+  isOwner,
+  normalizePayloadDescription,
+} from '@/modules/wishlist/wishlist.utils';
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
@@ -24,8 +28,15 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const body = await request.json();
+    const descriptionError = getDescriptionValidationError(
+      body && typeof body === 'object' ? (body as Record<string, unknown>).description : undefined
+    );
 
-    const id = await WishlistService.createItem(body);
+    if (descriptionError) {
+      return new Response(JSON.stringify({ error: descriptionError }), { status: 400 });
+    }
+
+    const id = await WishlistService.createItem(normalizePayloadDescription(body));
 
     return new Response(JSON.stringify({ message: 'Created', id }), { status: 201 });
   } catch (error) {

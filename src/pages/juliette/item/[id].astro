@@ -1,0 +1,32 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import WishlistItemDetail from '@/modules/wishlist/components/WishlistItemDetail.astro';
+import { WishlistService } from '@/modules/wishlist/wishlist.service';
+
+const { id } = Astro.params;
+
+if (!id) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const item = await WishlistService.getItem(id);
+
+if (!item || item.owner !== 'her') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+---
+
+<Layout title={`${item.name.toUpperCase()} / JULIETTE`}>
+  <style slot="head">
+    :root {
+      --color-theme-bg: #234f1e;
+      --color-theme-text: #f5f5f5;
+      --color-theme-accent: #e6b8af;
+      --color-theme-border: rgba(245, 245, 245, 0.2);
+    }
+  </style>
+
+  <WishlistItemDetail item={item} />
+</Layout>
