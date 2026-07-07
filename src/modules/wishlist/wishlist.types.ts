@@ -6,7 +6,25 @@ export interface WishlistSpec {
   value: string;
 }
 
-export interface WishlistItem {
+export interface WishlistImageFields {
+  imageUrl?: string;
+  imagePublicId?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageFormat?: string;
+  imageBytes?: number;
+}
+
+export interface WishlistImageMetadata {
+  secureUrl: string;
+  publicId: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+}
+
+export interface WishlistItem extends WishlistImageFields {
   id: string;
   topic: string;
   name: string;
@@ -17,7 +35,7 @@ export interface WishlistItem {
   createdAt: string;
 }
 
-export interface CreateItemDTO {
+export interface CreateItemDTO extends WishlistImageFields {
   topic: string;
   name: string;
   owner: Owner;
@@ -26,4 +44,9 @@ export interface CreateItemDTO {
   specs?: WishlistSpec[];
 }
 
-export interface UpdateItemDTO extends Partial<CreateItemDTO> {}
+type NullableWishlistImageFields = {
+  [Key in keyof WishlistImageFields]?: WishlistImageFields[Key] | null;
+};
+
+export type UpdateItemDTO = Partial<Omit<CreateItemDTO, keyof WishlistImageFields>> &
+  NullableWishlistImageFields;

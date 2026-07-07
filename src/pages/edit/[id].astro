@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Button from '../../components/ui/Button.astro';
+import WishlistImageField from '../../modules/wishlist/components/WishlistImageField.astro';
 import { db } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { WishlistSpec } from '../../modules/wishlist/wishlist.types';
@@ -61,6 +62,16 @@ const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
       class="pointer-events-none flex flex-col gap-8 blur-sm transition-all duration-700 md:gap-12"
       data-id={id}
     >
+      <WishlistImageField
+        label="Change image"
+        imageUrl={item.imageUrl}
+        imagePublicId={item.imagePublicId}
+        imageWidth={item.imageWidth}
+        imageHeight={item.imageHeight}
+        imageFormat={item.imageFormat}
+        imageBytes={item.imageBytes}
+      />
+
       <div class="flex flex-col gap-4">
         <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
           >Owner / Beneficiary</span

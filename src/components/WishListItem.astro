@@ -15,6 +15,7 @@ const ownerLabel = getOwnerInitial(item.owner);
 <article
   class:list={[
     'group relative flex flex-col gap-6 py-8 transition-opacity duration-500 ease-out md:py-10',
+    item.imageUrl && 'md:pr-36',
     isAppended && 'animate-fade-in',
   ]}
 >
@@ -98,6 +99,21 @@ const ownerLabel = getOwnerInitial(item.owner);
             <span class="text-theme-text font-mono text-xs">{spec.value}</span>
           </div>
         ))}
+      </div>
+    )
+  }
+
+  {
+    item.imageUrl && (
+      <div class="border-theme-border mt-1 h-28 w-28 overflow-hidden border opacity-80 transition-opacity md:absolute md:right-0 md:bottom-8 md:mt-0 md:h-32 md:w-24 lg:opacity-70 lg:group-hover:opacity-100">
+        <img
+          src={item.imageUrl}
+          alt={item.name}
+          width={item.imageWidth}
+          height={item.imageHeight}
+          loading="lazy"
+          class="h-full w-full object-cover"
+        />
       </div>
     )
   }

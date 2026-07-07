@@ -1,3 +1,4 @@
+import { deleteWishlistImage, isWishlistImagePublicId } from '@/lib/server/cloudinary';
 import { WishlistRepository } from './wishlist.repository';
 import type { CreateItemDTO, Owner, WishlistItem } from './wishlist.types';
 import { escapeHtml, getOwnerTelegramLabel, getSafeHttpUrl } from './wishlist.utils';
@@ -65,6 +66,11 @@ export class WishlistService {
     await WishlistRepository.delete(id);
     if (item) {
       void this.sendTelegramDeleteNotification(item);
+      if (isWishlistImagePublicId(item.imagePublicId)) {
+        void deleteWishlistImage(item.imagePublicId).catch((error) => {
+          console.error('Cloudinary image delete failed after item deletion', error);
+        });
+      }
     }
   }
 

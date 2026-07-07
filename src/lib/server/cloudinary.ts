@@ -1,13 +1,5 @@
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
-
-export interface CloudinaryImageMetadata {
-  secureUrl: string;
-  publicId: string;
-  width: number;
-  height: number;
-  format: string;
-  bytes: number;
-}
+import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
 
 const WISHLIST_IMAGE_FOLDER = 'wishlist';
 const THUMBNAIL_TRANSFORMATION = {
@@ -37,7 +29,7 @@ function configureCloudinary() {
   });
 }
 
-function toImageMetadata(result: UploadApiResponse): CloudinaryImageMetadata {
+function toImageMetadata(result: UploadApiResponse): WishlistImageMetadata {
   return {
     secureUrl: result.secure_url,
     publicId: result.public_id,
@@ -52,7 +44,7 @@ export function isWishlistImagePublicId(value: unknown): value is string {
   return typeof value === 'string' && /^wishlist\/[A-Za-z0-9_.-]+$/.test(value);
 }
 
-export async function uploadWishlistImage(buffer: Buffer): Promise<CloudinaryImageMetadata> {
+export async function uploadWishlistImage(buffer: Buffer): Promise<WishlistImageMetadata> {
   configureCloudinary();
 
   const result = await new Promise<UploadApiResponse>((resolve, reject) => {

@@ -3,6 +3,7 @@ import {
   collection,
   addDoc,
   deleteDoc,
+  deleteField,
   updateDoc,
   doc,
   getDocs,
@@ -18,9 +19,23 @@ import {
   type QueryConstraint,
   type UpdateData,
 } from 'firebase/firestore';
-import type { CreateItemDTO, Owner, UpdateItemDTO, WishlistItem } from './wishlist.types';
+import type {
+  CreateItemDTO,
+  Owner,
+  UpdateItemDTO,
+  WishlistImageFields,
+  WishlistItem,
+} from './wishlist.types';
 
 const COLLECTION_NAME = 'items';
+const IMAGE_FIELD_KEYS = [
+  'imageUrl',
+  'imagePublicId',
+  'imageWidth',
+  'imageHeight',
+  'imageFormat',
+  'imageBytes',
+] as const satisfies readonly (keyof WishlistImageFields)[];
 
 export class WishlistRepository {
   static async findAll(owner?: Owner, cursorStr?: string, pageSize = 6) {
@@ -75,7 +90,15 @@ export class WishlistRepository {
 
   static async update(id: string, data: UpdateItemDTO) {
     const docRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(docRef, data as UpdateData<DocumentData>);
+    const updateData: UpdateData<DocumentData> = { ...data };
+
+    IMAGE_FIELD_KEYS.forEach((field) => {
+      if (data[field] === null) {
+        updateData[field] = deleteField();
+      }
+    });
+
+    await updateDoc(docRef, updateData);
   }
 
   static async delete(id: string) {
