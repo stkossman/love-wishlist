@@ -1,4 +1,4 @@
-import type { WishlistImageMetadata } from './wishlist.types';
+import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
 
 const IMAGE_UPLOAD_URL = '/api/images/upload';
 const IMAGE_DELETE_URL = '/api/images/delete';

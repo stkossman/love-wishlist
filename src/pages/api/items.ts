@@ -4,6 +4,7 @@ import {
   getDescriptionValidationError,
   normalizePayloadDescription,
 } from '@/modules/wishlist/utils/description';
+import { jsonResponse } from '@/modules/wishlist/utils/api';
 import { isOwner } from '@/modules/wishlist/wishlist.utils';
 
 export const GET: APIRoute = async ({ request }) => {
@@ -14,9 +15,9 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const result = await WishlistService.getItems(owner, cursor);
-    return new Response(JSON.stringify(result), { status: 200 });
+    return jsonResponse(result, 200);
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Server Error' }), { status: 500 });
+    return jsonResponse({ error: 'Server Error' }, 500);
   }
 };
 
@@ -24,7 +25,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const providedPin = request.headers.get('x-auth-pin');
     if (providedPin !== import.meta.env.PUBLIC_SECRET_PIN) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return jsonResponse({ error: 'Unauthorized' }, 401);
     }
 
     const body = await request.json();
@@ -33,13 +34,13 @@ export const POST: APIRoute = async ({ request }) => {
     );
 
     if (descriptionError) {
-      return new Response(JSON.stringify({ error: descriptionError }), { status: 400 });
+      return jsonResponse({ error: descriptionError }, 400);
     }
 
     const id = await WishlistService.createItem(normalizePayloadDescription(body));
 
-    return new Response(JSON.stringify({ message: 'Created', id }), { status: 201 });
+    return jsonResponse({ message: 'Created', id }, 201);
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Server Error' }), { status: 500 });
+    return jsonResponse({ error: 'Server Error' }, 500);
   }
 };

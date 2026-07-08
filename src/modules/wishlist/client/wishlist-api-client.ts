@@ -1,4 +1,4 @@
-import type { CreateItemDTO, Owner, UpdateItemDTO } from './wishlist.types';
+import type { CreateItemDTO, Owner, UpdateItemDTO } from '@/modules/wishlist/wishlist.types';
 
 export class WishlistClient {
   private static BASE_URL = '/api/items';

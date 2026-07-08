@@ -1,16 +1,20 @@
-import { WishlistImageClient } from './wishlist.image.client';
-import { WishlistClient } from './wishlist.client';
+import { WishlistImageClient } from './wishlist-image-client';
+import { WishlistClient } from './wishlist-api-client';
+import {
+  WISHLIST_IMAGE_MAX_SIZE_BYTES,
+  WISHLIST_IMAGE_TYPES,
+} from '@/modules/wishlist/constants/image';
 import type {
   CreateItemDTO,
   UpdateItemDTO,
   WishlistImageMetadata,
-  WishlistSpec,
-} from './wishlist.types';
-import { getDescriptionValidationError, normalizeDescription } from './utils/description';
-import { getOwnerPath, isOwner } from './wishlist.utils';
-
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+} from '@/modules/wishlist/wishlist.types';
+import {
+  getDescriptionValidationError,
+  normalizeDescription,
+} from '@/modules/wishlist/utils/description';
+import { createEmptySpecRow, getSpecsFromForm } from './specs';
+import { getOwnerPath, isOwner } from '@/modules/wishlist/wishlist.utils';
 
 export class WishlistFormHandler {
   private form: HTMLFormElement;
@@ -129,7 +133,7 @@ export class WishlistFormHandler {
   }
 
   private isValidImage(file: File) {
-    return ALLOWED_IMAGE_TYPES.has(file.type) && file.size <= MAX_IMAGE_SIZE_BYTES;
+    return WISHLIST_IMAGE_TYPES.has(file.type) && file.size <= WISHLIST_IMAGE_MAX_SIZE_BYTES;
   }
 
   private showImagePreview(src: string) {
@@ -211,14 +215,7 @@ export class WishlistFormHandler {
     if (!specsContainer || !addSpecBtn) return;
 
     addSpecBtn.addEventListener('click', () => {
-      const row = document.createElement('div');
-      row.className = 'grid grid-cols-[1fr_2fr_auto] gap-4 items-end spec-row animate-fade-in';
-      row.innerHTML = `
-        <input type="text" placeholder="LABEL" class="bg-transparent border-b border-neutral-300 py-1 text-xs font-mono uppercase text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
-        <input type="text" placeholder="VALUE" class="bg-transparent border-b border-neutral-300 py-1 text-sm text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none placeholder:text-neutral-400" />
-        <button type="button" class="remove-spec text-neutral-400 hover:text-red-700 pb-1 text-xl leading-none transition-colors cursor-pointer">&times;</button>
-      `;
-      specsContainer.appendChild(row);
+      specsContainer.appendChild(createEmptySpecRow());
     });
 
     specsContainer.addEventListener('click', (e) => {
@@ -247,20 +244,13 @@ export class WishlistFormHandler {
       const owner = isOwner(ownerValue) ? ownerValue : 'me';
       const description = normalizeDescription(formData.get('description')) ?? '';
       const descriptionError = getDescriptionValidationError(description);
-      const specs: WishlistSpec[] = [];
+      const specs = getSpecsFromForm(this.form);
 
       if (descriptionError) {
         alert(descriptionError);
         this.setLoading(false);
         return;
       }
-
-      this.form.querySelectorAll('.spec-row').forEach((row) => {
-        const inputs = row.querySelectorAll('input');
-        const label = inputs[0].value.trim();
-        const value = inputs[1].value.trim();
-        if (label && value) specs.push({ label, value });
-      });
 
       const payload: CreateItemDTO = {
         owner,

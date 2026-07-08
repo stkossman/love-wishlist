@@ -1,4 +1,6 @@
 ---
+import { WISHLIST_IMAGE_ACCEPT } from '@/modules/wishlist/constants/image';
+
 interface Props {
   label: string;
   imageUrl?: string;
@@ -24,7 +26,7 @@ const hasImage = Boolean(imageUrl);
   data-initial-image-format={imageFormat ?? ''}
   data-initial-image-bytes={imageBytes ?? ''}
 >
-  <input id="image-input" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" />
+  <input id="image-input" type="file" accept={WISHLIST_IMAGE_ACCEPT} class="sr-only" />
 
   <label
     for="image-input"

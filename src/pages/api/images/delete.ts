@@ -1,12 +1,6 @@
 import type { APIRoute } from 'astro';
 import { deleteWishlistImage, isWishlistImagePublicId } from '@/lib/server/cloudinary';
-
-function jsonResponse(body: unknown, status: number) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
+import { jsonResponse } from '@/modules/wishlist/utils/api';
 
 export const DELETE: APIRoute = async ({ request }) => {
   const providedPin = request.headers.get('x-auth-pin');

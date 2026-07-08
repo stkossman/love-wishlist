@@ -62,7 +62,7 @@ const { items, nextCursor } = await WishlistService.getItems('me');
 </Layout>
 
 <script>
-  import { WishlistFeedHandler } from '@/modules/wishlist/wishlist.feed';
+  import { WishlistFeedHandler } from '@/modules/wishlist/client/wishlist-feed-handler';
 
   new WishlistFeedHandler('me');
 </script>

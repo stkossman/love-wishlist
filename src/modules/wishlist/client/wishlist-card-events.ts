@@ -1,4 +1,4 @@
-import { WishlistClient } from './wishlist.client';
+import { WishlistClient } from './wishlist-api-client';
 
 export class WishlistCardEvents {
   static init() {

@@ -1,4 +1,4 @@
-import type { OwnerFilter } from './wishlist.types';
+import type { OwnerFilter } from '@/modules/wishlist/wishlist.types';
 
 export class WishlistFeedHandler {
   private static readonly FRAGMENT_URL = '/api/items/fragment';

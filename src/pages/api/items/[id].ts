@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
+import { jsonResponse } from '@/modules/wishlist/utils/api';
 import {
   getDescriptionValidationError,
   normalizePayloadDescription,
@@ -9,14 +10,14 @@ export const DELETE: APIRoute = async ({ params }) => {
   const { id } = params;
 
   if (!id) {
-    return new Response(JSON.stringify({ error: 'ID is required' }), { status: 400 });
+    return jsonResponse({ error: 'ID is required' }, 400);
   }
 
   try {
     await WishlistService.deleteItem(id);
-    return new Response(JSON.stringify({ message: 'Item deleted' }), { status: 200 });
+    return jsonResponse({ message: 'Item deleted' }, 200);
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to delete' }), { status: 500 });
+    return jsonResponse({ error: 'Failed to delete' }, 500);
   }
 };
 
@@ -24,7 +25,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
   const { id } = params;
 
   if (!id) {
-    return new Response(JSON.stringify({ error: 'ID is required' }), { status: 400 });
+    return jsonResponse({ error: 'ID is required' }, 400);
   }
 
   try {
@@ -37,18 +38,18 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const secretPin = import.meta.env.PUBLIC_SECRET_PIN;
 
     if (providedPin !== secretPin) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return jsonResponse({ error: 'Unauthorized' }, 401);
     }
 
     if (descriptionError) {
-      return new Response(JSON.stringify({ error: descriptionError }), { status: 400 });
+      return jsonResponse({ error: descriptionError }, 400);
     }
 
     await WishlistService.updateItem(id, normalizePayloadDescription(data));
 
-    return new Response(JSON.stringify({ message: 'Item updated' }), { status: 200 });
+    return jsonResponse({ message: 'Item updated' }, 200);
   } catch (error) {
     console.error('Update Error:', error);
-    return new Response(JSON.stringify({ error: 'Failed to update' }), { status: 500 });
+    return jsonResponse({ error: 'Failed to update' }, 500);
   }
 };

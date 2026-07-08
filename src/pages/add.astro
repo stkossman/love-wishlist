@@ -2,7 +2,9 @@
 import Layout from '@/layouts/Layout.astro';
 import Button from '@/components/ui/Button.astro';
 import WishlistDescriptionField from '@/modules/wishlist/components/description/WishlistDescriptionField.astro';
-import WishlistImageField from '@/modules/wishlist/components/WishlistImageField.astro';
+import WishlistOwnerSelector from '@/modules/wishlist/components/forms/WishlistOwnerSelector.astro';
+import WishlistImageField from '@/modules/wishlist/components/image/WishlistImageField.astro';
+import WishlistSpecsField from '@/modules/wishlist/components/specs/WishlistSpecsField.astro';
 ---
 
 <Layout title="ADD ITEM / NEW ENTRY">
@@ -47,38 +49,7 @@ import WishlistImageField from '@/modules/wishlist/components/WishlistImageField
     >
       <WishlistImageField label="Add image" />
 
-      <div class="flex flex-col gap-4">
-        <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-          >Owner / Beneficiary</span
-        >
-        <div class="flex gap-8">
-          <label class="group flex cursor-pointer items-center gap-3">
-            <input
-              type="radio"
-              name="owner"
-              value="me"
-              checked
-              class="h-4 w-4 cursor-pointer accent-[#1a1a1a]"
-            />
-            <span
-              class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
-              >Andrii</span
-            >
-          </label>
-          <label class="group flex cursor-pointer items-center gap-3">
-            <input
-              type="radio"
-              name="owner"
-              value="her"
-              class="h-4 w-4 cursor-pointer accent-[#234f1e]"
-            />
-            <span
-              class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
-              >Juliette</span
-            >
-          </label>
-        </div>
-      </div>
+      <WishlistOwnerSelector />
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div class="group">
@@ -146,40 +117,7 @@ import WishlistImageField from '@/modules/wishlist/components/WishlistImageField
         />
       </div>
 
-      <div class="flex flex-col gap-5 border-t border-neutral-200 pt-8">
-        <div class="flex items-center justify-between">
-          <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-            >Specifications</span
-          >
-          <button
-            type="button"
-            id="add-spec-btn"
-            class="cursor-pointer font-mono text-xs text-[#1a1a1a] underline transition-opacity hover:no-underline hover:opacity-70"
-          >
-            + ADD ROW
-          </button>
-        </div>
-
-        <div id="specs-container" class="space-y-4">
-          <div class="spec-row grid grid-cols-[1fr_2fr_auto] items-end gap-4">
-            <input
-              type="text"
-              placeholder="LABEL (e.g. SIZE)"
-              class="border-b border-neutral-300 bg-transparent py-1 font-mono text-xs text-[#1a1a1a] uppercase placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
-            />
-            <input
-              type="text"
-              placeholder="VALUE (e.g. XL)"
-              class="border-b border-neutral-300 bg-transparent py-1 text-sm text-[#1a1a1a] placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
-            />
-            <button
-              type="button"
-              class="remove-spec cursor-pointer pb-1 text-xl leading-none text-neutral-400 transition-colors hover:text-red-700"
-              >&times;</button
-            >
-          </div>
-        </div>
-      </div>
+      <WishlistSpecsField />
 
       <div class="pt-8">
         <button
@@ -195,7 +133,7 @@ import WishlistImageField from '@/modules/wishlist/components/WishlistImageField
 </Layout>
 
 <script>
-  import { WishlistFormHandler } from '@/modules/wishlist/wishlist.dom';
+  import { WishlistFormHandler } from '@/modules/wishlist/client/wishlist-form-handler';
 
   new WishlistFormHandler('add-item-form', 'create');
 </script>

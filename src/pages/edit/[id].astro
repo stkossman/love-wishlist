@@ -2,9 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import Button from '../../components/ui/Button.astro';
 import WishlistDescriptionField from '../../modules/wishlist/components/description/WishlistDescriptionField.astro';
-import WishlistImageField from '../../modules/wishlist/components/WishlistImageField.astro';
-import { db } from '../../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import WishlistOwnerSelector from '../../modules/wishlist/components/forms/WishlistOwnerSelector.astro';
+import WishlistImageField from '../../modules/wishlist/components/image/WishlistImageField.astro';
+import WishlistSpecsField from '../../modules/wishlist/components/specs/WishlistSpecsField.astro';
+import { WishlistService } from '../../modules/wishlist/wishlist.service';
 import type { WishlistSpec } from '../../modules/wishlist/wishlist.types';
 
 const { id } = Astro.params;
@@ -13,14 +14,12 @@ if (!id) {
   return Astro.redirect('/');
 }
 
-const docRef = doc(db, 'items', id);
-const docSnap = await getDoc(docRef);
+const item = await WishlistService.getItem(id);
 
-if (!docSnap.exists()) {
+if (!item) {
   return Astro.redirect('/');
 }
 
-const item = docSnap.data();
 const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
 ---
 
@@ -73,39 +72,7 @@ const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
         imageBytes={item.imageBytes}
       />
 
-      <div class="flex flex-col gap-4">
-        <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-          >Owner / Beneficiary</span
-        >
-        <div class="flex gap-8">
-          <label class="group flex cursor-pointer items-center gap-3">
-            <input
-              type="radio"
-              name="owner"
-              value="me"
-              checked={item.owner === 'me'}
-              class="h-4 w-4 cursor-pointer accent-[#1a1a1a]"
-            />
-            <span
-              class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
-              >Andrii</span
-            >
-          </label>
-          <label class="group flex cursor-pointer items-center gap-3">
-            <input
-              type="radio"
-              name="owner"
-              value="her"
-              checked={item.owner === 'her'}
-              class="h-4 w-4 cursor-pointer accent-[#234f1e]"
-            />
-            <span
-              class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
-              >Juliette</span
-            >
-          </label>
-        </div>
-      </div>
+      <WishlistOwnerSelector selectedOwner={item.owner} />
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div class="group">
@@ -173,47 +140,7 @@ const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
         />
       </div>
 
-      <div class="flex flex-col gap-5 border-t border-neutral-200 pt-8">
-        <div class="flex items-center justify-between">
-          <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-            >Specifications</span
-          >
-          <button
-            type="button"
-            id="add-spec-btn"
-            class="cursor-pointer font-mono text-xs text-[#1a1a1a] underline transition-opacity hover:no-underline hover:opacity-70"
-          >
-            + ADD ROW
-          </button>
-        </div>
-
-        <div id="specs-container" class="space-y-4">
-          {
-            specs.map((spec) => (
-              <div class="spec-row grid grid-cols-[1fr_2fr_auto] items-end gap-4">
-                <input
-                  type="text"
-                  value={spec.label}
-                  placeholder="LABEL"
-                  class="border-b border-neutral-300 bg-transparent py-1 font-mono text-xs text-[#1a1a1a] uppercase placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
-                />
-                <input
-                  type="text"
-                  value={spec.value}
-                  placeholder="VALUE"
-                  class="border-b border-neutral-300 bg-transparent py-1 text-sm text-[#1a1a1a] placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
-                />
-                <button
-                  type="button"
-                  class="remove-spec cursor-pointer pb-1 text-xl leading-none text-neutral-400 transition-colors hover:text-red-700"
-                >
-                  &times;
-                </button>
-              </div>
-            ))
-          }
-        </div>
-      </div>
+      <WishlistSpecsField specs={specs} showEmptyRow={false} showExamplePlaceholders={false} />
 
       <div class="pt-8">
         <button
@@ -229,7 +156,7 @@ const specs: WishlistSpec[] = Array.isArray(item.specs) ? item.specs : [];
 </Layout>
 
 <script>
-  import { WishlistFormHandler } from '../../modules/wishlist/wishlist.dom';
+  import { WishlistFormHandler } from '../../modules/wishlist/client/wishlist-form-handler';
 
   new WishlistFormHandler('edit-item-form', 'update');
 </script>
