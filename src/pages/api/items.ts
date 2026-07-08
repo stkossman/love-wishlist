@@ -2,9 +2,9 @@ import type { APIRoute } from 'astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
 import {
   getDescriptionValidationError,
-  isOwner,
   normalizePayloadDescription,
-} from '@/modules/wishlist/wishlist.utils';
+} from '@/modules/wishlist/utils/description';
+import { isOwner } from '@/modules/wishlist/wishlist.utils';
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);

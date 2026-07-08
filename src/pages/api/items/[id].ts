@@ -3,7 +3,7 @@ import { WishlistService } from '@/modules/wishlist/wishlist.service';
 import {
   getDescriptionValidationError,
   normalizePayloadDescription,
-} from '@/modules/wishlist/wishlist.utils';
+} from '@/modules/wishlist/utils/description';
 
 export const DELETE: APIRoute = async ({ params }) => {
   const { id } = params;

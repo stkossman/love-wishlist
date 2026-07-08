@@ -1,0 +1,70 @@
+---
+import { WISHLIST_DESCRIPTION_MAX_LENGTH } from '@/modules/wishlist/utils/description';
+
+interface Props {
+  value?: string;
+}
+
+const { value = '' } = Astro.props;
+const currentLength = value.length;
+---
+
+<div
+  class="group"
+  data-description-field
+  data-description-max-length={WISHLIST_DESCRIPTION_MAX_LENGTH}
+>
+  <div class="mb-2 flex items-center justify-between gap-4">
+    <label
+      for="description"
+      class="block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+      >Description / Notes</label
+    >
+    <span
+      data-description-counter
+      class="font-mono text-[10px] tracking-widest text-[#1a1a1a] uppercase opacity-40"
+    >
+      {currentLength} / {WISHLIST_DESCRIPTION_MAX_LENGTH}
+    </span>
+  </div>
+
+  <textarea
+    id="description"
+    name="description"
+    maxlength={WISHLIST_DESCRIPTION_MAX_LENGTH}
+    rows="6"
+    placeholder="Optional details, sizing notes, or preferences"
+    class="min-h-40 w-full resize-y border-b border-neutral-400 bg-transparent py-2 font-sans text-sm leading-relaxed text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none md:min-h-44"
+    >{value}</textarea
+  >
+
+  <p
+    data-description-error
+    class="mt-2 font-mono text-[10px] tracking-widest text-red-700 uppercase opacity-0 transition-opacity"
+  >
+    Description is too long
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll('[data-description-field]').forEach((field) => {
+    const textarea = field.querySelector('textarea');
+    const counter = field.querySelector('[data-description-counter]');
+    const error = field.querySelector('[data-description-error]');
+    const maxLength = Number(field.getAttribute('data-description-max-length'));
+
+    if (!(textarea instanceof HTMLTextAreaElement) || !counter || !error || !maxLength) return;
+
+    const updateDescriptionState = () => {
+      const length = textarea.value.length;
+      const isOverLimit = length > maxLength;
+
+      counter.textContent = `${length} / ${maxLength}`;
+      error.classList.toggle('opacity-0', !isOverLimit);
+      error.classList.toggle('opacity-100', isOverLimit);
+    };
+
+    textarea.addEventListener('input', updateDescriptionState);
+    updateDescriptionState();
+  });
+</script>

@@ -6,12 +6,8 @@ import type {
   WishlistImageMetadata,
   WishlistSpec,
 } from './wishlist.types';
-import {
-  getDescriptionValidationError,
-  getOwnerPath,
-  isOwner,
-  normalizeDescription,
-} from './wishlist.utils';
+import { getDescriptionValidationError, normalizeDescription } from './utils/description';
+import { getOwnerPath, isOwner } from './wishlist.utils';
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);

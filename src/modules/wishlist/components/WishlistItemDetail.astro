@@ -1,5 +1,6 @@
 ---
 import Button from '@/components/ui/Button.astro';
+import WishlistDescription from '@/modules/wishlist/components/description/WishlistDescription.astro';
 import WishlistItemActions from '@/modules/wishlist/components/WishlistItemActions.astro';
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
 import { getOwnerName, getOwnerPath } from '@/modules/wishlist/wishlist.utils';
@@ -12,7 +13,6 @@ interface Props {
 const { item } = Astro.props;
 const ownerName = getOwnerName(item.owner);
 const ownerPath = getOwnerPath(item.owner);
-const description = item.description?.trim();
 ---
 
 <main class="mx-auto w-full max-w-4xl">
@@ -68,13 +68,7 @@ const description = item.description?.trim();
         }
       </div>
 
-      {
-        description && (
-          <p class="text-theme-text max-w-2xl font-serif text-xl leading-relaxed italic opacity-75 md:text-2xl">
-            {description}
-          </p>
-        )
-      }
+      <WishlistDescription description={item.description} />
 
       {
         item.specs && item.specs.length > 0 && (
