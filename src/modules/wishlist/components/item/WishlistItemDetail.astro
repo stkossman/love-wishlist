@@ -16,9 +16,7 @@ const ownerPath = getOwnerPath(item.owner);
 ---
 
 <main class="mx-auto w-full max-w-4xl">
-  <header
-    class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-20"
-  >
+  <header class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-20">
     <div>
       <Button href={ownerPath} variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
         <ArrowLeft class="mr-1 h-4 w-4" /> Back
@@ -46,9 +44,7 @@ const ownerPath = getOwnerPath(item.owner);
   >
     <section class="flex flex-col gap-8">
       <div class="flex items-center gap-3">
-        <span
-          class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50"
-        >
+        <span class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50">
           {ownerName[0]}
         </span>
         <span class="text-theme-text font-mono text-[10px] tracking-[0.15em] uppercase opacity-40">
@@ -61,59 +57,51 @@ const ownerPath = getOwnerPath(item.owner);
           {item.name}
         </h1>
 
-        {
-          item.price && (
-            <p class="text-theme-text font-mono text-xs tracking-wide opacity-60">{item.price}</p>
-          )
-        }
+        {item.price && (
+          <p class="text-theme-text font-mono text-xs tracking-wide opacity-60">{item.price}</p>
+        )}
       </div>
 
       <WishlistDescription description={item.description} />
 
-      {
-        item.specs && item.specs.length > 0 && (
-          <div class="border-theme-border grid grid-cols-1 gap-x-10 gap-y-5 border-t pt-8 sm:grid-cols-2">
-            {item.specs.map((spec) => (
-              <div class="flex flex-col gap-1">
-                <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
-                  {spec.label}
-                </span>
-                <span class="text-theme-text font-mono text-sm">{spec.value}</span>
-              </div>
-            ))}
-          </div>
-        )
-      }
+      {item.specs && item.specs.length > 0 && (
+        <div class="border-theme-border grid grid-cols-1 gap-x-10 gap-y-5 border-t pt-8 sm:grid-cols-2">
+          {item.specs.map((spec) => (
+            <div class="flex flex-col gap-1">
+              <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
+                {spec.label}
+              </span>
+              <span class="text-theme-text font-mono text-sm">{spec.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {
-        item.url && (
-          <div class="pt-2">
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-theme-text hover:text-theme-accent inline-flex items-center font-mono text-xs tracking-widest uppercase transition-colors"
-            >
-              Open reference
-              <ArrowUpRight class="ml-1 h-4 w-4 stroke-[1.5]" />
-            </a>
-          </div>
-        )
-      }
+      {item.url && (
+        <div class="pt-2">
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-theme-text hover:text-theme-accent inline-flex items-center font-mono text-xs tracking-widest uppercase transition-colors"
+          >
+            Open reference
+            <ArrowUpRight class="ml-1 h-4 w-4 stroke-[1.5]" />
+          </a>
+        </div>
+      )}
     </section>
 
-    {
-      item.imageUrl && (
-        <aside class="border-theme-border bg-theme-text/5 flex min-h-72 items-center justify-center border p-5 md:min-h-96">
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            width={item.imageWidth}
-            height={item.imageHeight}
-            class="max-h-[28rem] w-full object-contain"
-          />
-        </aside>
-      )
-    }
+    {item.imageUrl && (
+      <aside class="border-theme-border bg-theme-text/5 flex min-h-72 items-center justify-center border p-5 md:min-h-96">
+        <img
+          src={item.imageUrl}
+          alt={item.name}
+          width={item.imageWidth}
+          height={item.imageHeight}
+          class="max-h-[28rem] w-full object-contain"
+        />
+      </aside>
+    )}
   </article>
 </main>

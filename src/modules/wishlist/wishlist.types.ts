@@ -52,3 +52,16 @@ type NullableWishlistImageFields = {
 
 export type UpdateItemDTO = Partial<Omit<CreateItemDTO, keyof WishlistImageFields>> &
   NullableWishlistImageFields;
+
+export interface WishlistPage {
+  items: WishlistItem[];
+  nextCursor: string | null;
+}
+
+export interface MutationResult {
+  message: string;
+}
+
+export interface CreateItemResult extends MutationResult {
+  id: string;
+}

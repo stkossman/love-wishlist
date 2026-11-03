@@ -28,12 +28,6 @@ body {
   opacity: 0.2;
 }
 
-.text-theme-main {
-  color: var(--color-theme-text);
-}
 .text-theme-accent {
   color: var(--color-theme-accent);
-}
-.border-theme {
-  border-color: var(--color-theme-border);
 }

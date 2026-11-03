@@ -6,10 +6,9 @@ import { ArrowUpRight } from '@lucide/astro';
 
 interface Props {
   item: WishlistItem;
-  isAppended?: boolean;
 }
 
-const { item, isAppended = false } = Astro.props;
+const { item } = Astro.props;
 const ownerLabel = getOwnerInitial(item.owner);
 const itemPath = getOwnerItemPath(item.owner, item.id);
 ---
@@ -18,20 +17,14 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
   class:list={[
     'group relative flex flex-col gap-6 py-8 transition-opacity duration-500 ease-out md:py-10',
     item.imageUrl && 'md:min-h-48 md:pr-44',
-    isAppended && 'animate-fade-in',
   ]}
 >
-  <div
-    class="bg-theme-border group-hover:bg-theme-text absolute top-0 left-0 h-px w-full opacity-20 transition-opacity duration-300 group-hover:opacity-100"
-  >
-  </div>
+  <div class="bg-theme-border group-hover:bg-theme-text absolute top-0 left-0 h-px w-full opacity-20 transition-opacity duration-300 group-hover:opacity-100"></div>
 
   <WishlistItemActions itemId={item.id} />
 
   <div class="flex items-center gap-3">
-    <span
-      class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50"
-    >
+    <span class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50">
       {ownerLabel}
     </span>
 
@@ -45,55 +38,47 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
       <a href={itemPath} class="hover:text-theme-accent transition-colors duration-300">
         {item.name}
       </a>
-      {
-        item.url && (
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Open reference"
-            class="group/link hover:text-theme-accent transition-colors duration-300"
-          >
-            <ArrowUpRight class="mb-2 ml-0.5 inline-block h-4 w-4 stroke-[1.5] transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-          </a>
-        )
-      }
+      {item.url && (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open reference"
+          class="group/link hover:text-theme-accent transition-colors duration-300"
+        >
+          <ArrowUpRight class="mb-2 ml-0.5 inline-block h-4 w-4 stroke-[1.5] transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+        </a>
+      )}
     </h2>
 
-    {
-      item.price && (
-        <p class="text-theme-text mt-1 font-mono text-xs tracking-wide opacity-60">{item.price}</p>
-      )
-    }
+    {item.price && (
+      <p class="text-theme-text mt-1 font-mono text-xs tracking-wide opacity-60">{item.price}</p>
+    )}
   </div>
 
-  {
-    item.specs && item.specs.length > 0 && (
-      <div class="mt-2 flex flex-wrap gap-x-8 gap-y-4 opacity-70 transition-opacity lg:opacity-50 lg:group-hover:opacity-100">
-        {item.specs.map((spec) => (
-          <div class="flex flex-col gap-1">
-            <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
-              {spec.label}
-            </span>
-            <span class="text-theme-text font-mono text-xs">{spec.value}</span>
-          </div>
-        ))}
-      </div>
-    )
-  }
+  {item.specs && item.specs.length > 0 && (
+    <div class="mt-2 flex flex-wrap gap-x-8 gap-y-4 opacity-70 transition-opacity lg:opacity-50 lg:group-hover:opacity-100">
+      {item.specs.map((spec) => (
+        <div class="flex flex-col gap-1">
+          <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
+            {spec.label}
+          </span>
+          <span class="text-theme-text font-mono text-xs">{spec.value}</span>
+        </div>
+      ))}
+    </div>
+  )}
 
-  {
-    item.imageUrl && (
-      <div class="border-theme-border bg-theme-text/5 mt-1 flex h-44 w-full items-center justify-center overflow-hidden border p-3 opacity-100 transition-opacity md:absolute md:top-1/2 md:right-0 md:mt-0 md:h-36 md:w-36 md:-translate-y-1/2 lg:opacity-75 lg:group-hover:opacity-100">
-        <img
-          src={item.imageUrl}
-          alt={item.name}
-          width={item.imageWidth}
-          height={item.imageHeight}
-          loading="lazy"
-          class="h-full w-full object-contain"
-        />
-      </div>
-    )
-  }
+  {item.imageUrl && (
+    <div class="border-theme-border bg-theme-text/5 mt-1 flex h-44 w-full items-center justify-center overflow-hidden border p-3 opacity-100 transition-opacity md:absolute md:top-1/2 md:right-0 md:mt-0 md:h-36 md:w-36 md:-translate-y-1/2 lg:opacity-75 lg:group-hover:opacity-100">
+      <img
+        src={item.imageUrl}
+        alt={item.name}
+        width={item.imageWidth}
+        height={item.imageHeight}
+        loading="lazy"
+        class="h-full w-full object-contain"
+      />
+    </div>
+  )}
 </article>

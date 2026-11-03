@@ -1,39 +1,35 @@
 import type { APIRoute } from 'astro';
+import { withMutationAuth } from '@/lib/server/auth';
+import { HttpError, readBody } from '@/lib/server/http';
 import {
   WISHLIST_IMAGE_MAX_SIZE_BYTES,
   WISHLIST_IMAGE_TYPES,
 } from '@/modules/wishlist/constants/image';
 import { jsonResponse } from '@/modules/wishlist/utils/api';
-import { uploadWishlistImage } from '@/lib/server/cloudinary';
+import { WishlistMediaService } from '@/modules/wishlist/wishlist-media.service';
 
-export const POST: APIRoute = async ({ request }) => {
-  const providedPin = request.headers.get('x-auth-pin');
-  if (providedPin !== import.meta.env.PUBLIC_SECRET_PIN) {
-    return jsonResponse({ error: 'Unauthorized' }, 401);
-  }
-
+export const POST: APIRoute = withMutationAuth(async ({ request }) => {
+  const contentType = request.headers.get('content-type') ?? '';
+  if (!contentType.startsWith('multipart/form-data;'))
+    throw new HttpError(415, 'Content-Type must be multipart/form-data');
+  const bytes = await readBody(request, WISHLIST_IMAGE_MAX_SIZE_BYTES + 64 * 1024);
+  let formData: FormData;
   try {
-    const formData = await request.formData();
-    const image = formData.get('image');
-
-    if (!(image instanceof File)) {
-      return jsonResponse({ error: 'Image file is required' }, 400);
-    }
-
-    if (!WISHLIST_IMAGE_TYPES.has(image.type)) {
-      return jsonResponse({ error: 'Unsupported image type' }, 400);
-    }
-
-    if (image.size > WISHLIST_IMAGE_MAX_SIZE_BYTES) {
-      return jsonResponse({ error: 'Image file is too large' }, 400);
-    }
-
-    const buffer = Buffer.from(await image.arrayBuffer());
-    const metadata = await uploadWishlistImage(buffer);
-
-    return jsonResponse({ image: metadata }, 201);
-  } catch (error) {
-    console.error('Cloudinary upload failed:', error);
-    return jsonResponse({ error: 'Image upload failed' }, 500);
+    formData = await new Response(bytes, { headers: { 'Content-Type': contentType } }).formData();
+  } catch {
+    throw new HttpError(400, 'Invalid multipart form');
   }
-};
+  const entries = [...formData.entries()];
+  const image = formData.get('image');
+  if (entries.length !== 1 || !(image instanceof File))
+    throw new HttpError(400, 'One image file is required');
+  if (!WISHLIST_IMAGE_TYPES.has(image.type) || !image.size)
+    throw new HttpError(400, 'Unsupported or empty image');
+  if (image.size > WISHLIST_IMAGE_MAX_SIZE_BYTES)
+    throw new HttpError(413, 'Image file is too large');
+  const metadata = await WishlistMediaService.upload(
+    Buffer.from(await image.arrayBuffer()),
+    image.type
+  );
+  return jsonResponse({ image: metadata }, 201);
+});

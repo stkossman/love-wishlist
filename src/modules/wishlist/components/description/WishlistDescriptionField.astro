@@ -18,8 +18,9 @@ const currentLength = value.length;
     <label
       for="description"
       class="block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-      >Description / Notes</label
     >
+      Description / Notes
+    </label>
     <span
       data-description-counter
       class="font-mono text-[10px] tracking-widest text-[#1a1a1a] uppercase opacity-40"
@@ -31,18 +32,20 @@ const currentLength = value.length;
   <textarea
     id="description"
     name="description"
+    aria-describedby="description-error"
     maxlength={WISHLIST_DESCRIPTION_MAX_LENGTH}
     rows="6"
     placeholder="Optional details, sizing notes, or preferences"
     class="min-h-40 w-full resize-y border-b border-neutral-400 bg-transparent py-2 font-sans text-sm leading-relaxed text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none md:min-h-44"
-    >{value}</textarea
-  >
+  >{value}</textarea>
 
   <p
+    id="description-error"
     data-description-error
-    class="mt-2 font-mono text-[10px] tracking-widest text-red-700 uppercase opacity-0 transition-opacity"
+    aria-live="polite"
+    class="mt-2 min-h-4 font-mono text-[10px] tracking-widest text-red-700 uppercase opacity-0 transition-opacity"
   >
-    Description is too long
+    {currentLength > WISHLIST_DESCRIPTION_MAX_LENGTH ? 'Description is too long' : ''}
   </p>
 </div>
 
@@ -60,6 +63,8 @@ const currentLength = value.length;
       const isOverLimit = length > maxLength;
 
       counter.textContent = `${length} / ${maxLength}`;
+      error.textContent = isOverLimit ? 'Description is too long' : '';
+      textarea.setAttribute('aria-invalid', String(isOverLimit));
       error.classList.toggle('opacity-0', !isOverLimit);
       error.classList.toggle('opacity-100', isOverLimit);
     };

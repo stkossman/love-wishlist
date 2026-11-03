@@ -1,0 +1,75 @@
+---
+import WishlistItemComponent from '@/components/WishListItem.astro';
+import Button from '@/components/ui/Button.astro';
+import { ArrowLeft, Asterisk } from '@lucide/astro';
+import type { Owner, WishlistPage } from '../wishlist.types';
+import { getOwnerName } from '../wishlist.utils';
+interface Props extends WishlistPage {
+  owner: Owner;
+}
+const { owner, items, nextCursor } = Astro.props;
+---
+
+<main data-owner-feed={owner} class="mx-auto w-full max-w-2xl">
+  <header class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-24">
+    <div>
+      <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
+        <ArrowLeft class="mr-1 h-4 w-4" /> Back
+      </Button>
+      <h1 class="text-theme-accent font-serif text-4xl italic md:text-6xl">
+        {getOwnerName(owner)}
+      </h1>
+    </div>
+    <p class="font-mono text-xs opacity-50">
+      {owner === 'me' ? 'HIS COLLECTION' : 'HER COLLECTION'}
+    </p>
+  </header>
+
+  <section id="feed-container" class="flex flex-col">
+    {items.map((item) => (
+      <WishlistItemComponent item={item} />
+    ))}
+    <p
+      id="empty-message"
+      class:list={['py-10 text-center opacity-50', items.length > 0 && 'hidden']}
+    >
+      No items found.
+    </p>
+  </section>
+
+  <div class="flex justify-center py-12">
+    {nextCursor && (
+      <button
+        id="load-more-btn"
+        class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
+        data-cursor={nextCursor}
+      >
+        Load More
+      </button>
+    )}
+    <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">
+      No more items
+    </p>
+  </div>
+
+  <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
+    <Button
+      href="/add"
+      class:list={[
+        '!bg-theme-accent flex h-14 w-14 items-center justify-center rounded-full border-none !p-0 text-xl shadow-2xl',
+        owner === 'me' ? '!text-white shadow-red-900/20' : '!text-theme-bg',
+      ]}
+    >
+      <Asterisk class="h-6 w-6" />
+      <span class="sr-only">Add wishlist item</span>
+    </Button>
+  </div>
+</main>
+
+<script>
+  import { WishlistFeedHandler } from '../client/wishlist-feed-handler';
+  import { isOwner } from '../wishlist.utils';
+  const root = document.querySelector('[data-owner-feed]');
+  const owner = root instanceof HTMLElement ? root.dataset.ownerFeed : undefined;
+  if (isOwner(owner)) new WishlistFeedHandler(owner);
+</script>

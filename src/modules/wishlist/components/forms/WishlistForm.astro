@@ -1,0 +1,151 @@
+---
+import Button from '@/components/ui/Button.astro';
+import WishlistDescriptionField from '../description/WishlistDescriptionField.astro';
+import WishlistOwnerSelector from './WishlistOwnerSelector.astro';
+import WishlistFormAccess from './WishlistFormAccess.astro';
+import WishlistImageField from '../image/WishlistImageField.astro';
+import WishlistSpecsField from '../specs/WishlistSpecsField.astro';
+import type { WishlistItem } from '../../wishlist.types';
+
+type Props = { mode: 'create'; item?: never } | { mode: 'update'; item: WishlistItem };
+const { mode, item } = Astro.props;
+---
+
+<main
+  data-wishlist-form
+  data-mode={mode}
+  class="relative mx-auto mt-4 mb-20 w-full max-w-xl min-w-0 px-4 md:mt-10"
+>
+  <WishlistFormAccess />
+
+  <div data-form-content inert>
+    <header class="mb-8 flex items-end justify-between border-b border-[#1a1a1a] pb-4">
+      <h1 class="font-serif text-3xl text-[#1a1a1a] italic md:text-4xl">
+        {mode === 'create' ? 'New Entry' : 'Edit Entry'}
+      </h1>
+      <Button
+        href="/"
+        variant="outline"
+        class="border-opacity-30 border-[#1a1a1a]! px-3 py-1 text-xs text-[#1a1a1a]! hover:bg-[#1a1a1a]! hover:text-[#f5f5f5]!"
+      >
+        Cancel
+      </Button>
+    </header>
+
+    <form
+      id={mode === 'create' ? 'add-item-form' : 'edit-item-form'}
+      data-id={item?.id}
+      inert
+      class="pointer-events-none flex flex-col gap-8 blur-sm transition-all duration-700 motion-reduce:transition-none md:gap-12"
+    >
+      <WishlistImageField label={mode === 'create' ? 'Add image' : 'Change image'} {...item} />
+
+      <WishlistOwnerSelector selectedOwner={item?.owner} />
+
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div class="group min-w-0">
+          <label
+            for="topic"
+            class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+          >
+            Topic / Brand
+          </label>
+          <input
+            type="text"
+            id="topic"
+            name="topic"
+            required
+            value={item?.topic}
+            placeholder={mode === 'create' ? 'e.g. CP COMPANY' : undefined}
+            class="w-full min-w-0 border-b border-neutral-400 bg-transparent py-2 font-sans text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+          />
+        </div>
+
+        <div class="group min-w-0">
+          <label
+            for="price"
+            class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+          >
+            Price Estimate
+          </label>
+          <input
+            type="text"
+            id="price"
+            name="price"
+            value={item?.price}
+            placeholder={mode === 'create' ? 'e.g. 150 EUR' : undefined}
+            class="w-full min-w-0 border-b border-neutral-400 bg-transparent py-2 font-sans text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="group min-w-0">
+        <label
+          for="name"
+          class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+        >
+          Item Name
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          value={item?.name}
+          placeholder={mode === 'create' ? 'e.g. Goggle Jacket Chrome-R' : undefined}
+          class="w-full min-w-0 border-b border-neutral-400 bg-transparent py-2 font-serif text-3xl text-[#1a1a1a] italic transition-colors placeholder:text-neutral-300 focus:border-[#1a1a1a] focus:outline-none"
+        />
+      </div>
+
+      <WishlistDescriptionField value={item?.description} />
+
+      <div class="group min-w-0">
+        <label
+          for="url"
+          class="mb-2 block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+        >
+          Reference URL
+        </label>
+        <input
+          type="url"
+          id="url"
+          name="url"
+          value={item?.url}
+          placeholder={mode === 'create' ? 'https://...' : undefined}
+          class="w-full min-w-0 border-b border-neutral-400 bg-transparent py-2 font-sans text-sm text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+        />
+      </div>
+
+      <WishlistSpecsField
+        specs={item?.specs}
+        showEmptyRow={mode === 'create'}
+        showExamplePlaceholders={mode === 'create'}
+      />
+
+      <div class="pt-8">
+        <button
+          type="submit"
+          id="submit-btn"
+          class="w-full cursor-pointer bg-[#1a1a1a] py-5 font-sans text-sm tracking-[0.2em] text-[#f5f5f5] uppercase shadow-lg transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {mode === 'create' ? 'Confirm Entry' : 'Update Entry'}
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<style>
+  [data-wishlist-form] :global(button:focus-visible),
+  [data-wishlist-form] :global(a:focus-visible) {
+    outline: 2px solid #1a1a1a;
+    outline-offset: 4px;
+  }
+</style>
+
+<script>
+  import { initWishlistForm } from '../../client/wishlist-form-handler';
+  document.querySelectorAll('[data-wishlist-form]').forEach((root) => {
+    if (root instanceof HTMLElement) initWishlistForm(root);
+  });
+</script>

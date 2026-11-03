@@ -1,0 +1,39 @@
+---
+import type { WishlistSpec } from '../../wishlist.types';
+interface Props {
+  spec?: WishlistSpec;
+  labelPlaceholder?: string;
+  valuePlaceholder?: string;
+}
+const {
+  spec = { label: '', value: '' },
+  labelPlaceholder = 'LABEL',
+  valuePlaceholder = 'VALUE',
+} = Astro.props;
+---
+
+<div class="spec-row grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] items-end gap-4">
+  <input
+    type="text"
+    data-spec-label
+    aria-label="Specification label"
+    value={spec.label}
+    placeholder={labelPlaceholder}
+    class="w-full min-w-0 border-b border-neutral-300 bg-transparent py-1 font-mono text-xs text-[#1a1a1a] uppercase placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+  />
+  <input
+    type="text"
+    data-spec-value
+    aria-label="Specification value"
+    value={spec.value}
+    placeholder={valuePlaceholder}
+    class="w-full min-w-0 border-b border-neutral-300 bg-transparent py-1 text-sm text-[#1a1a1a] placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
+  />
+  <button
+    type="button"
+    aria-label="Remove specification"
+    class="remove-spec min-h-8 min-w-8 cursor-pointer pb-1 text-xl leading-none text-neutral-400 transition-colors hover:text-red-700"
+  >
+    &times;
+  </button>
+</div>
