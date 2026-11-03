@@ -9,19 +9,24 @@ const { items, nextCursor } = await WishlistService.getItems();
 ---
 
 <Layout title="WISHLIST / INDEX">
-  <main class="collection-shell">
-    <header class="collection-heading">
-      <h1>Latest Additions</h1>
-      <p>Andrii & Juliette / Our collection of wishes</p>
+  <main class="collection-shell mx-auto w-full max-w-[76rem]">
+    <header class="collection-heading mb-8 md:mb-10">
+      <h1 class="font-serif text-[clamp(2.75rem,5vw,4.5rem)] leading-[1.1] italic">
+        Latest Additions
+      </h1>
     </header>
 
-    <section id="feed-container" class="wishlist-feed" aria-label="Our wishes">
+    <section
+      id="feed-container"
+      class="wishlist-feed grid grid-cols-1 gap-x-8 gap-y-11 sm:grid-cols-2 lg:grid-cols-3 wishlist-list:mx-auto wishlist-list:max-w-[60rem] wishlist-list:grid-cols-1 wishlist-list:gap-0"
+      aria-label="Our wishes"
+    >
       {items.map((item) => (
         <WishlistItemComponent item={item} />
       ))}
       <p
         id="empty-message"
-        class:list={['py-10 text-center opacity-70', items.length > 0 && 'hidden']}
+        class:list={['col-span-full py-10 text-center opacity-70', items.length > 0 && 'hidden']}
       >
         No wishes yet. Add the first one.
       </p>

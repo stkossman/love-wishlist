@@ -36,12 +36,12 @@ const { mode, item } = Astro.props;
       id={mode === 'create' ? 'add-item-form' : 'edit-item-form'}
       data-id={item?.id}
       inert
-      class="entry-form pointer-events-none flex flex-col gap-8 blur-sm transition-all duration-700 motion-reduce:transition-none"
+      class="entry-form pointer-events-none flex flex-col gap-8 blur-sm transition-all duration-700 motion-reduce:transition-none min-[900px]:grid min-[900px]:grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)] min-[900px]:items-start min-[900px]:gap-16"
     >
-      <div class="entry-image">
+      <div class="entry-image min-[900px]:sticky min-[900px]:top-8">
         <WishlistImageField label={mode === 'create' ? 'Add image' : 'Change image'} {...item} />
       </div>
-      <div class="entry-fields">
+      <div class="entry-fields flex min-w-0 flex-col gap-8">
         <WishlistOwnerSelector selectedOwner={item?.owner} />
 
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">

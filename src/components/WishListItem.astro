@@ -11,9 +11,13 @@ const { item } = Astro.props;
 const itemPath = getOwnerItemPath(item.owner, item.id);
 ---
 
-<article class="wish-card group">
+<article class="wish-card group relative min-w-0 focus-within:z-10 has-[[aria-expanded=true]]:z-20 wishlist-list:grid wishlist-list:grid-cols-[minmax(0,1fr)_8rem] wishlist-list:gap-6 wishlist-list:border-theme-border wishlist-list:border-t wishlist-list:py-6 wishlist-list:first:border-t-0 wishlist-list:max-[400px]:grid-cols-[minmax(0,1fr)_5rem] wishlist-list:max-[400px]:gap-3">
   <WishlistItemActions itemId={item.id} itemName={item.name} />
-  <a href={itemPath} class="wish-image" aria-label={`View ${item.name}`}>
+  <a
+    href={itemPath}
+    class="wish-image group/image flex aspect-4/5 w-full items-center justify-center bg-[color-mix(in_srgb,var(--color-theme-text)_5%,var(--color-theme-bg))] wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:mt-13 wishlist-list:aspect-square"
+    aria-label={`View ${item.name}`}
+  >
     {item.imageUrl ? (
       <img
         src={item.imageUrl}
@@ -21,27 +25,35 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
         width={item.imageWidth}
         height={item.imageHeight}
         loading="lazy"
+        class="h-full w-full object-contain p-6 transition-transform duration-250 ease-out group-hover/image:scale-[1.025] wishlist-list:p-2"
       />
     ) : (
-      <span class="wish-image-fallback" aria-hidden="true">
-        <Heart size={48} stroke-width={1} />A wish, still taking shape.
+      <span
+        class="wish-image-fallback flex flex-col items-center gap-4 font-serif italic opacity-70 wishlist-list:gap-1 wishlist-list:p-2 wishlist-list:text-center wishlist-list:text-xs wishlist-list:max-[400px]:text-[.625rem]"
+        aria-hidden="true"
+      >
+        <Heart class="wishlist-list:size-8" size={48} stroke-width={1} />A wish, still taking shape.
       </span>
     )}
   </a>
-  <div class="wish-copy">
-    <div class="wish-meta">
+  <div class="wish-copy pt-5 wrap-anywhere wishlist-list:col-start-1 wishlist-list:row-start-1 wishlist-list:pt-0">
+    <div class="wish-meta flex flex-wrap justify-between gap-x-4 gap-y-2 text-[.6875rem] tracking-[.08em] uppercase opacity-75 wishlist-list:justify-start">
       <span>{item.topic}</span>
-      <span class="wish-owner">{getOwnerName(item.owner)}</span>
+      <span class="wish-owner font-serif text-[.9375rem] tracking-normal normal-case italic [[data-owner-feed]_&]:hidden">
+        {getOwnerName(item.owner)}
+      </span>
     </div>
-    <h2>
-      <a href={itemPath}>{item.name}</a>
+    <h2 class="mt-2.5 font-serif text-[clamp(1.75rem,2.5vw,2.25rem)] leading-[1.15] font-normal italic">
+      <a href={itemPath} class="decoration-1 underline-offset-[.15em] hover:underline">
+        {item.name}
+      </a>
     </h2>
-    {item.price && <p class="wish-price">{item.price}</p>}
+    {item.price && <p class="wish-price mt-3 text-[.8125rem] opacity-80">{item.price}</p>}
     {item.specs && item.specs.length > 0 && (
-      <dl class="wish-specs">
+      <dl class="wish-specs mt-5 flex flex-wrap gap-x-8 gap-y-4 text-xs">
         {item.specs.map((spec) => (
           <div>
-            <dt>{spec.label}</dt>
+            <dt class="mb-1 text-[.625rem] tracking-[.06em] uppercase opacity-70">{spec.label}</dt>
             <dd>{spec.value}</dd>
           </div>
         ))}
@@ -52,7 +64,7 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
         href={item.url}
         target="_blank"
         rel="noopener noreferrer"
-        class="wish-reference"
+        class="wish-reference mt-5 inline-flex items-center gap-1 text-[.6875rem] underline-offset-4 hover:underline"
         aria-label={`Open reference for ${item.name} (new tab)`}
       >
         Reference <ArrowUpRight size={14} />

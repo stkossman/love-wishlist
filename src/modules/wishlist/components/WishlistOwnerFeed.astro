@@ -10,19 +10,27 @@ interface Props extends WishlistPage {
 const { owner, items, nextCursor } = Astro.props;
 ---
 
-<main data-owner-feed={owner} class="collection-shell">
-  <header class="collection-heading">
-    <h1>{getOwnerName(owner)}</h1>
-    <p>{owner === 'me' ? 'His collection of wishes' : 'Her collection of wishes'}</p>
+<main data-owner-feed={owner} class="collection-shell mx-auto w-full max-w-[76rem]">
+  <header class="collection-heading mb-8 flex flex-wrap items-baseline justify-between gap-4 md:mb-10">
+    <h1 class="font-serif text-[clamp(2.75rem,5vw,4.5rem)] leading-[1.1] text-[color-mix(in_srgb,var(--color-theme-accent)_80%,var(--color-theme-text))] italic">
+      {getOwnerName(owner)}
+    </h1>
+    <p class="text-xs opacity-75">
+      {owner === 'me' ? 'His collection of wishes' : 'Her collection of wishes'}
+    </p>
   </header>
 
-  <section id="feed-container" class="wishlist-feed" aria-label={`${getOwnerName(owner)}’s wishes`}>
+  <section
+    id="feed-container"
+    class="wishlist-feed grid grid-cols-1 gap-x-8 gap-y-11 sm:grid-cols-2 lg:grid-cols-3 wishlist-list:mx-auto wishlist-list:max-w-[60rem] wishlist-list:grid-cols-1 wishlist-list:gap-0"
+    aria-label={`${getOwnerName(owner)}’s wishes`}
+  >
     {items.map((item) => (
       <WishlistItemComponent item={item} />
     ))}
     <p
       id="empty-message"
-      class:list={['py-10 text-center opacity-50', items.length > 0 && 'hidden']}
+      class:list={['col-span-full py-10 text-center opacity-50', items.length > 0 && 'hidden']}
     >
       No items found.
     </p>
