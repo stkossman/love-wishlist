@@ -1,5 +1,5 @@
 ---
-import { Ellipsis } from '@lucide/astro';
+import { Ellipsis, EllipsisVertical } from '@lucide/astro';
 
 interface Props {
   itemId: string;
@@ -13,24 +13,41 @@ const {
   itemId,
   itemName,
   redirectTo,
-  class: className = 'card-actions absolute top-2 right-2 z-2 wishlist-list:top-6',
+  alwaysVisible = false,
+  class:
+    className = 'card-actions absolute top-3 left-3 z-2 wishlist-list:top-6 wishlist-list:right-0 wishlist-list:left-auto',
 } = Astro.props;
+const Icon = alwaysVisible ? EllipsisVertical : Ellipsis;
 ---
 
-<div class={className}>
+<div
+  class:list={[
+    className,
+    !alwaysVisible &&
+      'transition-opacity pointer-fine:opacity-0 pointer-fine:group-has-[.wish-image:hover]:opacity-100 pointer-fine:hover:opacity-100 pointer-fine:focus-within:opacity-100 pointer-fine:has-[[aria-expanded=true]]:opacity-100 wishlist-list:opacity-100!',
+  ]}
+>
   <button
-    class="menu-btn border-theme-border bg-theme-bg text-theme-text hover:bg-theme-text hover:text-theme-bg aria-expanded:bg-theme-text aria-expanded:text-theme-bg flex size-11 cursor-pointer items-center justify-center border"
+    class:list={[
+      'menu-btn flex size-11 cursor-pointer items-center justify-center rounded-full border transition-colors',
+      alwaysVisible
+        ? 'border-transparent text-theme-text hover:border-current/40 hover:bg-theme-text/5 aria-expanded:border-current/40 aria-expanded:bg-theme-text/5'
+        : 'border-transparent bg-black/45 text-white hover:bg-black/60 aria-expanded:bg-black/60',
+    ]}
     type="button"
     aria-label={itemName ? `Options for ${itemName}` : 'Item options'}
     aria-expanded="false"
     aria-controls={`item-actions-${itemId}`}
   >
-    <Ellipsis class="h-4 w-4" />
+    <Icon class="h-4 w-4" />
   </button>
 
   <div
     id={`item-actions-${itemId}`}
-    class="menu-dropdown absolute top-full right-0 z-30 mt-1.5 hidden w-36 border border-[#1a1a1a] bg-white py-1 shadow-[0_8px_20px_#0002]"
+    class:list={[
+      'menu-dropdown absolute top-full z-30 mt-1.5 hidden w-36 border border-[#1a1a1a] bg-white py-1 shadow-[0_8px_20px_#0002]',
+      alwaysVisible ? 'right-0' : 'left-0 wishlist-list:right-0 wishlist-list:left-auto',
+    ]}
     aria-label="Item actions"
   >
     <a

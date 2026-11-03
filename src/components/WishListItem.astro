@@ -20,7 +20,10 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
   <a
     href={itemPath}
     data-wish-detail
-    class="wish-image group/image flex aspect-4/5 w-full items-center justify-center overflow-hidden bg-[#eeece8] text-[#1a1a1a] wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:mt-13 wishlist-list:aspect-square"
+    class:list={[
+      'wish-image group/image flex aspect-4/5 w-full items-center justify-center overflow-hidden bg-[#eeece8] text-[#1a1a1a] wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:mt-13 wishlist-list:aspect-square',
+      item.imageUrl && '[[data-owner-feed]_&]:bg-transparent',
+    ]}
     aria-label={`View ${item.name}`}
   >
     {item.imageUrl ? (
@@ -30,7 +33,7 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
         width={item.imageWidth}
         height={item.imageHeight}
         loading="lazy"
-        class="h-full w-full object-contain p-1 transition-transform duration-250 ease-out group-hover/image:scale-[1.025] wishlist-list:p-0.5"
+        class="h-full w-full object-contain p-1 transition-transform duration-250 ease-out group-hover/image:scale-[1.025] wishlist-list:p-0.5 [[data-owner-feed]_&]:p-0"
       />
     ) : (
       <span
