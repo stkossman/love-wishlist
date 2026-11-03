@@ -18,6 +18,7 @@ const hasImage = Boolean(imageUrl);
 
 <div
   id="image-upload-field"
+  data-image-field
   class="flex flex-col items-start gap-3"
   data-initial-image-url={imageUrl ?? ''}
   data-initial-image-public-id={imagePublicId ?? ''}
@@ -26,11 +27,18 @@ const hasImage = Boolean(imageUrl);
   data-initial-image-format={imageFormat ?? ''}
   data-initial-image-bytes={imageBytes ?? ''}
 >
-  <input id="image-input" type="file" accept={WISHLIST_IMAGE_ACCEPT} class="sr-only" />
+  <input
+    id="image-input"
+    type="file"
+    aria-label={label}
+    aria-describedby="image-error"
+    accept={WISHLIST_IMAGE_ACCEPT}
+    class="peer sr-only"
+  />
 
   <label
     for="image-input"
-    class="group flex h-36 w-32 cursor-pointer items-center justify-center overflow-hidden border border-dashed border-[#1a1a1a]/40 bg-transparent text-center transition-colors hover:border-[#1a1a1a] md:h-40 md:w-36"
+    class="group flex h-36 w-32 cursor-pointer items-center justify-center overflow-hidden border border-dashed border-[#1a1a1a]/40 bg-transparent text-center transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 hover:border-[#1a1a1a] md:h-40 md:w-36"
   >
     <img
       id="image-preview"
@@ -40,6 +48,7 @@ const hasImage = Boolean(imageUrl);
     />
     <span
       id="image-placeholder"
+      data-image-placeholder
       class:list={[
         'px-4 font-mono text-[10px] tracking-widest text-[#1a1a1a] uppercase opacity-50 transition-opacity group-hover:opacity-80',
         hasImage && 'hidden',
@@ -60,7 +69,12 @@ const hasImage = Boolean(imageUrl);
     >
       Remove image
     </button>
-    <p id="image-error" class="font-mono text-[10px] text-red-700 uppercase opacity-0">
+    <p
+      id="image-error"
+      data-image-error
+      aria-live="polite"
+      class="font-mono text-[10px] text-red-700 uppercase opacity-0"
+    >
       Invalid image
     </p>
   </div>

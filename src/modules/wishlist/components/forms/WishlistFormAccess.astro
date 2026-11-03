@@ -1,0 +1,35 @@
+<div
+  id="security-overlay"
+  data-form-access
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="access-title"
+  class="fixed inset-0 z-100 flex flex-col items-center justify-center bg-[#f5f5f5] p-4 transition-opacity duration-500 motion-reduce:transition-none"
+>
+  <div class="w-full max-w-xs space-y-6 text-center">
+    <h2 id="access-title" class="font-serif text-3xl text-[#1a1a1a] italic">Restricted Access</h2>
+    <p id="pin-label" class="font-mono text-xs tracking-widest uppercase opacity-50">
+      Enter Access Code
+    </p>
+
+    <input
+      type="password"
+      id="pin-input"
+      aria-labelledby="pin-label"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="****"
+      maxlength="4"
+      autofocus
+      class="w-full border-b border-[#1a1a1a] bg-transparent py-2 text-center font-serif text-4xl tracking-[0.5em] text-[#1a1a1a] placeholder:opacity-20 focus:outline-none"
+    />
+
+    <p
+      id="error-msg"
+      aria-live="polite"
+      class="font-mono text-xs text-red-700 opacity-0 transition-opacity"
+    >
+      INVALID CREDENTIALS
+    </p>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 ---
+import WishlistSpecRow from './WishlistSpecRow.astro';
 import type { WishlistSpec } from '@/modules/wishlist/wishlist.types';
 
 interface Props {
@@ -13,7 +14,7 @@ const labelPlaceholder = showExamplePlaceholders ? 'LABEL (e.g. SIZE)' : 'LABEL'
 const valuePlaceholder = showExamplePlaceholders ? 'VALUE (e.g. XL)' : 'VALUE';
 ---
 
-<div class="flex flex-col gap-5 border-t border-neutral-200 pt-8">
+<div data-specs-field class="flex min-w-0 flex-col gap-5 border-t border-neutral-200 pt-8">
   <div class="flex items-center justify-between">
     <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
       >Specifications</span
@@ -21,36 +22,23 @@ const valuePlaceholder = showExamplePlaceholders ? 'VALUE (e.g. XL)' : 'VALUE';
     <button
       type="button"
       id="add-spec-btn"
+      data-add-spec
       class="cursor-pointer font-mono text-xs text-[#1a1a1a] underline transition-opacity hover:no-underline hover:opacity-70"
     >
       + ADD ROW
     </button>
   </div>
 
-  <div id="specs-container" class="space-y-4">
+  <div id="specs-container" data-specs-container class="space-y-4">
     {
       rows.map((spec) => (
-        <div class="spec-row grid grid-cols-[1fr_2fr_auto] items-end gap-4">
-          <input
-            type="text"
-            value={spec.label}
-            placeholder={labelPlaceholder}
-            class="border-b border-neutral-300 bg-transparent py-1 font-mono text-xs text-[#1a1a1a] uppercase placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
-          />
-          <input
-            type="text"
-            value={spec.value}
-            placeholder={valuePlaceholder}
-            class="border-b border-neutral-300 bg-transparent py-1 text-sm text-[#1a1a1a] placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
-          />
-          <button
-            type="button"
-            class="remove-spec cursor-pointer pb-1 text-xl leading-none text-neutral-400 transition-colors hover:text-red-700"
-          >
-            &times;
-          </button>
-        </div>
+        <WishlistSpecRow
+          spec={spec}
+          labelPlaceholder={labelPlaceholder}
+          valuePlaceholder={valuePlaceholder}
+        />
       ))
     }
   </div>
+  <template data-spec-template><WishlistSpecRow /></template>
 </div>

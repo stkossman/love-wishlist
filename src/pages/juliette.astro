@@ -1,11 +1,8 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import WishlistItemComponent from '@/components/WishListItem.astro';
-import Button from '@/components/ui/Button.astro';
-import { ArrowLeft, Asterisk } from '@lucide/astro';
+import WishlistOwnerFeed from '@/modules/wishlist/components/WishlistOwnerFeed.astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
-
-const { items, nextCursor } = await WishlistService.getItems('her');
+const page = await WishlistService.getItems('her');
 ---
 
 <Layout title="JULIETTE / WISHLIST">
@@ -18,57 +15,5 @@ const { items, nextCursor } = await WishlistService.getItems('her');
     }
   </style>
 
-  <main class="mx-auto w-full max-w-2xl">
-    <header
-      class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-24"
-    >
-      <div>
-        <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs"
-          ><ArrowLeft class="mr-1 h-4 w-4" /> Back</Button
-        >
-        <h1 class="text-theme-accent font-serif text-4xl italic md:text-6xl">Juliette</h1>
-      </div>
-      <p class="font-mono text-xs opacity-50">HER COLLECTION</p>
-    </header>
-
-    <section id="feed-container" class="flex flex-col">
-      {items.map((item) => <WishlistItemComponent item={item} />)}
-      <p
-        id="empty-message"
-        class:list={['py-10 text-center opacity-50', items.length > 0 && 'hidden']}
-      >
-        No items found.
-      </p>
-    </section>
-
-    <div class="flex justify-center py-12">
-      {
-        nextCursor && (
-          <button
-            id="load-more-btn"
-            class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
-            data-cursor={nextCursor}
-          >
-            Load More
-          </button>
-        )
-      }
-      <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">No more items</p>
-    </div>
-
-    <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
-      <Button
-        href="/add"
-        class="!bg-theme-accent !text-theme-bg flex h-14 w-14 items-center justify-center rounded-full border-none !p-0 text-xl shadow-2xl"
-      >
-        <Asterisk class="h-6 w-6" />
-      </Button>
-    </div>
-  </main>
+  <WishlistOwnerFeed owner="her" {...page} />
 </Layout>
-
-<script>
-  import { WishlistFeedHandler } from '@/modules/wishlist/client/wishlist-feed-handler';
-
-  new WishlistFeedHandler('her');
-</script>
