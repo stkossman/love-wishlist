@@ -1,5 +1,4 @@
 ---
-import { Heart } from '@lucide/astro';
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const occasions = path.endsWith('/occasions');
 const owner = path.startsWith('/andrii')
@@ -10,29 +9,16 @@ const owner = path.startsWith('/andrii')
 ---
 
 <header class="site-header mx-auto mb-12 w-full max-w-[76rem] md:mb-14">
-  <a
-    class="site-identity mb-7 inline-block font-serif text-xl italic"
-    href="/"
-    aria-current={path === '/' ? 'page' : undefined}
-  >
-    Love Wishlist
-    <Heart
-      class="ml-1.5 inline-block align-baseline"
-      size={14}
-      stroke-width={1.5}
-      aria-hidden="true"
-    />
-  </a>
   <div class="site-navigation border-theme-border grid grid-cols-[1fr_auto] gap-5 border-b pb-4 max-[400px]:grid-cols-1 max-[400px]:gap-4 [&_a]:underline-offset-[.35em] [&_a:hover]:underline [&_a[aria-current]]:font-medium [&_a[aria-current]]:underline">
     <nav
       aria-label="Collections"
-      class="owner-navigation flex flex-wrap items-baseline gap-3 font-serif text-[1.75rem]"
+      class="owner-navigation flex flex-wrap items-baseline gap-2 font-serif text-2xl sm:gap-3 sm:text-[1.75rem]"
     >
       <a
-        href={occasions ? '/andrii/occasions' : '/andrii'}
-        aria-current={owner === '/andrii' ? 'page' : undefined}
+        href={occasions ? '/occasions' : '/'}
+        aria-current={!owner && (path === '/' || occasions) ? 'page' : undefined}
       >
-        Andrii
+        All
       </a>
       <span aria-hidden="true" class="opacity-65">
         /
@@ -43,10 +29,19 @@ const owner = path.startsWith('/andrii')
       >
         Juliette
       </a>
+      <span aria-hidden="true" class="opacity-65">
+        /
+      </span>
+      <a
+        href={occasions ? '/andrii/occasions' : '/andrii'}
+        aria-current={owner === '/andrii' ? 'page' : undefined}
+      >
+        Andrii
+      </a>
     </nav>
     <nav
       aria-label="Personal reference"
-      class="utility-navigation flex flex-wrap items-baseline gap-3 text-xs max-[400px]:row-start-2"
+      class="utility-navigation flex flex-wrap items-baseline gap-3 text-xs max-[400px]:row-start-2 max-[400px]:justify-self-end"
     >
       <a href="/sizes" aria-current={path === '/sizes' ? 'page' : undefined}>
         Sizes

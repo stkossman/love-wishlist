@@ -244,6 +244,50 @@ test('browser API updates preserve nullable image fields and GET checks error st
   });
 });
 
+for (const status of [200, 404, 503]) {
+  test(`modal deletion (${status}) retains its item identity after the dialog is replaced`, async () => {
+    WishlistCardEvents.init();
+    const button = new TestElement();
+    button.dataset.id = 'modal-item';
+    button.matches.set('.delete-btn', button);
+    button.matches.set('#wishlist-detail-dialog', new TestElement());
+    let removed = 0;
+    let removedId: string | undefined;
+    doc.addEventListener('wishlist:detail-deleted', (event) => {
+      removed++;
+      removedId = (event as CustomEvent<{ id: string }>).detail.id;
+    });
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ authenticated: true })));
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status }));
+    const event = new Event('click');
+    Object.defineProperty(event, 'target', { value: button });
+    doc.dispatchEvent(event);
+    button.matches.delete('#wishlist-detail-dialog');
+    await tick();
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/auth/session');
+    expect(fetchMock.mock.calls[1][0]).toBe('/api/items/modal-item');
+    expect(fetchMock.mock.calls[1][1]?.method).toBe('DELETE');
+    expect(removed).toBe(status === 503 ? 0 : 1);
+    expect(removedId).toBe(status === 503 ? undefined : 'modal-item');
+    expect(button.disabled).toBe(false);
+    expect(button.textContent).toBe('Delete');
+  });
+}
+
+test('collection loading status is cleared after a failed request', async () => {
+  const loader = new TestElement();
+  loader.classes.add('hidden');
+  elements.set('feed-loader', loader);
+  new WishlistFeedHandler();
+  fetchMock.mockRejectedValueOnce(new Error('offline'));
+  elements.get('load-more-btn')!.dispatchEvent(new Event('click'));
+  expect(loader.classes.has('hidden')).toBe(false);
+  expect(elements.get('feed-container')!.getAttribute('aria-busy')).toBe('true');
+  await tick();
+  expect(loader.classes.has('hidden')).toBe(true);
+  expect(elements.get('feed-container')!.getAttribute('aria-busy')).toBeNull();
+});
+
 test('delegated menus keep one disclosure open and support arrows, Escape, outside clicks and focus', () => {
   WishlistCardEvents.init();
   const makeMenu = () => {
@@ -267,6 +311,7 @@ test('delegated menus keep one disclosure open and support arrows, Escape, outsi
     const event = new Event(type, { cancelable: true });
     Object.defineProperties(event, { target: { value: target }, key: { value: key } });
     doc.dispatchEvent(event);
+    return event;
   };
   dispatch('click', first.button);
   expect(first.button.getAttribute('aria-expanded')).toBe('true');
@@ -282,6 +327,7 @@ test('delegated menus keep one disclosure open and support arrows, Escape, outsi
   dispatch('keydown', first.edit, 'Escape');
   expect(first.panel.classes.has('hidden')).toBe(true);
   expect(first.button.focused).toBe(true);
+  expect(dispatch('keydown', first.button, 'Escape').defaultPrevented).toBe(false);
   dispatch('click', first.button);
   dispatch('focusin', new TestElement());
   expect(first.button.getAttribute('aria-expanded')).toBe('false');

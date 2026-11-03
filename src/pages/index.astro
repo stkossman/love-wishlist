@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
 import { Asterisk } from '@lucide/astro';
+import HeartLoader from '@/components/HeartLoader.astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
 
 const { items, nextCursor } = await WishlistService.getItems();
@@ -32,7 +33,10 @@ const { items, nextCursor } = await WishlistService.getItems();
       </p>
     </section>
 
-    <div class="flex justify-center py-12">
+    <div class="flex items-center justify-center gap-3 py-12">
+      <span id="feed-loader" class="hidden">
+        <HeartLoader />
+      </span>
       {nextCursor && (
         <button
           id="load-more-btn"

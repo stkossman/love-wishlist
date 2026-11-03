@@ -2,6 +2,7 @@
 import '@/styles/global.css';
 import WishlistAccessDialog from '@/modules/wishlist/components/actions/WishlistAccessDialog.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
+import WishlistDetailDialog from '@/modules/wishlist/components/item/WishlistDetailDialog.astro';
 
 interface Props {
   title: string;
@@ -48,6 +49,7 @@ const { title } = Astro.props;
       <slot />
     </div>
     <WishlistAccessDialog />
+    <WishlistDetailDialog />
 
     <script>
       import { WishlistCardEvents } from '@/modules/wishlist/client/wishlist-card-events';

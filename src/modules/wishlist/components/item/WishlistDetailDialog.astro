@@ -1,0 +1,37 @@
+---
+import { X } from '@lucide/astro';
+import HeartLoader from '@/components/HeartLoader.astro';
+---
+
+<dialog
+  id="wishlist-detail-dialog"
+  aria-label="Wish details"
+  class="bg-theme-bg text-theme-text fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-5xl overflow-y-auto overscroll-contain p-5 shadow-[0_24px_80px_#0005] backdrop:bg-black/45 sm:p-8 md:p-10"
+>
+  <div class="mb-6 flex items-center gap-3">
+    <span data-detail-owner class="mr-auto font-serif text-lg italic">
+      Wish details
+    </span>
+    <div data-detail-toolbar></div>
+    <button
+      data-detail-close
+      type="button"
+      autofocus
+      aria-label="Close wish details"
+      class="border-theme-border flex size-11 cursor-pointer items-center justify-center border hover:bg-theme-text/10"
+    >
+      <X size={20} stroke-width={1.5} />
+    </button>
+  </div>
+  <div data-detail-content aria-live="polite"></div>
+  <template data-detail-loading>
+    <div class="flex min-h-60 items-center justify-center">
+      <HeartLoader />
+    </div>
+  </template>
+</dialog>
+
+<script>
+  import { initWishlistDetailDialog } from '../../client/wishlist-detail-dialog';
+  initWishlistDetailDialog();
+</script>

@@ -16,9 +16,13 @@ const ownerName = getOwnerName(item.owner);
 const ownerPath = getOwnerPath(item.owner);
 ---
 
-<main class="mx-auto w-full max-w-6xl">
-  <header class="mt-4 mb-10 flex items-end justify-between md:mt-10 md:mb-16">
-    <div>
+<main
+  data-item-detail={item.id}
+  data-detail-owner-name={ownerName}
+  class="mx-auto w-full max-w-6xl"
+>
+  <header data-detail-header class="mb-6 flex items-start justify-between gap-4">
+    <div data-standalone-only>
       <Button href={ownerPath} variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
         <ArrowLeft class="mr-1 h-4 w-4" /> Back
       </Button>
@@ -26,8 +30,7 @@ const ownerPath = getOwnerPath(item.owner);
         {ownerName} / Wishlist
       </p>
     </div>
-    <div class="flex flex-col items-end gap-4">
-      <p class="font-mono text-xs opacity-50">ITEM DETAILS</p>
+    <div data-detail-actions class="flex flex-col items-end gap-4">
       <WishlistItemActions
         itemId={item.id}
         redirectTo={ownerPath}
@@ -39,7 +42,7 @@ const ownerPath = getOwnerPath(item.owner);
 
   <article
     class:list={[
-      'grid grid-cols-1 gap-10 md:gap-16',
+      'grid grid-cols-1 gap-8 md:gap-10',
       item.imageUrl ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : 'md:grid-cols-1',
     ]}
   >
@@ -54,7 +57,7 @@ const ownerPath = getOwnerPath(item.owner);
       </div>
 
       <div class="flex flex-col gap-3">
-        <h1 class="text-theme-text font-serif text-4xl leading-tight break-words font-light italic md:text-6xl">
+        <h1 class="text-theme-text font-serif text-4xl leading-tight break-words font-light italic md:text-5xl">
           {item.name}
         </h1>
 
@@ -95,13 +98,13 @@ const ownerPath = getOwnerPath(item.owner);
     </section>
 
     {item.imageUrl && (
-      <aside class="bg-theme-text/5 flex min-h-72 items-center justify-center p-5 md:min-h-96">
+      <aside class="order-first flex min-h-56 items-center justify-center overflow-hidden bg-[#eeece8] p-1 md:order-last md:min-h-80">
         <img
           src={item.imageUrl}
           alt={item.name}
           width={item.imageWidth}
           height={item.imageHeight}
-          class="max-h-[28rem] w-full object-contain"
+          class="max-h-[55dvh] w-full object-contain"
         />
       </aside>
     )}

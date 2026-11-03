@@ -12,11 +12,15 @@ const { item } = Astro.props;
 const itemPath = getOwnerItemPath(item.owner, item.id);
 ---
 
-<article class="wish-card group relative min-w-0 focus-within:z-10 has-[[aria-expanded=true]]:z-20 wishlist-list:grid wishlist-list:grid-cols-[minmax(0,1fr)_8rem] wishlist-list:gap-6 wishlist-list:border-theme-border wishlist-list:border-t wishlist-list:py-6 wishlist-list:first:border-t-0 wishlist-list:max-[400px]:grid-cols-[minmax(0,1fr)_5rem] wishlist-list:max-[400px]:gap-3">
+<article
+  data-wishlist-item-id={item.id}
+  class="wish-card group relative min-w-0 focus-within:z-10 has-[[aria-expanded=true]]:z-20 wishlist-list:grid wishlist-list:grid-cols-[minmax(0,1fr)_8rem] wishlist-list:gap-6 wishlist-list:border-theme-border wishlist-list:border-t wishlist-list:py-6 wishlist-list:first:border-t-0 wishlist-list:max-[400px]:grid-cols-[minmax(0,1fr)_5rem] wishlist-list:max-[400px]:gap-3"
+>
   <WishlistItemActions itemId={item.id} itemName={item.name} />
   <a
     href={itemPath}
-    class="wish-image group/image flex aspect-4/5 w-full items-center justify-center bg-[color-mix(in_srgb,var(--color-theme-text)_5%,var(--color-theme-bg))] wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:mt-13 wishlist-list:aspect-square"
+    data-wish-detail
+    class="wish-image group/image flex aspect-4/5 w-full items-center justify-center overflow-hidden bg-[#eeece8] text-[#1a1a1a] wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:mt-13 wishlist-list:aspect-square"
     aria-label={`View ${item.name}`}
   >
     {item.imageUrl ? (
@@ -26,7 +30,7 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
         width={item.imageWidth}
         height={item.imageHeight}
         loading="lazy"
-        class="h-full w-full object-contain p-6 transition-transform duration-250 ease-out group-hover/image:scale-[1.025] wishlist-list:p-2"
+        class="h-full w-full object-contain p-1 transition-transform duration-250 ease-out group-hover/image:scale-[1.025] wishlist-list:p-0.5"
       />
     ) : (
       <span
@@ -45,7 +49,11 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
       </span>
     </div>
     <h2 class="mt-2.5 font-serif text-[clamp(1.75rem,2.5vw,2.25rem)] leading-[1.15] font-normal italic">
-      <a href={itemPath} class="decoration-1 underline-offset-[.15em] hover:underline">
+      <a
+        href={itemPath}
+        data-wish-detail
+        class="decoration-1 underline-offset-[.15em] hover:underline"
+      >
         {item.name}
       </a>
     </h2>

@@ -40,6 +40,8 @@ export class WishlistFeedHandler {
     const cursor = this.loadMoreBtn.getAttribute('data-cursor');
     if (!cursor) return;
 
+    document.getElementById('feed-loader')?.classList.remove('hidden');
+    this.container?.setAttribute('aria-busy', 'true');
     this.loadMoreBtn.textContent = 'Loading...';
     this.loadMoreBtn.disabled = true;
     this.loading = true;
@@ -76,6 +78,8 @@ export class WishlistFeedHandler {
         this.refreshRequired = true;
       }
     } finally {
+      document.getElementById('feed-loader')?.classList.add('hidden');
+      this.container?.removeAttribute('aria-busy');
       this.loading = false;
       this.loadMoreBtn.disabled = false;
     }

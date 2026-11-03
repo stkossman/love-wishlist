@@ -2,6 +2,7 @@
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
 import { Asterisk } from '@lucide/astro';
+import HeartLoader from '@/components/HeartLoader.astro';
 import OccasionFiltersComponent from './OccasionFilters.astro';
 import type { OccasionFilters, Owner, WishlistPage } from '../wishlist.types';
 import { getOwnerName } from '../wishlist.utils';
@@ -50,7 +51,10 @@ const { owner, items, nextCursor, filters = {} } = Astro.props;
     </p>
   </section>
 
-  <div class="flex justify-center py-12">
+  <div class="flex items-center justify-center gap-3 py-12">
+    <span id="feed-loader" class="hidden">
+      <HeartLoader />
+    </span>
     {nextCursor && (
       <button
         id="load-more-btn"

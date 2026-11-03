@@ -28,7 +28,7 @@ export class WishlistCardEvents {
     const target = event.target;
     const button = target.closest('.menu-btn');
     const dropdown = target.closest('.menu-dropdown');
-    if (event.key === 'Escape' && (button || dropdown)) {
+    if (event.key === 'Escape' && (dropdown || button?.getAttribute('aria-expanded') === 'true')) {
       event.preventDefault();
       const trigger = button ?? dropdown?.previousElementSibling;
       this.closeMenus();
@@ -77,6 +77,7 @@ export class WishlistCardEvents {
 
       const id = deleteBtn.dataset.id;
       const redirectTo = deleteBtn.dataset.redirectTo;
+      const fromDetail = Boolean(deleteBtn.closest('#wishlist-detail-dialog'));
       const card = deleteBtn.closest('article') as HTMLElement;
 
       if (!id) return;
@@ -102,12 +103,16 @@ export class WishlistCardEvents {
           return;
         }
 
-        this.removeCard(card);
+        if (fromDetail) {
+          document.dispatchEvent(new CustomEvent('wishlist:detail-deleted', { detail: { id } }));
+        } else this.removeCard(card);
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           if (redirectTo) {
             window.location.href = redirectTo;
             redirecting = true;
+          } else if (fromDetail) {
+            document.dispatchEvent(new CustomEvent('wishlist:detail-deleted', { detail: { id } }));
           } else this.removeCard(card);
           return;
         }
