@@ -1,5 +1,5 @@
 const args = process.argv.slice(2);
-if (!args.length || (args[0] !== '--dry-run' && args[0] !== '--apply')) {
+if (!args.length) {
   console.log(
     'Usage: bun scripts/reconcile-images.ts --dry-run\n       bun scripts/reconcile-images.ts --apply --public-id wishlist/ID'
   );

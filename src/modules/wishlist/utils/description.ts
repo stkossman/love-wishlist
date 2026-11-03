@@ -1,8 +1,7 @@
 export const WISHLIST_DESCRIPTION_MAX_LENGTH = 1024;
 
 export type DescriptionSegment =
-  | { type: 'text'; value: string }
-  | { type: 'link'; value: string; href: string };
+  { type: 'text'; value: string } | { type: 'link'; value: string; href: string };
 
 const DESCRIPTION_URL_PATTERN = /(?:https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
 const TRAILING_URL_PUNCTUATION_PATTERN = /[.,!?;:)]+$/;
@@ -20,16 +19,6 @@ export function normalizeDescription(value: unknown) {
   return typeof value === 'string' ? value.trim() : undefined;
 }
 
-export function normalizePayloadDescription<T>(payload: T): T {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return payload;
-  if (!Object.prototype.hasOwnProperty.call(payload, 'description')) return payload;
-
-  return {
-    ...payload,
-    description: normalizeDescription((payload as Record<string, unknown>).description) ?? '',
-  };
-}
-
 export function normalizeDescriptionUrl(value: string) {
   const candidate = value.startsWith('www.') ? `https://${value}` : value;
 
@@ -39,10 +28,6 @@ export function normalizeDescriptionUrl(value: string) {
   } catch {
     return null;
   }
-}
-
-export function isSafeDescriptionUrl(value: string) {
-  return Boolean(normalizeDescriptionUrl(value));
 }
 
 export function parseDescriptionSegments(description: string): DescriptionSegment[] {

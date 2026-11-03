@@ -1,4 +1,4 @@
-# Stage 1 security configuration
+# Security configuration
 
 ## Authorization and endpoint inventory
 
@@ -39,10 +39,10 @@ The application limits login attempts to five per client address per fifteen-min
 
 This is a local backstop, not distributed protection. Vercel cold starts and multiple instances have separate counters. Before enabling production writes, configure a shared Vercel WAF rate-limit rule:
 
-1. Open the intended Vercel project's Firewall and create a rate-limit rule matching **POST** and exact pathname **`/api/auth/session`**.
+1. First address the installed adapter's [path-override advisory](https://github.com/advisories/GHSA-mr6q-rp88-fx84): `x-astro-path` headers and `x_astro_path` query parameters can route an arbitrary public pathname to the login handler. A rule matching only `/api/auth/session` can be bypassed. With this app's current configuration (no Edge Middleware or ISR), block requests carrying either override at the platform boundary, including direct deployment URLs. Verify the block before relying on pathname matching. If platform filtering cannot be established, rate-limit **all POST requests** with a shared per-IP bucket and verify rewritten login attempts consume that same bucket; legitimate saves/uploads will also consume it. A compatible patched adapter is the longer-term solution.
 2. Group requests by client IP and block excessive attempts, targeting at most five requests per fifteen minutes. If the plan supports a different interval, choose an equally restrictive available policy; inspect the project's actual plan capabilities.
 3. Apply it to every publicly reachable writable deployment/domain, including Preview deployments if enabled. Confirm an exceeded limit returns a blocked response and normal login remains usable.
-4. Confirm the deployed adapter resolves the original client IP and request origin correctly. Never weaken origin checks to accommodate a proxy without establishing its trusted forwarding configuration.
+4. Confirm the deployed adapter resolves the original client IP and request origin correctly. Test direct and alternate-path login requests in an isolated Preview environment. Never weaken origin checks to accommodate a proxy without establishing its trusted forwarding configuration. Reassess override filtering if Edge Middleware or ISR is introduced; those features use internal override routing.
 
 A four-digit shared PIN has low entropy. Per-IP limiting does not prevent a distributed attack. If exposure or threat level increases, revisit the PIN interaction and shared durable throttling before expanding access. No WAF settings were changed by this implementation.
 
@@ -77,7 +77,7 @@ JSON bodies are bounded at 64 KiB (login and image deletion at 1 KiB). Multipart
 
 Run `bun run test`, `bun run typecheck`, `bun run check`, and `bun run build`. Tests stub persistence and external providers; they never exercise production services. A successful build does not verify deployed rules, IAM, WAF, credentials, or an external provider.
 
-Stage 2 remains deferred: timestamp cursor precision, full legacy-document decoding, media cleanup across navigation/partial commits, background notification completion, and broader frontend refactoring. Read privacy remains an explicit product decision. No production settings, data, deployments, or credentials were changed here.
+Cursor precision, defensive document mapping, shared form/feed components, awaited notifications, and durable media cleanup are implemented. Remaining limits include public reads, shared low-entropy PIN access, per-instance application throttling, best-effort/non-deduplicated notifications, and non-atomic cross-provider operations. See [production readiness](docs/production-readiness.md) for dependency advisory reachability, external deployment gates, and rollback. No production settings, data, deployments, or credentials were changed here.
 
 ## Stage 4 media lifecycle
 

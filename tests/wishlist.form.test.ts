@@ -94,6 +94,11 @@ const original = {
 let active: TestElement | null;
 let browser: EventTarget & { location: { href: string }; matchMedia: () => { matches: boolean } };
 const settle = () => new Promise((resolve) => setTimeout(resolve, 10));
+async function waitForUnlock(form: TestForm) {
+  const deadline = Date.now() + 1000;
+  while (form.inert && Date.now() < deadline) await settle();
+  expect(form.inert).toBe(false);
+}
 const html = (element: TestElement) => element as unknown as HTMLElement;
 const formElement = (element: TestForm) => element as unknown as HTMLFormElement;
 
@@ -253,7 +258,7 @@ for (const mode of ['create', 'update'] as const) {
     initWishlistForm(html(f.root));
     initWishlistForm(html(f.root));
     expect(f.form.inert).toBe(true);
-    await settle();
+    await waitForUnlock(f.form);
     expect(f.form.inert).toBe(false);
     expect(f.content.inert).toBe(false);
     expect(f.overlay.hidden).toBe(true);
@@ -299,7 +304,7 @@ test('PIN errors recover and stale session checks cannot undo an explicit lock',
   fetch.mockResolvedValueOnce(new Response('{}'));
   f.pin.value = '2468';
   f.pin.dispatchEvent(new Event('input'));
-  await settle();
+  await waitForUnlock(f.form);
   expect(access.isAuthenticated()).toBe(true);
   expect(f.form.inert).toBe(false);
 });
@@ -307,7 +312,7 @@ test('PIN errors recover and stale session checks cannot undo an explicit lock',
 test('session expiry relocks the populated form, and submission can be retried after login', async () => {
   const f = fixture('update');
   initWishlistForm(html(f.root));
-  await settle();
+  await waitForUnlock(f.form);
   spyOn(WishlistClient, 'update').mockRejectedValueOnce(new ApiError(401, 'Unauthorized'));
   submit(f.form);
   await settle();
@@ -318,7 +323,7 @@ test('session expiry relocks the populated form, and submission can be retried a
   spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('{}'));
   f.pin.value = '2468';
   f.pin.dispatchEvent(new Event('input'));
-  await settle();
+  await waitForUnlock(f.form);
   submit(f.form);
   await settle();
   expect(WishlistClient.update).toHaveBeenCalledTimes(2);
@@ -399,7 +404,7 @@ test('dynamic specification rows clone the template, focus inputs and extract on
 test('failed uploads and persistence leave image selection retryable and restore pending controls', async () => {
   const f = fixture();
   initWishlistForm(html(f.root));
-  await settle();
+  await waitForUnlock(f.form);
   select(f.input, file());
   spyOn(WishlistImageClient, 'upload').mockRejectedValueOnce(
     new ApiError(503, 'Upload unavailable')
@@ -427,7 +432,7 @@ test('failed uploads and persistence leave image selection retryable and restore
 test('image-removal updates retain null semantics and duplicate submits do not repeat persistence', async () => {
   const f = fixture('update', true);
   initWishlistForm(html(f.root));
-  await settle();
+  await waitForUnlock(f.form);
   f.clear.dispatchEvent(new Event('click'));
   let resolve!: (result: { message: string }) => void;
   spyOn(WishlistClient, 'update').mockReturnValueOnce(

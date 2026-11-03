@@ -493,3 +493,40 @@ test('recovery never deletes an asset through a different configured Cloudinary 
   expect(record(image.publicId).state).toBe('retired');
   expect(cloudinary.deleteWishlistImage).not.toHaveBeenCalled();
 });
+
+for (const first of ['attachment', 'cleanup'] as const) {
+  test(`${first} wins a race between attachment and orphan cleanup without deleting a reference`, async () => {
+    const image = await upload();
+    record(image.publicId).createdAt = Timestamp.fromMillis(0);
+    record(image.publicId).updatedAt = Timestamp.fromMillis(0);
+    const operations = {
+      attachment: () => WishlistService.createItem(payload(image)),
+      cleanup: () => WishlistMediaService.cleanup(image.publicId, true),
+    };
+    const second = first === 'attachment' ? 'cleanup' : 'attachment';
+    const results = await Promise.allSettled([operations[first](), operations[second]()]);
+    if (first === 'attachment') {
+      expect(results[0].status).toBe('fulfilled');
+      expect(results[1]).toMatchObject({ status: 'fulfilled', value: 'retained' });
+      expect(record(image.publicId).state).toBe('attached');
+      expect(cloudinary.deleteWishlistImage).not.toHaveBeenCalled();
+    } else {
+      expect(results[0]).toMatchObject({ status: 'fulfilled', value: 'deleted' });
+      expect(results[1]).toMatchObject({ status: 'rejected', reason: { status: 409 } });
+      expect(record(image.publicId).state).toBe('deleted');
+      expect([...memory.documents.keys()].some((path) => path.startsWith('items/'))).toBe(false);
+    }
+  });
+}
+
+test('duplicate recovery workers claim an abandoned asset only once during the grace window', async () => {
+  const image = await upload();
+  record(image.publicId).createdAt = Timestamp.fromMillis(0);
+  record(image.publicId).updatedAt = Timestamp.fromMillis(0);
+  const results = await Promise.all([
+    WishlistMediaService.cleanup(image.publicId, true),
+    WishlistMediaService.cleanup(image.publicId, true),
+  ]);
+  expect(results.sort()).toEqual(['deleted', 'retained']);
+  expect(cloudinary.deleteWishlistImage).toHaveBeenCalledTimes(1);
+});

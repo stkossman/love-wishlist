@@ -1,18 +1,6 @@
 # Media lifecycle
 
-## Failure windows before Stage 4
-
-The browser uploads first, saves an item second, and initiates image deletion itself.
-
-- Navigation after upload can leave an unassociated asset.
-- A failed item request does not prove that Firestore rejected the write. Browser cleanup after a lost response can delete the image of a successfully saved item.
-- Replacement cleanup depends on the browser remaining alive after save and uses its stale copy of the previous public ID.
-- The authenticated generic deletion endpoint accepts any matching wishlist public ID, including referenced assets.
-- Item deletion commits before cleanup. Cleanup failure preserves the item deletion but has no durable recovery record.
-- Reading an item, changing it, and deleting its former asset are separate operations. Concurrent changes can invalidate a cleanup decision.
-- MIME declarations alone do not establish the uploaded file format, and upload responses are trusted without verifying their identity or metadata.
-
-## Stage 4 design
+## Design
 
 An auxiliary `wishlistImages` collection records server-generated, non-overwriting uploads and their lifecycle. Existing `items` documents retain their schema. The ledger is necessary to atomically prevent attaching an asset after cleanup begins; a reference check alone cannot provide that protection.
 
@@ -48,10 +36,16 @@ SDK timeouts are 10 seconds for upload and 3 seconds for deletion. Persistence e
 
 The tool uses configured server credentials and can affect the configured environment. No live reconciliation, provider scan, database write, or asset deletion was executed during implementation.
 
+Before any recovery, identify the intended environment/account privately. Use an operator-provided, read-only Firestore view/export of `items` and `wishlistImages` and a read-only Cloudinary console inventory to compare public IDs, canonical URLs, account ownership, and references. Check URL-only legacy records as well as `imagePublicId`. A `wishlist/` prefix or managed tag alone does not prove historical ownership. Do not print credentials or publish item inventories. The reconciliation tool does not inventory Cloudinary or discover untracked legacy assets.
+
 1. In an explicitly selected staging environment, inspect old records with `bun scripts/reconcile-images.ts --dry-run`. It only reads the application's Firestore ledger and reference queries, not a Cloudinary asset listing.
 2. Review the output. Candidates must be at least **24 hours old**, with no ledger update in the last 24 hours. Entries marked `referenced: true` must be retained. The small-app inspector reads the complete ledger; paginate it if the application grows substantially.
 3. After reviewing a specific candidate, apply **one explicit ID** with `bun scripts/reconcile-images.ts --apply --public-id wishlist/ID`. Applying rechecks age, state and references transactionally; a prior dry run does not authorize deleting an asset that has since been attached. Results are `deleted`, `retained`, or `failed`; failure sets a nonzero exit code.
 4. Keep failed/deleting records and rerun inspection after the grace period. Provider `not found` is a successful idempotent cleanup outcome. A crash after provider deletion but before marking `deleted` is therefore recoverable.
+
+For `uploading` candidates, compare provider inventory with the reservation before review; an uncertain upload is not evidence that no asset exists. Never force an `attached` record into cleanup because its item appears missing: investigate inconsistent/manual writes first. The tool intentionally excludes attached and deleted records. A blocked reference check, unexpected ledger schema, changed Cloudinary account, or unclear ownership means retain and investigate. Do not edit states, erase tombstones, or recreate public IDs to force a retry. Stop if older deployments can still write.
+
+Untracked legacy assets have no candidates in this dry-run. Preserve working references and retain unreferenced historical files until a separate, explicitly reviewed operator action establishes ownership and safety. No automatic migration/adoption is required. Invalid command-line options exit nonzero without loading provider or database modules.
 
 There is no scheduled job or new infrastructure. Recovery is an explicit operator action. Keep ledger access server-only under the existing deny-all client rules and verify deployed rules/IAM before enabling writes. No new composite index is required by these equality reference checks.
 
@@ -63,4 +57,4 @@ The safety guarantee applies to writes through this application and its ledger. 
 
 ## Verification
 
-Provider operations were mocked. Tests cover transaction rollback, lost commit responses, idempotent image retries, stale/concurrent replacements, referenced-image retention, provider failures, upload validation, and dry-run/grace-period safety. Browser tests use an in-memory Firestore substitute and mocked Cloudinary with the actual Astro routes, services, and repositories.
+Provider operations were mocked. Tests cover transaction rollback, lost commit responses, idempotent image retries, stale/concurrent replacements, attachment-versus-cleanup ordering, duplicate recovery claims, referenced-image retention, provider failures, upload validation, and dry-run/grace-period safety. Browser verification uses an in-memory Firestore substitute and mocked Cloudinary SDK with the actual Astro routes, services, repositories, and provider wrapper. The temporary browser harness is not part of CI; these tests do not verify real Firestore contention/retries or Cloudinary timing. See [production readiness](production-readiness.md) for release gates.

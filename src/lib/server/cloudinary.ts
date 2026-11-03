@@ -4,7 +4,6 @@ import { isWishlistImagePublicId } from '@/modules/wishlist/constants/image';
 import { parseUpdateItem } from '@/modules/wishlist/wishlist.validation';
 import { mapImageMetadata } from '@/modules/wishlist/utils/image';
 import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
-export { isWishlistImagePublicId } from '@/modules/wishlist/constants/image';
 
 const THUMBNAIL_TRANSFORMATION = {
   width: 768,
@@ -109,13 +108,4 @@ export async function deleteWishlistImage(publicId: string): Promise<void> {
     (result.result !== 'ok' && result.result !== 'not found')
   )
     throw new Error('Image deletion was not confirmed');
-}
-
-export function getWishlistThumbnailUrl(publicId: string) {
-  configureCloudinary();
-
-  return cloudinary.url(publicId, {
-    secure: true,
-    transformation: [THUMBNAIL_TRANSFORMATION],
-  });
 }

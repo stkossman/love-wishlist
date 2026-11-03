@@ -6,14 +6,9 @@ interface Props {
   label: string;
   imageUrl?: string;
   imagePublicId?: string;
-  imageWidth?: number;
-  imageHeight?: number;
-  imageFormat?: string;
-  imageBytes?: number;
 }
 
-const { label, imageUrl, imagePublicId, imageWidth, imageHeight, imageFormat, imageBytes } =
-  Astro.props;
+const { label, imageUrl, imagePublicId } = Astro.props;
 const hasImage = Boolean(imageUrl);
 ---
 
@@ -24,10 +19,6 @@ const hasImage = Boolean(imageUrl);
   class="flex flex-col items-start gap-3"
   data-initial-image-url={imageUrl ?? ''}
   data-initial-image-public-id={imagePublicId ?? ''}
-  data-initial-image-width={imageWidth ?? ''}
-  data-initial-image-height={imageHeight ?? ''}
-  data-initial-image-format={imageFormat ?? ''}
-  data-initial-image-bytes={imageBytes ?? ''}
 >
   <input
     id="image-input"
@@ -77,7 +68,6 @@ const hasImage = Boolean(imageUrl);
       aria-live="polite"
       class="font-mono text-[10px] text-red-700 uppercase opacity-0"
     >
-      Invalid image
     </p>
   </div>
 </div>
