@@ -14,8 +14,7 @@ const {
   itemName,
   redirectTo,
   alwaysVisible = false,
-  class:
-    className = 'card-actions absolute top-3 left-3 z-2 wishlist-list:top-6 wishlist-list:right-0 wishlist-list:left-auto',
+  class: className = 'card-actions absolute top-3 left-3 z-2',
 } = Astro.props;
 const Icon = alwaysVisible ? EllipsisVertical : Ellipsis;
 ---
@@ -24,7 +23,7 @@ const Icon = alwaysVisible ? EllipsisVertical : Ellipsis;
   class:list={[
     className,
     !alwaysVisible &&
-      'transition-opacity pointer-fine:opacity-0 pointer-fine:group-has-[.wish-image:hover]:opacity-100 pointer-fine:hover:opacity-100 pointer-fine:focus-within:opacity-100 pointer-fine:has-[[aria-expanded=true]]:opacity-100 wishlist-list:opacity-100!',
+      'transition-opacity pointer-fine:opacity-0 pointer-fine:group-has-[.wish-media:hover]:opacity-100 pointer-fine:hover:opacity-100 pointer-fine:focus-within:opacity-100 pointer-fine:has-[[aria-expanded=true]]:opacity-100 wishlist-list:opacity-100!',
   ]}
 >
   <button
