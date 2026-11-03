@@ -9,9 +9,9 @@ const { selectedOwner = 'me' } = Astro.props;
 ---
 
 <div class="flex flex-col gap-4">
-  <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-    >Owner / Beneficiary</span
-  >
+  <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60">
+    Owner / Beneficiary
+  </span>
   <div class="flex gap-8">
     <label class="group flex cursor-pointer items-center gap-3">
       <input
@@ -21,10 +21,9 @@ const { selectedOwner = 'me' } = Astro.props;
         checked={selectedOwner === 'me'}
         class="h-4 w-4 cursor-pointer accent-[#1a1a1a]"
       />
-      <span
-        class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
-        >Andrii</span
-      >
+      <span class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70">
+        Andrii
+      </span>
     </label>
     <label class="group flex cursor-pointer items-center gap-3">
       <input
@@ -34,10 +33,9 @@ const { selectedOwner = 'me' } = Astro.props;
         checked={selectedOwner === 'her'}
         class="h-4 w-4 cursor-pointer accent-[#234f1e]"
       />
-      <span
-        class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70"
-        >Juliette</span
-      >
+      <span class="font-serif text-xl text-[#1a1a1a] italic transition-opacity group-hover:opacity-70">
+        Juliette
+      </span>
     </label>
   </div>
 </div>

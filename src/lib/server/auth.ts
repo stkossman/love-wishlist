@@ -11,8 +11,8 @@ export interface AuthConfig {
 }
 
 export function getAuthConfig(): AuthConfig {
-  const pin = process.env.SECRET_PIN ?? import.meta.env.SECRET_PIN;
-  const secret = process.env.SESSION_SECRET ?? import.meta.env.SESSION_SECRET;
+  const pin = process.env.SECRET_PIN;
+  const secret = process.env.SESSION_SECRET;
   if (!pin || !/^\d{4}$/.test(pin) || !secret || Buffer.byteLength(secret) < 32) {
     throw new HttpError(503, 'Authentication is unavailable');
   }

@@ -4,7 +4,7 @@ A small shared wishlist for two people, built with Astro SSR, TypeScript, Tailwi
 
 ## Local development
 
-Use Node.js 22+ and Bun 1.3.5 (the version pinned in CI).
+Use Node.js 22.23.4+ and Bun 1.3.5 (the version pinned in CI).
 
 ```sh
 bun install --frozen-lockfile
@@ -22,7 +22,7 @@ Server-only configuration:
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Image upload/deletion in the intended account                                |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`                               | Optional; notifications are disabled unless both are set                     |
 
-Never prefix credentials with `PUBLIC_`. Development and Preview must not use production credentials or media. See [.env.example](.env.example).
+Server code reads configuration from runtime `process.env`; Bun loads `.env` for local commands. Never prefix credentials with `PUBLIC_`. Development and Preview must not use production credentials or media. See [.env.example](.env.example).
 
 ## Architecture
 
@@ -45,12 +45,12 @@ bun run build
 git diff --check
 ```
 
-`format:check` never rewrites source; `bun run format` is an explicit formatting command. GitHub Actions runs one validation job for pull requests and pushes to `main`, using Node 22, pinned Bun, the committed lockfile, and no integration secrets. Firebase and Cloudinary initialize lazily, so the SSR build needs no credentials. Tests mock persistence/providers and never require production access.
+`format:check` never rewrites source; `bun run format` is an explicit formatting command. GitHub Actions runs one validation job for pull requests and pushes to `main`, using Node 22.23.4, pinned Bun, the committed lockfile, and no integration secrets. Firebase and Cloudinary initialize lazily, so the SSR build needs no credentials. Tests mock persistence/providers and never require production access.
 
 The Bun suite covers API/security contracts, cursor precision, repository behavior, browser-controller logic, and media failure/retry races. Controller tests use DOM substitutes; they are not a browser engine. Stage 5 also received isolated Chromium verification; that temporary harness is not a committed or CI browser suite. See [the readiness assessment](docs/production-readiness.md) for results and limits.
 
 ## Production and recovery
 
-Read [SECURITY.md](SECURITY.md), [media lifecycle and operator recovery](docs/media-lifecycle.md), and [production readiness and rollout](docs/production-readiness.md) before enabling writes. Deployed rules, IAM, indexes, WAF, provider permissions, and environment isolation require manual verification. In particular, the installed adapter's path-override advisory affects pathname-only login rate limiting.
+Read [SECURITY.md](SECURITY.md), [media lifecycle and operator recovery](docs/media-lifecycle.md), and [production readiness and rollout](docs/production-readiness.md) before enabling writes. Deployed rules, IAM, indexes, WAF, provider permissions, and environment isolation require manual verification. The upgraded adapter authenticates internal path overrides; distributed login throttling still needs external verification. See [dependency versions, migration and residual advisories](docs/dependency-update.md).
 
 Legacy image records continue to work without migration. Untracked historical assets are retained; no automatic adoption or deletion is performed. Firestore and Cloudinary cannot commit atomically, so interrupted operations need conservative recovery.

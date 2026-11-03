@@ -14,7 +14,7 @@ const THUMBNAIL_TRANSFORMATION = {
 } as const;
 
 function getRequiredEnv(name: string) {
-  const value = process.env[name] ?? import.meta.env[name];
+  const value = process.env[name];
 
   if (!value) {
     throw new Error(`Missing required Cloudinary environment variable: ${name}`);

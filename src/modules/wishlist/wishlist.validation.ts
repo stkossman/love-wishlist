@@ -73,7 +73,7 @@ function parseImage(body: Record<string, unknown>, update: boolean): UpdateItemD
   if (!isWishlistImagePublicId(body.imagePublicId))
     throw new HttpError(400, 'Invalid wishlist image publicId');
   const imageUrl = text(body.imageUrl, 'Image URL', 2048, true);
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME ?? import.meta.env.CLOUDINARY_CLOUD_NAME;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   if (!cloudName) throw new HttpError(503, 'Image configuration is unavailable');
   let url: URL;
   try {

@@ -16,9 +16,9 @@ const valuePlaceholder = showExamplePlaceholders ? 'VALUE (e.g. XL)' : 'VALUE';
 
 <div data-specs-field class="flex min-w-0 flex-col gap-5 border-t border-neutral-200 pt-8">
   <div class="flex items-center justify-between">
-    <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
-      >Specifications</span
-    >
+    <span class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60">
+      Specifications
+    </span>
     <button
       type="button"
       id="add-spec-btn"
@@ -30,15 +30,15 @@ const valuePlaceholder = showExamplePlaceholders ? 'VALUE (e.g. XL)' : 'VALUE';
   </div>
 
   <div id="specs-container" data-specs-container class="space-y-4">
-    {
-      rows.map((spec) => (
-        <WishlistSpecRow
-          spec={spec}
-          labelPlaceholder={labelPlaceholder}
-          valuePlaceholder={valuePlaceholder}
-        />
-      ))
-    }
+    {rows.map((spec) => (
+      <WishlistSpecRow
+        spec={spec}
+        labelPlaceholder={labelPlaceholder}
+        valuePlaceholder={valuePlaceholder}
+      />
+    ))}
   </div>
-  <template data-spec-template><WishlistSpecRow /></template>
+  <template data-spec-template>
+    <WishlistSpecRow />
+  </template>
 </div>

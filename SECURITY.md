@@ -22,7 +22,7 @@ Both login and mutation requests require an `Origin` header exactly matching the
 
 ## Environment and runtime
 
-Use Node.js 22 or newer in Vercel project settings (Firebase Admin 14 requires Node 22+). Use Bun for package management and tests. Copy `.env.example` to an ignored local environment file and configure each Vercel environment separately.
+Use Node.js 22.23.4 or newer in Vercel project settings (the minimum declared by Astro 7.4.5). Use Bun for package management and tests. Copy `.env.example` to an ignored local environment file and configure each Vercel environment separately.
 
 - `SECRET_PIN`: a **new** four-digit numeric PIN, including leading zeroes if desired. Never reuse the value previously shipped to browsers.
 - `SESSION_SECRET`: independently generated cryptographic secret, at least 32 random bytes. For example, generate one locally with `bun -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"`; store the output privately.
@@ -31,7 +31,7 @@ Use Node.js 22 or newer in Vercel project settings (Firebase Admin 14 requires N
 
 Remove `PUBLIC_SECRET_PIN` from local and Vercel configuration. Remove unused `PUBLIC_FIREBASE_*` settings after confirming no other application needs them. Public Firebase configuration was not itself a privileged credential.
 
-Production and Preview must use separate signing secrets, PINs, and database credentials/projects. Mark credentials and secrets as private/sensitive in Vercel; never use a `PUBLIC_` prefix. Configure secrets in runtime environment settings, not committed files. Rebuild/redeploy only after explicit deployment approval. Old deployments/assets contained the old public PIN, so changing only the source is insufficient: rotate the PIN and retire old writable deployments. Missing auth configuration fails closed with 503. Firebase initializes lazily and has no browser-SDK fallback.
+Production and Preview must use separate signing secrets, PINs, and database credentials/projects. Mark credentials and secrets as private/sensitive in Vercel; never use a `PUBLIC_` prefix. Configure secrets in runtime environment settings, not committed files. Rebuild/redeploy only after explicit deployment approval. Old deployments/assets contained the old public PIN, so changing only the source is insufficient: rotate the PIN and retire old writable deployments. Missing auth configuration fails closed with 503. Private configuration is read only from runtime `process.env`; it is not inlined through `import.meta.env`. Bun loads `.env` for local script commands. Firebase initializes lazily and has no browser-SDK fallback.
 
 ## PIN guessing protection — deployment prerequisite
 
@@ -39,10 +39,10 @@ The application limits login attempts to five per client address per fifteen-min
 
 This is a local backstop, not distributed protection. Vercel cold starts and multiple instances have separate counters. Before enabling production writes, configure a shared Vercel WAF rate-limit rule:
 
-1. First address the installed adapter's [path-override advisory](https://github.com/advisories/GHSA-mr6q-rp88-fx84): `x-astro-path` headers and `x_astro_path` query parameters can route an arbitrary public pathname to the login handler. A rule matching only `/api/auth/session` can be bypassed. With this app's current configuration (no Edge Middleware or ISR), block requests carrying either override at the platform boundary, including direct deployment URLs. Verify the block before relying on pathname matching. If platform filtering cannot be established, rate-limit **all POST requests** with a shared per-IP bucket and verify rewritten login attempts consume that same bucket; legitimate saves/uploads will also consume it. A compatible patched adapter is the longer-term solution.
+1. Create a rate-limit rule matching **POST** and exact pathname **`/api/auth/session`**. The upgraded `@astrojs/vercel` 11.0.18 authenticates internal path overrides, fixing [GHSA-mr6q-rp88-fx84](https://github.com/advisories/GHSA-mr6q-rp88-fx84). Local tests of the built entrypoint verified that forged header/query overrides cannot turn another pathname into login. Verify that behavior on the staged deployment as well; do not restore a vulnerable adapter or leave older writable deployments reachable.
 2. Group requests by client IP and block excessive attempts, targeting at most five requests per fifteen minutes. If the plan supports a different interval, choose an equally restrictive available policy; inspect the project's actual plan capabilities.
 3. Apply it to every publicly reachable writable deployment/domain, including Preview deployments if enabled. Confirm an exceeded limit returns a blocked response and normal login remains usable.
-4. Confirm the deployed adapter resolves the original client IP and request origin correctly. Test direct and alternate-path login requests in an isolated Preview environment. Never weaken origin checks to accommodate a proxy without establishing its trusted forwarding configuration. Reassess override filtering if Edge Middleware or ISR is introduced; those features use internal override routing.
+4. Confirm the deployed adapter resolves the original client IP and request origin correctly. Test direct and alternate-path login requests in an isolated Preview environment. Never weaken origin checks to accommodate a proxy without establishing its trusted forwarding configuration. Reassess routing and throttle coverage if Edge Middleware or ISR is introduced.
 
 A four-digit shared PIN has low entropy. Per-IP limiting does not prevent a distributed attack. If exposure or threat level increases, revisit the PIN interaction and shared durable throttling before expanding access. No WAF settings were changed by this implementation.
 
@@ -77,7 +77,7 @@ JSON bodies are bounded at 64 KiB (login and image deletion at 1 KiB). Multipart
 
 Run `bun run test`, `bun run typecheck`, `bun run check`, and `bun run build`. Tests stub persistence and external providers; they never exercise production services. A successful build does not verify deployed rules, IAM, WAF, credentials, or an external provider.
 
-Cursor precision, defensive document mapping, shared form/feed components, awaited notifications, and durable media cleanup are implemented. Remaining limits include public reads, shared low-entropy PIN access, per-instance application throttling, best-effort/non-deduplicated notifications, and non-atomic cross-provider operations. See [production readiness](docs/production-readiness.md) for dependency advisory reachability, external deployment gates, and rollback. No production settings, data, deployments, or credentials were changed here.
+Cursor precision, defensive document mapping, shared form/feed components, awaited notifications, and durable media cleanup are implemented. Remaining limits include public reads, shared low-entropy PIN access, per-instance application throttling, best-effort/non-deduplicated notifications, and non-atomic cross-provider operations. See [production readiness](docs/production-readiness.md) for dependency advisory reachability, external deployment gates, and rollback. The [dependency update](docs/dependency-update.md) records the Astro/adapter security fixes and the three remaining transitive advisories. No production settings, data, deployments, or credentials were changed here.
 
 ## Stage 4 media lifecycle
 

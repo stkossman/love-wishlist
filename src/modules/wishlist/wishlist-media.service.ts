@@ -40,7 +40,7 @@ export function validateImageContents(buffer: Buffer, mime: string): void {
 
 export class WishlistMediaService {
   private static cloudName(): string {
-    const name = process.env.CLOUDINARY_CLOUD_NAME ?? import.meta.env.CLOUDINARY_CLOUD_NAME;
+    const name = process.env.CLOUDINARY_CLOUD_NAME;
     if (!name) throw new HttpError(503, 'Image configuration is unavailable');
     return name;
   }

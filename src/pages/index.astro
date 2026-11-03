@@ -11,9 +11,15 @@ const { items, nextCursor } = await WishlistService.getItems();
 <Layout title="WISHLIST / INDEX">
   <main class="mx-auto w-full max-w-2xl">
     <nav class="relative mb-12 flex items-center justify-center gap-4 pt-10 md:mb-20">
-      <Button href="/andrii" variant="outline">Andrii</Button>
-      <Button href="/juliette" variant="outline">Juliette</Button>
-      <Button href="/sizes" variant="outline">Sizes</Button>
+      <Button href="/andrii" variant="outline">
+        Andrii
+      </Button>
+      <Button href="/juliette" variant="outline">
+        Juliette
+      </Button>
+      <Button href="/sizes" variant="outline">
+        Sizes
+      </Button>
     </nav>
 
     <header class="mb-12 text-center md:mb-24">
@@ -23,22 +29,24 @@ const { items, nextCursor } = await WishlistService.getItems();
     </header>
 
     <section id="feed-container" class="flex min-h-[20vh] flex-col">
-      {items.map((item) => <WishlistItemComponent item={item} />)}
+      {items.map((item) => (
+        <WishlistItemComponent item={item} />
+      ))}
     </section>
 
     <div class="flex justify-center py-12">
-      {
-        items.length >= 6 && (
-          <button
-            id="load-more-btn"
-            class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
-            data-cursor={nextCursor}
-          >
-            Load More
-          </button>
-        )
-      }
-      <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">No more items</p>
+      {items.length >= 6 && (
+        <button
+          id="load-more-btn"
+          class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
+          data-cursor={nextCursor}
+        >
+          Load More
+        </button>
+      )}
+      <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">
+        No more items
+      </p>
     </div>
 
     <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">

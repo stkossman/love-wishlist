@@ -12,8 +12,8 @@ import { escapeHtml, getOwnerTelegramLabel, getSafeHttpUrl } from './wishlist.ut
 
 export class WishlistService {
   private static getTelegramConfig() {
-    const token = process.env.TELEGRAM_BOT_TOKEN ?? import.meta.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID ?? import.meta.env.TELEGRAM_CHAT_ID;
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
     if (!token || !chatId) return null;
     return { token, chatId };
   }
