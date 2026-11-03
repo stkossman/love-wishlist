@@ -1,56 +1,57 @@
 ---
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
-import { ArrowLeft, Asterisk } from '@lucide/astro';
-import type { Owner, WishlistPage } from '../wishlist.types';
+import { Asterisk } from '@lucide/astro';
+import WishlistFeedPagination from './WishlistFeedPagination.astro';
+import OccasionFiltersComponent from './OccasionFilters.astro';
+import type { OccasionFilters, Owner, WishlistPage } from '../wishlist.types';
 import { getOwnerName } from '../wishlist.utils';
 interface Props extends WishlistPage {
-  owner: Owner;
+  owner: Owner | null;
+  filters?: OccasionFilters;
 }
-const { owner, items, nextCursor } = Astro.props;
+const { owner, items, nextCursor, filters = {} } = Astro.props;
 ---
 
-<main data-owner-feed={owner} class="mx-auto w-full max-w-2xl">
-  <header class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-24">
-    <div>
-      <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
-        <ArrowLeft class="mr-1 h-4 w-4" /> Back
-      </Button>
-      <h1 class="text-theme-accent font-serif text-4xl italic md:text-6xl">
-        {getOwnerName(owner)}
-      </h1>
-    </div>
-    <p class="font-mono text-xs opacity-50">
-      {owner === 'me' ? 'HIS COLLECTION' : 'HER COLLECTION'}
+<main
+  data-wishlist-feed-root
+  data-owner-feed={owner ?? undefined}
+  class="collection-shell mx-auto w-full max-w-[76rem]"
+>
+  <header class="collection-heading mb-8 flex flex-wrap items-baseline justify-between gap-4 md:mb-10">
+    <h1 class="font-serif text-[clamp(2.75rem,5vw,4.5rem)] leading-[1.1] text-[color-mix(in_srgb,var(--color-theme-accent)_80%,var(--color-theme-text))] italic">
+      {filters.occasions ? 'For occasions' : owner ? getOwnerName(owner) : 'Latest Additions'}
+    </h1>
+    <p class="text-xs opacity-75">
+      {filters.occasions
+        ? owner
+          ? `${getOwnerName(owner)}’s wishes for celebrations`
+          : 'Our wishes for celebrations'
+        : owner === 'me'
+          ? 'His collection of wishes'
+          : 'Her collection of wishes'}
     </p>
   </header>
 
-  <section id="feed-container" class="flex flex-col">
+  {filters.occasions && <OccasionFiltersComponent filters={filters} />}
+
+  <section
+    id="feed-container"
+    class="wishlist-feed grid grid-cols-1 items-start gap-x-8 gap-y-11 data-masonry:auto-rows-[4px] data-masonry:gap-y-0 sm:grid-cols-2 lg:grid-cols-3 wishlist-list:mx-auto wishlist-list:max-w-[60rem] wishlist-list:grid-cols-1 wishlist-list:gap-0"
+    aria-label={owner ? `${getOwnerName(owner)}’s wishes` : 'Our wishes'}
+  >
     {items.map((item) => (
       <WishlistItemComponent item={item} />
     ))}
     <p
       id="empty-message"
-      class:list={['py-10 text-center opacity-50', items.length > 0 && 'hidden']}
+      class:list={['col-span-full py-10 text-center opacity-50', items.length > 0 && 'hidden']}
     >
-      No items found.
+      {filters.occasions ? 'No wishes for these occasions yet.' : 'No items found.'}
     </p>
   </section>
 
-  <div class="flex justify-center py-12">
-    {nextCursor && (
-      <button
-        id="load-more-btn"
-        class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
-        data-cursor={nextCursor}
-      >
-        Load More
-      </button>
-    )}
-    <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">
-      No more items
-    </p>
-  </div>
+  <WishlistFeedPagination nextCursor={nextCursor} />
 
   <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
     <Button
@@ -69,7 +70,14 @@ const { owner, items, nextCursor } = Astro.props;
 <script>
   import { WishlistFeedHandler } from '../client/wishlist-feed-handler';
   import { isOwner } from '../wishlist.utils';
-  const root = document.querySelector('[data-owner-feed]');
+  import { readOccasionFilters } from '../occasion';
+  const root = document.querySelector('[data-wishlist-feed-root]');
   const owner = root instanceof HTMLElement ? root.dataset.ownerFeed : undefined;
-  if (isOwner(owner)) new WishlistFeedHandler(owner);
+  const params = new URLSearchParams(window.location.search);
+  const occasions = window.location.pathname.replace(/\/+$/, '').endsWith('/occasions');
+  if (occasions) params.set('collection', 'occasions');
+  new WishlistFeedHandler(
+    isOwner(owner) ? owner : null,
+    occasions ? readOccasionFilters(params) : {}
+  );
 </script>

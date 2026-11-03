@@ -10,6 +10,10 @@
   --color-theme-border: rgba(26, 26, 26, 0.2);
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background-color: var(--color-theme-bg);
   color: var(--color-theme-text);
@@ -28,6 +32,22 @@ body {
   opacity: 0.2;
 }
 
-.text-theme-accent {
-  color: var(--color-theme-accent);
+/* The saved browser preference styles SSR cards and paginated fragments alike. */
+@custom-variant wishlist-list (&:where(html[data-wishlist-view='list'] *));
+
+:focus-visible:not(
+  :where(input:not([type='radio']):not([type='checkbox']):not([type='file']), textarea, select)
+) {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

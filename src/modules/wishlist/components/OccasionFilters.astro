@@ -1,0 +1,61 @@
+---
+import { OCCASIONS, MIN_OCCASION_YEAR, MAX_OCCASION_YEAR } from '../occasion';
+import type { OccasionFilters } from '../wishlist.types';
+interface Props {
+  filters: OccasionFilters;
+}
+const { filters } = Astro.props;
+const controlClass =
+  'min-h-11 border-b border-theme-border bg-theme-bg py-2 text-sm text-theme-text focus:border-current focus:outline-none';
+---
+
+<form
+  method="get"
+  action={Astro.url.pathname}
+  aria-label="Filter occasions"
+  class="mb-9 flex flex-wrap items-end gap-x-6 gap-y-4"
+>
+  <div class="flex min-w-40 flex-col gap-1">
+    <label for="filter-occasion" class="text-xs opacity-80">
+      Occasion
+    </label>
+    <select id="filter-occasion" name="occasion" class={controlClass}>
+      <option value="">Every occasion</option>
+      {Object.entries(OCCASIONS).map(([type, label]) => (
+        <option value={type} selected={filters.type === type}>
+          {label}
+        </option>
+      ))}
+    </select>
+  </div>
+  <div class="flex w-28 flex-col gap-1">
+    <label for="filter-year" class="text-xs opacity-80">
+      Year
+    </label>
+    <input
+      id="filter-year"
+      name="year"
+      type="number"
+      min={MIN_OCCASION_YEAR}
+      max={MAX_OCCASION_YEAR}
+      step="1"
+      value={filters.year}
+      placeholder="Any year"
+      class={controlClass}
+    />
+  </div>
+  <button
+    type="submit"
+    class="min-h-11 cursor-pointer text-xs underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+  >
+    Apply filters
+  </button>
+  {(filters.type || filters.year) && (
+    <a
+      href={Astro.url.pathname}
+      class="inline-flex min-h-11 items-center text-xs underline underline-offset-4"
+    >
+      Clear filters
+    </a>
+  )}
+</form>

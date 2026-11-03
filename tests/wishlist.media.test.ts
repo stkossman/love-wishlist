@@ -530,3 +530,97 @@ test('duplicate recovery workers claim an abandoned asset only once during the g
   expect(results.sort()).toEqual(['deleted', 'retained']);
   expect(cloudinary.deleteWishlistImage).toHaveBeenCalledTimes(1);
 });
+
+test('occasion create/edit/remove preserves image ownership through both update paths and retries', async () => {
+  const image = await upload();
+  const occasion = { type: 'birthday', year: 2027, desire: 4 } as const;
+  const id = await WishlistRepository.create({ ...payload(image), occasion });
+  expect((await WishlistRepository.findById(id))?.occasion).toEqual(occasion);
+  await WishlistService.updateItem(id, { occasion: { ...occasion, desire: 5 } });
+  expect(getItem(id).imagePublicId).toBe(image.publicId);
+  expect(record(image.publicId).itemId).toBe(id);
+  await WishlistService.updateItem(id, { occasion: null });
+  expect(getItem(id)).not.toHaveProperty('occasion');
+  expect((await WishlistRepository.findById(id))?.name).toBe('Gift');
+  const replacement = await upload();
+  const expectedVersion = version(id);
+  const update = { ...mapImageMetadata(replacement), occasion };
+  await WishlistService.updateItem(id, update, expectedVersion);
+  await WishlistService.updateItem(id, update, expectedVersion);
+  expect(getItem(id).occasion).toEqual(occasion);
+  expect(record(replacement.publicId).itemId).toBe(id);
+  const removalVersion = version(id);
+  const removal = { imageUrl: null, imagePublicId: null, occasion: null };
+  await WishlistService.updateItem(id, removal, removalVersion);
+  await WishlistService.updateItem(id, removal, removalVersion);
+  expect(getItem(id)).not.toHaveProperty('occasion');
+  expect(getItem(id)).not.toHaveProperty('imagePublicId');
+});
+
+test('occasion filtering precedes pagination for combined and owner feeds, with legacy compatibility', async () => {
+  const timestamp = new Timestamp(1700000000, 123456789);
+  for (let n = 0; n < 28; n++) {
+    const id = String(n).padStart(2, '0');
+    memory.documents.set(`items/${id}`, {
+      ...item,
+      owner: n % 2 ? 'her' : 'me',
+      createdAt: timestamp,
+      ...(n < 4
+        ? {}
+        : {
+            occasion: {
+              type: n < 24 ? 'birthday' : 'christmas',
+              year: n < 20 ? 2027 : 2026,
+              desire: 3,
+            },
+          }),
+    });
+  }
+  expect((await WishlistRepository.findById('00'))?.occasion).toBeUndefined();
+  expect((await WishlistRepository.findAll()).items).toHaveLength(6);
+  for (const owner of [undefined, 'me', 'her'] as const) {
+    const filters = { occasions: true, type: 'birthday', year: 2027 } as const;
+    const ids: string[] = [];
+    let cursor: string | undefined;
+    do {
+      const page = await WishlistRepository.findAll(owner, cursor, filters);
+      ids.push(...page.items.map((wish) => wish.id));
+      expect(
+        page.items.every(
+          (wish) =>
+            wish.occasion?.year === 2027 &&
+            wish.occasion.type === 'birthday' &&
+            (!owner || wish.owner === owner)
+        )
+      ).toBe(true);
+      cursor = page.nextCursor ?? undefined;
+    } while (cursor);
+    const expected = [...memory.documents.entries()]
+      .filter(([, data]) => {
+        const o = data.occasion as { type: string; year: number } | undefined;
+        return o?.type === 'birthday' && o.year === 2027 && (!owner || data.owner === owner);
+      })
+      .map(([path]) => path.split('/')[1])
+      .sort()
+      .reverse();
+    expect(ids).toEqual(expected);
+    expect(new Set(ids).size).toBe(ids.length);
+  }
+  expect(
+    (await WishlistRepository.findAll(undefined, undefined, { occasions: true })).items.every(
+      (wish) => wish.occasion
+    )
+  ).toBe(true);
+  expect(
+    (await WishlistRepository.findAll(undefined, undefined, { year: 2026 })).items.every(
+      (wish) => wish.occasion?.year === 2026
+    )
+  ).toBe(true);
+  const page = await WishlistRepository.findAll(undefined, undefined, { occasions: true });
+  expect(
+    await failure(WishlistRepository.findAll('me', page.nextCursor!, { occasions: true }))
+  ).toBeInstanceOf(Error);
+  expect(
+    await failure(WishlistRepository.findAll(undefined, 'bad', { occasions: true }))
+  ).toBeInstanceOf(Error);
+});

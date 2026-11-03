@@ -105,6 +105,49 @@ function signed() {
   return createSession(config);
 }
 
+test('occasion mutations retain PIN authorization and server validation', async () => {
+  const occasion = { type: 'birthday', year: 2027, desire: 5 };
+  expect(
+    (await invoke(items.POST, context('/api/items', 'POST', { ...validItem, occasion }))).status
+  ).toBe(401);
+  expect(
+    (await invoke(item.PUT, context('/api/items/test-item', 'PUT', { occasion: null }))).status
+  ).toBe(401);
+  expect(createItem).not.toHaveBeenCalled();
+  expect(updateItem).not.toHaveBeenCalled();
+  expect(
+    (
+      await invoke(
+        items.POST,
+        context('/api/items', 'POST', { ...validItem, occasion }, { token: signed() })
+      )
+    ).status
+  ).toBe(201);
+  expect(createItem).toHaveBeenCalledWith(expect.objectContaining({ occasion }));
+  expect(
+    (
+      await invoke(
+        item.PUT,
+        context('/api/items/test-item', 'PUT', { occasion: null }, { token: signed() })
+      )
+    ).status
+  ).toBe(200);
+  expect(updateItem).toHaveBeenCalledWith('test-item', { occasion: null });
+  expect(
+    (
+      await invoke(
+        item.PUT,
+        context(
+          '/api/items/test-item',
+          'PUT',
+          { occasion: { ...occasion, desire: 6 } },
+          { token: signed() }
+        )
+      )
+    ).status
+  ).toBe(400);
+});
+
 afterEach(() => mock.restore());
 
 beforeEach(() => {

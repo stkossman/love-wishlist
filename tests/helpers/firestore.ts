@@ -60,7 +60,7 @@ export function createMemoryFirestore() {
     }
   }
   class Query {
-    private filters: [string, unknown][] = [];
+    private filters: [string, string, unknown][] = [];
     private orders: { field: string; direction: string }[] = [];
     private count = Infinity;
     private boundary?: [Timestamp, string];
@@ -82,9 +82,9 @@ export function createMemoryFirestore() {
       return next;
     }
     where(field: string, operator: string, value: unknown) {
-      if (operator !== '==') throw new Error('Unsupported test query');
+      if (operator !== '==' && operator !== 'in') throw new Error('Unsupported test query');
       const next = this.copy();
-      next.filters.push([field, value]);
+      next.filters.push([field, operator, value]);
       return next;
     }
     orderBy(field: unknown, direction: string) {
@@ -112,7 +112,15 @@ export function createMemoryFirestore() {
         .filter((path) => path.startsWith(`${this.name}/`))
         .map((path) => snapshot(new Reference(path)));
       docs = docs.filter((doc) =>
-        this.filters.every(([field, value]) => doc.data()?.[field] === value)
+        this.filters.every(([field, operator, value]) => {
+          const actual = field
+            .split('.')
+            .reduce<unknown>(
+              (data, key) => (data && typeof data === 'object' ? (data as Data)[key] : undefined),
+              doc.data()
+            );
+          return operator === 'in' ? (value as unknown[]).includes(actual) : actual === value;
+        })
       );
       if (this.orders.length)
         docs.sort((a, b) => {

@@ -1,6 +1,20 @@
 export type Owner = 'me' | 'her';
 export type OwnerFilter = Owner | null;
 
+export type OccasionType =
+  'new-year' | 'birthday' | 'christmas' | 'valentines-day' | 'anniversary' | 'other';
+export interface WishlistOccasion {
+  type: OccasionType;
+  year: number;
+  desire: 1 | 2 | 3 | 4 | 5;
+  customLabel?: string;
+}
+export interface OccasionFilters {
+  occasions?: boolean;
+  type?: OccasionType;
+  year?: number;
+}
+
 export interface WishlistSpec {
   label: string;
   value: string;
@@ -25,6 +39,7 @@ export interface WishlistImageMetadata {
 }
 
 export interface WishlistItem extends WishlistImageFields {
+  occasion?: WishlistOccasion;
   id: string;
   topic: string;
   name: string;
@@ -37,6 +52,7 @@ export interface WishlistItem extends WishlistImageFields {
 }
 
 export interface CreateItemDTO extends WishlistImageFields {
+  occasion?: WishlistOccasion;
   topic: string;
   name: string;
   owner: Owner;
@@ -50,8 +66,8 @@ type NullableWishlistImageFields = {
   [Key in keyof WishlistImageFields]?: WishlistImageFields[Key] | null;
 };
 
-export type UpdateItemDTO = Partial<Omit<CreateItemDTO, keyof WishlistImageFields>> &
-  NullableWishlistImageFields;
+export type UpdateItemDTO = Partial<Omit<CreateItemDTO, keyof WishlistImageFields | 'occasion'>> &
+  NullableWishlistImageFields & { occasion?: WishlistOccasion | null };
 
 export interface WishlistPage {
   items: WishlistItem[];

@@ -8,6 +8,43 @@ export class WishlistCardEvents {
     if (this.initialized) return;
     this.initialized = true;
     document.addEventListener('click', (e) => this.handleClick(e));
+    document.addEventListener('keydown', (e) => this.handleKeydown(e));
+    document.addEventListener('focusin', (e) => {
+      if (!(e.target instanceof Element) || !e.target.closest('.menu-dropdown, .menu-btn'))
+        this.closeMenus();
+    });
+  }
+
+  private static closeMenus(except?: Element | null) {
+    document.querySelectorAll('.menu-btn').forEach((button) => {
+      if (button === except) return;
+      button.setAttribute('aria-expanded', 'false');
+      button.nextElementSibling?.classList.add('hidden');
+    });
+  }
+
+  private static handleKeydown(event: KeyboardEvent) {
+    if (!(event.target instanceof Element)) return;
+    const target = event.target;
+    const button = target.closest('.menu-btn');
+    const dropdown = target.closest('.menu-dropdown');
+    if (event.key === 'Escape' && (dropdown || button?.getAttribute('aria-expanded') === 'true')) {
+      event.preventDefault();
+      const trigger = button ?? dropdown?.previousElementSibling;
+      this.closeMenus();
+      if (trigger instanceof HTMLElement) trigger.focus();
+      return;
+    }
+    if (button && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+      event.preventDefault();
+      this.closeMenus(button);
+      button.setAttribute('aria-expanded', 'true');
+      const panel = button.nextElementSibling;
+      panel?.classList.remove('hidden');
+      const actions = panel?.querySelectorAll<HTMLElement>('a, button');
+      const index = event.key === 'ArrowUp' ? (actions?.length ?? 1) - 1 : 0;
+      actions?.[index]?.focus();
+    }
   }
 
   private static async handleClick(e: MouseEvent) {
@@ -19,17 +56,16 @@ export class WishlistCardEvents {
       e.stopPropagation();
       const dropdown = menuBtn.nextElementSibling;
 
-      document.querySelectorAll('.menu-dropdown').forEach((el) => {
-        if (el !== dropdown) el.classList.add('hidden');
-      });
-
-      dropdown?.classList.toggle('hidden');
+      const opening = menuBtn.getAttribute('aria-expanded') !== 'true';
+      this.closeMenus();
+      menuBtn.setAttribute('aria-expanded', String(opening));
+      dropdown?.classList.toggle('hidden', !opening);
       return;
     }
 
     const isDropdown = target.closest('.menu-dropdown');
     if (!menuBtn && !isDropdown) {
-      document.querySelectorAll('.menu-dropdown').forEach((el) => el.classList.add('hidden'));
+      this.closeMenus();
     }
 
     const deleteBtn = target.closest('.delete-btn') as HTMLButtonElement;
@@ -41,6 +77,7 @@ export class WishlistCardEvents {
 
       const id = deleteBtn.dataset.id;
       const redirectTo = deleteBtn.dataset.redirectTo;
+      const fromDetail = Boolean(deleteBtn.closest('#wishlist-detail-dialog'));
       const card = deleteBtn.closest('article') as HTMLElement;
 
       if (!id) return;
@@ -66,12 +103,16 @@ export class WishlistCardEvents {
           return;
         }
 
-        this.removeCard(card);
+        if (fromDetail) {
+          document.dispatchEvent(new CustomEvent('wishlist:detail-deleted', { detail: { id } }));
+        } else this.removeCard(card);
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           if (redirectTo) {
             window.location.href = redirectTo;
             redirecting = true;
+          } else if (fromDetail) {
+            document.dispatchEvent(new CustomEvent('wishlist:detail-deleted', { detail: { id } }));
           } else this.removeCard(card);
           return;
         }

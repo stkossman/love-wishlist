@@ -10,7 +10,7 @@ const segments = description ? parseDescriptionSegments(description) : [];
 ---
 
 {description && (
-  <p class="text-theme-text max-w-2xl font-serif text-xl leading-relaxed whitespace-pre-wrap italic opacity-75 md:text-2xl">
+  <p class="text-theme-text max-w-2xl font-serif text-xl leading-relaxed wrap-anywhere whitespace-pre-wrap italic opacity-75 md:text-2xl">
     {segments.map((segment) =>
       segment.type === 'link' ? (
         <a

@@ -1,0 +1,21 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import WishlistOwnerFeed from '@/modules/wishlist/components/WishlistOwnerFeed.astro';
+import { WishlistService } from '@/modules/wishlist/wishlist.service';
+import { parseOccasionFilters } from '@/modules/wishlist/wishlist.validation';
+import { errorResponse } from '@/lib/server/http';
+const params = new URLSearchParams(Astro.url.searchParams);
+params.set('collection', 'occasions');
+let filters;
+let page;
+try {
+  filters = parseOccasionFilters(params);
+  page = await WishlistService.getItems(undefined, undefined, filters);
+} catch (error) {
+  return errorResponse(error);
+}
+---
+
+<Layout title="OUR OCCASIONS / WISHLIST">
+  <WishlistOwnerFeed owner={null} filters={filters} {...page} />
+</Layout>

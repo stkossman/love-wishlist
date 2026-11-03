@@ -16,7 +16,7 @@ const hasImage = Boolean(imageUrl);
   id="image-upload-field"
   data-image-field
   data-image-version={imageVersion({ imagePublicId, imageUrl })}
-  class="flex flex-col items-start gap-3"
+  class="flex w-full flex-col items-start gap-3"
   data-initial-image-url={imageUrl ?? ''}
   data-initial-image-public-id={imagePublicId ?? ''}
 >
@@ -31,13 +31,13 @@ const hasImage = Boolean(imageUrl);
 
   <label
     for="image-input"
-    class="group flex h-36 w-32 cursor-pointer items-center justify-center overflow-hidden border border-dashed border-[#1a1a1a]/40 bg-transparent text-center transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 hover:border-[#1a1a1a] md:h-40 md:w-36"
+    class="group flex aspect-4/3 max-h-80 w-full cursor-pointer items-center justify-center overflow-hidden border border-dashed border-[#1a1a1a]/40 bg-transparent text-center transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 hover:border-[#1a1a1a] min-[900px]:aspect-4/5 min-[900px]:max-h-none"
   >
     <img
       id="image-preview"
       src={imageUrl}
       alt=""
-      class:list={['h-full w-full object-cover', !hasImage && 'hidden']}
+      class:list={['h-full w-full object-contain p-4', !hasImage && 'hidden']}
     />
     <span
       id="image-placeholder"

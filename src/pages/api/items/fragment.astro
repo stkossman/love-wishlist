@@ -1,4 +1,5 @@
 ---
+import { parseOccasionFilters } from '@/modules/wishlist/wishlist.validation';
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
 import { isOwner } from '@/modules/wishlist/wishlist.utils';
@@ -13,7 +14,11 @@ const cursor = Astro.url.searchParams.get('cursor') ?? undefined;
 
 let page: WishlistPage;
 try {
-  page = await WishlistService.getItems(owner, cursor);
+  page = await WishlistService.getItems(
+    owner,
+    cursor,
+    parseOccasionFilters(Astro.url.searchParams)
+  );
 } catch (error) {
   return errorResponse(error);
 }

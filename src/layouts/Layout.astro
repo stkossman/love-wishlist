@@ -1,6 +1,8 @@
 ---
 import '@/styles/global.css';
 import WishlistAccessDialog from '@/modules/wishlist/components/actions/WishlistAccessDialog.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import WishlistDetailDialog from '@/modules/wishlist/components/item/WishlistDetailDialog.astro';
 
 interface Props {
   title: string;
@@ -15,6 +17,14 @@ const { title } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      // Read before paint: the server renders the same card markup for both views.
+      try {
+        if (localStorage.getItem('wishlist:view') === 'list')
+          document.documentElement.dataset.wishlistView = 'list';
+      } catch {}
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,14 +37,26 @@ const { title } = Astro.props;
 
     <slot name="head" />
   </head>
-  <body class="selection:bg-theme-accent selection:text-theme-bg flex min-h-screen flex-col px-4 py-8 md:px-8 md:py-20">
-    <slot />
+  <body class="selection:bg-theme-accent selection:text-theme-bg flex min-h-screen flex-col px-4 py-6 md:px-8 md:py-10">
+    <a
+      href="#main-content"
+      class="skip-link bg-theme-bg fixed top-2 left-4 z-200 -translate-y-[200%] p-3 focus:translate-y-0"
+    >
+      Skip to content
+    </a>
+    <SiteHeader />
+    <div id="main-content" tabindex="-1">
+      <slot />
+    </div>
     <WishlistAccessDialog />
+    <WishlistDetailDialog />
 
     <script>
       import { WishlistCardEvents } from '@/modules/wishlist/client/wishlist-card-events';
+      import { initDisplayPreferences } from '@/modules/wishlist/client/wishlist-display-preferences';
 
       WishlistCardEvents.init();
+      initDisplayPreferences();
     </script>
   </body>
 </html>

@@ -1,0 +1,50 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="SETTINGS / LOVE WISHLIST">
+  <main class="mx-auto mb-20 w-full max-w-2xl">
+    <header class="collection-heading mb-10">
+      <h1 class="font-serif text-[clamp(2.75rem,5vw,4.5rem)] leading-[1.1] italic">Settings</h1>
+    </header>
+    <fieldset class="preference-options my-8 grid gap-2" data-display-preferences>
+      <legend class="font-serif text-2xl italic">Collection display</legend>
+      <label class="flex cursor-pointer items-start gap-4 py-5">
+        <input
+          class="accent-theme-text mt-1.5 size-4"
+          type="radio"
+          name="wishlist-view"
+          value="grid"
+          checked
+        />
+        <span>
+          <strong class="block font-serif text-[1.75rem] font-normal italic">Grid</strong>
+          <span class="mt-2 block text-[.8125rem] leading-relaxed opacity-80">
+            An image-led collection, with room for each wish.
+          </span>
+        </span>
+      </label>
+      <label class="flex cursor-pointer items-start gap-4 py-5">
+        <input
+          class="accent-theme-text mt-1.5 size-4"
+          type="radio"
+          name="wishlist-view"
+          value="list"
+        />
+        <span>
+          <strong class="block font-serif text-[1.75rem] font-normal italic">List</strong>
+          <span class="mt-2 block text-[.8125rem] leading-relaxed opacity-80">
+            A compact reading view, with images alongside the details.
+          </span>
+        </span>
+      </label>
+    </fieldset>
+    <p class="text-sm leading-relaxed opacity-80">
+      Applies to both collections and the combined wishlist in this browser.
+    </p>
+    <p data-preference-status role="status" class="mt-4 min-h-6 text-sm"></p>
+    <noscript>
+      <p class="mt-4 text-sm">Enable JavaScript to change and save your display preference.</p>
+    </noscript>
+  </main>
+</Layout>

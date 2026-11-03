@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
 import { withMutationAuth } from '@/lib/server/auth';
 import { errorResponse, readJson } from '@/lib/server/http';
-import { parseCreateItem } from '@/modules/wishlist/wishlist.validation';
+import { parseCreateItem, parseOccasionFilters } from '@/modules/wishlist/wishlist.validation';
 import { jsonResponse } from '@/modules/wishlist/utils/api';
 import { isOwner } from '@/modules/wishlist/wishlist.utils';
 
@@ -13,7 +13,11 @@ export const GET: APIRoute = async ({ request }) => {
   const cursor = url.searchParams.get('cursor') ?? undefined;
 
   try {
-    const result = await WishlistService.getItems(owner, cursor);
+    const result = await WishlistService.getItems(
+      owner,
+      cursor,
+      parseOccasionFilters(url.searchParams)
+    );
     return jsonResponse(result, 200);
   } catch (error) {
     return errorResponse(error);

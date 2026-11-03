@@ -1,0 +1,68 @@
+---
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const occasions = path.endsWith('/occasions');
+const owner = path.startsWith('/andrii')
+  ? '/andrii'
+  : path.startsWith('/juliette')
+    ? '/juliette'
+    : null;
+---
+
+<header class="site-header mx-auto mb-12 w-full max-w-[76rem] md:mb-14">
+  <div class="site-navigation border-theme-border grid grid-cols-[1fr_auto] gap-5 border-b pb-4 max-[400px]:grid-cols-1 max-[400px]:gap-4 [&_a]:underline-offset-[.35em] [&_a:hover]:underline [&_a[aria-current]]:font-medium [&_a[aria-current]]:underline">
+    <nav
+      aria-label="Collections"
+      class="owner-navigation flex flex-wrap items-baseline gap-2 font-serif text-2xl sm:gap-3 sm:text-[1.75rem]"
+    >
+      <a
+        href={occasions ? '/occasions' : '/'}
+        aria-current={!owner && (path === '/' || occasions) ? 'page' : undefined}
+      >
+        All
+      </a>
+      <span aria-hidden="true" class="opacity-65">
+        /
+      </span>
+      <a
+        href={occasions ? '/juliette/occasions' : '/juliette'}
+        aria-current={owner === '/juliette' ? 'page' : undefined}
+      >
+        Juliette
+      </a>
+      <span aria-hidden="true" class="opacity-65">
+        /
+      </span>
+      <a
+        href={occasions ? '/andrii/occasions' : '/andrii'}
+        aria-current={owner === '/andrii' ? 'page' : undefined}
+      >
+        Andrii
+      </a>
+    </nav>
+    <nav
+      aria-label="Personal reference"
+      class="utility-navigation flex flex-wrap items-baseline gap-3 text-xs max-[400px]:row-start-2 max-[400px]:justify-self-end"
+    >
+      <a href="/sizes" aria-current={path === '/sizes' ? 'page' : undefined}>
+        Sizes
+      </a>
+      <span aria-hidden="true" class="opacity-65">
+        /
+      </span>
+      <a href="/settings" aria-current={path === '/settings' ? 'page' : undefined}>
+        Settings
+      </a>
+    </nav>
+    <nav
+      aria-label="Collection view"
+      class="collection-navigation col-span-full flex flex-wrap items-baseline gap-6 text-xs max-[400px]:row-start-3"
+    >
+      <a href={owner ?? '/'} aria-current={path === (owner ?? '/') ? 'page' : undefined}>
+        All
+      </a>
+      <a href={`${owner ?? ''}/occasions`} aria-current={occasions ? 'page' : undefined}>
+        For occasions
+      </a>
+    </nav>
+  </div>
+</header>

@@ -1,84 +1,91 @@
 ---
+import OccasionSummary from '@/modules/wishlist/components/OccasionSummary.astro';
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
-import { getOwnerInitial, getOwnerItemPath } from '@/modules/wishlist/wishlist.utils';
+import { getOwnerName, getOwnerItemPath } from '@/modules/wishlist/wishlist.utils';
 import WishlistItemActions from '@/modules/wishlist/components/actions/WishlistItemActions.astro';
-import { ArrowUpRight } from '@lucide/astro';
+import { ArrowUpRight, Heart } from '@lucide/astro';
 
 interface Props {
   item: WishlistItem;
 }
-
 const { item } = Astro.props;
-const ownerLabel = getOwnerInitial(item.owner);
 const itemPath = getOwnerItemPath(item.owner, item.id);
 ---
 
 <article
-  class:list={[
-    'group relative flex flex-col gap-6 py-8 transition-opacity duration-500 ease-out md:py-10',
-    item.imageUrl && 'md:min-h-48 md:pr-44',
-  ]}
+  data-wishlist-item-id={item.id}
+  class="wish-card group relative min-w-0 focus-within:z-10 has-[[aria-expanded=true]]:z-20 [[data-masonry]_&]:pb-11 wishlist-list:grid wishlist-list:grid-cols-[minmax(0,1fr)_8rem] wishlist-list:gap-6 wishlist-list:border-theme-border wishlist-list:border-t wishlist-list:py-6 wishlist-list:first:border-t-0 wishlist-list:max-[400px]:grid-cols-[minmax(0,1fr)_5rem] wishlist-list:max-[400px]:gap-3"
 >
-  <div class="bg-theme-border group-hover:bg-theme-text absolute top-0 left-0 h-px w-full opacity-20 transition-opacity duration-300 group-hover:opacity-100"></div>
-
-  <WishlistItemActions itemId={item.id} />
-
-  <div class="flex items-center gap-3">
-    <span class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50">
-      {ownerLabel}
-    </span>
-
-    <span class="text-theme-text font-mono text-[10px] tracking-[0.15em] uppercase opacity-40">
-      {item.topic}
-    </span>
+  <div class="wish-media relative min-w-0 wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:self-start">
+    <WishlistItemActions itemId={item.id} itemName={item.name} />
+    <a
+      href={itemPath}
+      data-wish-detail
+      class:list={[
+        'wish-image block w-full wishlist-list:aspect-square',
+        !item.imageUrl &&
+          'flex aspect-4/3 items-center justify-center bg-theme-text/5 text-theme-text',
+      ]}
+      aria-label={`View ${item.name}`}
+    >
+      {item.imageUrl ? (
+        <img
+          src={item.imageUrl}
+          alt=""
+          width={item.imageWidth}
+          height={item.imageHeight}
+          loading="lazy"
+          class="block h-auto w-full wishlist-list:h-full wishlist-list:object-contain"
+        />
+      ) : (
+        <span
+          class="wish-image-fallback flex flex-col items-center gap-4 font-serif italic opacity-70 wishlist-list:absolute wishlist-list:right-2 wishlist-list:bottom-2"
+          aria-hidden="true"
+        >
+          <Heart class="wishlist-list:size-5" size={48} stroke-width={1} />
+          <span class="wishlist-list:hidden">A wish, still taking shape.</span>
+        </span>
+      )}
+    </a>
   </div>
-
-  <div class="flex flex-col gap-1">
-    <h2 class="text-theme-text font-serif text-3xl leading-tight font-light italic md:text-4xl">
-      <a href={itemPath} class="hover:text-theme-accent transition-colors duration-300">
+  <div class="wish-copy pt-5 wrap-anywhere wishlist-list:col-start-1 wishlist-list:row-start-1 wishlist-list:pt-0">
+    <div class="wish-meta flex flex-wrap justify-between gap-x-4 gap-y-2 text-[.6875rem] tracking-[.08em] uppercase opacity-75 wishlist-list:justify-start">
+      <span>{item.topic}</span>
+      <span class="wish-owner font-serif text-[.9375rem] tracking-normal normal-case italic [[data-owner-feed]_&]:hidden">
+        {getOwnerName(item.owner)}
+      </span>
+    </div>
+    <h2 class="mt-2.5 font-serif text-[clamp(1.75rem,2.5vw,2.25rem)] leading-[1.15] font-normal italic">
+      <a
+        href={itemPath}
+        data-wish-detail
+        class="decoration-1 underline-offset-[.15em] hover:underline"
+      >
         {item.name}
       </a>
-      {item.url && (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open reference"
-          class="group/link hover:text-theme-accent transition-colors duration-300"
-        >
-          <ArrowUpRight class="mb-2 ml-0.5 inline-block h-4 w-4 stroke-[1.5] transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-        </a>
-      )}
     </h2>
-
-    {item.price && (
-      <p class="text-theme-text mt-1 font-mono text-xs tracking-wide opacity-60">{item.price}</p>
+    <OccasionSummary occasion={item.occasion} />
+    {item.price && <p class="wish-price mt-3 text-[.8125rem] opacity-80">{item.price}</p>}
+    {item.specs && item.specs.length > 0 && (
+      <dl class="wish-specs mt-5 flex flex-wrap gap-x-8 gap-y-4 text-xs">
+        {item.specs.map((spec) => (
+          <div>
+            <dt class="mb-1 text-[.625rem] tracking-[.06em] uppercase opacity-70">{spec.label}</dt>
+            <dd>{spec.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+    {item.url && (
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="wish-reference mt-5 inline-flex items-center gap-1 text-[.6875rem] underline-offset-4 hover:underline"
+        aria-label={`Open reference for ${item.name} (new tab)`}
+      >
+        Reference <ArrowUpRight size={14} />
+      </a>
     )}
   </div>
-
-  {item.specs && item.specs.length > 0 && (
-    <div class="mt-2 flex flex-wrap gap-x-8 gap-y-4 opacity-70 transition-opacity lg:opacity-50 lg:group-hover:opacity-100">
-      {item.specs.map((spec) => (
-        <div class="flex flex-col gap-1">
-          <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
-            {spec.label}
-          </span>
-          <span class="text-theme-text font-mono text-xs">{spec.value}</span>
-        </div>
-      ))}
-    </div>
-  )}
-
-  {item.imageUrl && (
-    <div class="border-theme-border bg-theme-text/5 mt-1 flex h-44 w-full items-center justify-center overflow-hidden border p-3 opacity-100 transition-opacity md:absolute md:top-1/2 md:right-0 md:mt-0 md:h-36 md:w-36 md:-translate-y-1/2 lg:opacity-75 lg:group-hover:opacity-100">
-      <img
-        src={item.imageUrl}
-        alt={item.name}
-        width={item.imageWidth}
-        height={item.imageHeight}
-        loading="lazy"
-        class="h-full w-full object-contain"
-      />
-    </div>
-  )}
 </article>

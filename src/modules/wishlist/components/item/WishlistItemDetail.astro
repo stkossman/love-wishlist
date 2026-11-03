@@ -1,4 +1,5 @@
 ---
+import OccasionSummary from '../OccasionSummary.astro';
 import Button from '@/components/ui/Button.astro';
 import WishlistItemActions from '@/modules/wishlist/components/actions/WishlistItemActions.astro';
 import WishlistDescription from '@/modules/wishlist/components/description/WishlistDescription.astro';
@@ -15,9 +16,13 @@ const ownerName = getOwnerName(item.owner);
 const ownerPath = getOwnerPath(item.owner);
 ---
 
-<main class="mx-auto w-full max-w-4xl">
-  <header class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-20">
-    <div>
+<main
+  data-item-detail={item.id}
+  data-detail-owner-name={ownerName}
+  class="mx-auto w-full max-w-6xl"
+>
+  <header data-detail-header class="mb-6 flex items-start justify-between gap-4">
+    <div data-standalone-only>
       <Button href={ownerPath} variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
         <ArrowLeft class="mr-1 h-4 w-4" /> Back
       </Button>
@@ -25,8 +30,7 @@ const ownerPath = getOwnerPath(item.owner);
         {ownerName} / Wishlist
       </p>
     </div>
-    <div class="flex flex-col items-end gap-4">
-      <p class="font-mono text-xs opacity-50">ITEM DETAILS</p>
+    <div data-detail-actions class="flex flex-col items-end gap-4">
       <WishlistItemActions
         itemId={item.id}
         redirectTo={ownerPath}
@@ -38,8 +42,8 @@ const ownerPath = getOwnerPath(item.owner);
 
   <article
     class:list={[
-      'grid grid-cols-1 gap-10 md:gap-16',
-      item.imageUrl ? 'md:grid-cols-[minmax(0,1fr)_18rem]' : 'md:grid-cols-1',
+      'grid grid-cols-1 gap-8 md:gap-10',
+      item.imageUrl ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : 'md:grid-cols-1',
     ]}
   >
     <section class="flex flex-col gap-8">
@@ -53,7 +57,7 @@ const ownerPath = getOwnerPath(item.owner);
       </div>
 
       <div class="flex flex-col gap-3">
-        <h1 class="text-theme-text font-serif text-4xl leading-tight font-light italic md:text-6xl">
+        <h1 class="text-theme-text font-serif text-4xl leading-tight break-words font-light italic md:text-5xl">
           {item.name}
         </h1>
 
@@ -62,10 +66,11 @@ const ownerPath = getOwnerPath(item.owner);
         )}
       </div>
 
+      <OccasionSummary occasion={item.occasion} />
       <WishlistDescription description={item.description} />
 
       {item.specs && item.specs.length > 0 && (
-        <div class="border-theme-border grid grid-cols-1 gap-x-10 gap-y-5 border-t pt-8 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-x-10 gap-y-5 pt-4 sm:grid-cols-2">
           {item.specs.map((spec) => (
             <div class="flex flex-col gap-1">
               <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
@@ -93,13 +98,13 @@ const ownerPath = getOwnerPath(item.owner);
     </section>
 
     {item.imageUrl && (
-      <aside class="border-theme-border bg-theme-text/5 flex min-h-72 items-center justify-center border p-5 md:min-h-96">
+      <aside class="order-first flex min-h-56 items-center justify-center overflow-hidden md:order-last md:min-h-80">
         <img
           src={item.imageUrl}
           alt={item.name}
           width={item.imageWidth}
           height={item.imageHeight}
-          class="max-h-[28rem] w-full object-contain"
+          class="max-h-[55dvh] w-full object-contain"
         />
       </aside>
     )}
