@@ -73,10 +73,12 @@ export async function uploadWishlistImage(buffer: Buffer): Promise<WishlistImage
 export async function deleteWishlistImage(publicId: string) {
   configureCloudinary();
 
-  return cloudinary.uploader.destroy(publicId, {
-    resource_type: 'image',
+  const options = {
+    resource_type: 'image' as const,
     invalidate: true,
-  });
+    timeout: 3000,
+  };
+  return cloudinary.uploader.destroy(publicId, options);
 }
 
 export function getWishlistThumbnailUrl(publicId: string) {

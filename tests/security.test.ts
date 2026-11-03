@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { APIContext, APIRoute } from 'astro';
 import { createContext } from 'astro/middleware';
+import { WishlistService } from '../src/modules/wishlist/wishlist.service';
 import type { CreateItemDTO } from '../src/modules/wishlist/wishlist.types';
 import {
   createSession,
@@ -34,9 +35,6 @@ const metadata = {
 const uploadImage = mock(async (_buffer: Buffer) => metadata);
 const deleteImage = mock(async (_id: string) => ({ result: 'ok' }));
 
-mock.module('../src/modules/wishlist/wishlist.service', () => ({
-  WishlistService: { createItem, updateItem, deleteItem, getItems },
-}));
 mock.module('../src/lib/server/cloudinary', () => ({
   uploadWishlistImage: uploadImage,
   deleteWishlistImage: deleteImage,
@@ -112,7 +110,13 @@ function signed() {
   return createSession(config);
 }
 
+afterEach(() => mock.restore());
+
 beforeEach(() => {
+  spyOn(WishlistService, 'createItem').mockImplementation(createItem);
+  spyOn(WishlistService, 'updateItem').mockImplementation(updateItem);
+  spyOn(WishlistService, 'deleteItem').mockImplementation(deleteItem);
+  spyOn(WishlistService, 'getItems').mockImplementation(getItems);
   for (const stub of [createItem, updateItem, deleteItem, getItems, uploadImage, deleteImage])
     stub.mockClear();
   process.env.SECRET_PIN = config.pin;
@@ -581,4 +585,27 @@ describe('validation', () => {
     expect(uploadImage).not.toHaveBeenCalled();
     expect(deleteImage).not.toHaveBeenCalled();
   });
+});
+
+test('public pagination errors preserve safe 400s and conceal provider failures', async () => {
+  getItems.mockRejectedValueOnce(new HttpError(400, 'Invalid pagination cursor'));
+  const invalid = await invoke(items.GET, context('/api/items?cursor=bad', 'GET'));
+  expect(invalid.status).toBe(400);
+  expect(await invalid.json()).toEqual({ error: 'Invalid pagination cursor' });
+  getItems.mockRejectedValueOnce(new Error('private-provider-detail'));
+  const failed = await invoke(items.GET, context('/api/items', 'GET'));
+  expect(failed.status).toBe(500);
+  expect(await failed.json()).toEqual({ error: 'Server Error' });
+});
+
+test('update and delete surface missing-document 404s through authorized routes', async () => {
+  for (const entry of [mutations[1], mutations[2]]) {
+    entry.stub.mockRejectedValueOnce(new HttpError(404, 'Item not found'));
+    const response = await invoke(
+      entry.route,
+      context(entry.path, entry.method, entry.body, { token: signed() })
+    );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: 'Item not found' });
+  }
 });

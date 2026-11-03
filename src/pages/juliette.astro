@@ -33,12 +33,17 @@ const { items, nextCursor } = await WishlistService.getItems('her');
 
     <section id="feed-container" class="flex flex-col">
       {items.map((item) => <WishlistItemComponent item={item} />)}
-      {items.length === 0 && <p class="py-10 text-center opacity-50">No items found.</p>}
+      <p
+        id="empty-message"
+        class:list={['py-10 text-center opacity-50', items.length > 0 && 'hidden']}
+      >
+        No items found.
+      </p>
     </section>
 
     <div class="flex justify-center py-12">
       {
-        items.length >= 6 && (
+        nextCursor && (
           <button
             id="load-more-btn"
             class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
