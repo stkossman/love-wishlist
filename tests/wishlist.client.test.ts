@@ -30,6 +30,7 @@ class TestElement extends EventTarget {
   focused = false;
   focus() {
     this.focused = true;
+    Object.assign(doc, { activeElement: this });
   }
   querySelectorAll() {
     return this.actions;
@@ -43,6 +44,9 @@ class TestElement extends EventTarget {
   }
   getAttribute(name: string) {
     return this.attributes.get(name) ?? null;
+  }
+  hasAttribute(name: string) {
+    return this.attributes.has(name);
   }
   setAttribute(name: string, value: string) {
     this.attributes.set(name, value);
@@ -66,8 +70,11 @@ const originalElement = globalThis.Element;
 const originalHTMLElement = globalThis.HTMLElement;
 const originalConfirm = globalThis.confirm;
 const originalAlert = globalThis.alert;
+const originalWindow = globalThis.window;
+const originalIntersectionObserver = globalThis.IntersectionObserver;
 let elements: Map<string, TestElement>;
 let doc: EventTarget;
+let browser: EventTarget & { location: { reload: ReturnType<typeof mock> } };
 let menuButtons: TestElement[];
 let fetchMock: ReturnType<typeof spyOn<typeof globalThis, 'fetch'>>;
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -92,10 +99,14 @@ beforeEach(() => {
   Reflect.set(WishlistCardEvents, 'initialized', false);
   menuButtons = [];
   elements = new Map(
-    ['load-more-btn', 'feed-container', 'end-message', 'empty-message'].map((id) => [
-      id,
-      new TestElement(),
-    ])
+    [
+      'load-more-btn',
+      'feed-container',
+      'end-message',
+      'empty-message',
+      'feed-sentinel',
+      'feed-status',
+    ].map((id) => [id, new TestElement()])
   );
   elements.get('load-more-btn')!.setAttribute('data-cursor', 'original-cursor');
   elements.get('empty-message')!.classes.add('hidden');
@@ -104,6 +115,9 @@ beforeEach(() => {
     querySelectorAll: (selector: string) => (selector === '.menu-btn' ? menuButtons : []),
   });
   globalThis.document = doc as unknown as Document;
+  browser = Object.assign(new EventTarget(), { location: { reload: mock(() => {}) } });
+  globalThis.window = browser as unknown as Window & typeof globalThis;
+  globalThis.IntersectionObserver = undefined as unknown as typeof IntersectionObserver;
   globalThis.Element = TestElement as unknown as typeof Element;
   globalThis.HTMLElement = TestElement as unknown as typeof HTMLElement;
   globalThis.confirm = () => true;
@@ -119,6 +133,191 @@ afterEach(() => {
   globalThis.HTMLElement = originalHTMLElement;
   globalThis.confirm = originalConfirm;
   globalThis.alert = originalAlert;
+  globalThis.window = originalWindow;
+  globalThis.IntersectionObserver = originalIntersectionObserver;
+});
+
+function intersectionObserver() {
+  let callback: IntersectionObserverCallback;
+  let options: IntersectionObserverInit | undefined;
+  const observe = mock((_target: Element) => {});
+  const disconnect = mock(() => {});
+  globalThis.IntersectionObserver = class {
+    constructor(cb: IntersectionObserverCallback, init?: IntersectionObserverInit) {
+      callback = cb;
+      options = init;
+    }
+    observe = observe;
+    disconnect = disconnect;
+  } as unknown as typeof IntersectionObserver;
+  return {
+    observe,
+    disconnect,
+    options: () => options,
+    enter(isIntersecting = true) {
+      callback([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
+    },
+  };
+}
+
+test('infinite scrolling preloads at 600px and requires a fresh entrance for successive pages', async () => {
+  const observer = intersectionObserver();
+  new WishlistFeedHandler();
+  const button = elements.get('load-more-btn')!;
+  expect(observer.options()?.rootMargin).toBe('0px 0px 600px 0px');
+  expect(observer.observe).toHaveBeenCalledTimes(1);
+  expect(button.classes.has('hidden')).toBe(true);
+  fetchMock.mockResolvedValueOnce(
+    new Response('<article>Page two</article>', {
+      headers: { 'X-Next-Cursor': 'second-cursor' },
+    })
+  );
+  observer.enter();
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  await tick();
+  expect(button.getAttribute('data-cursor')).toBe('second-cursor');
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(button.classes.has('hidden')).toBe(false);
+  observer.enter(false);
+  expect(button.classes.has('hidden')).toBe(true);
+  fetchMock.mockResolvedValueOnce(new Response('<article>Last page</article>'));
+  observer.enter();
+  await tick();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(String(fetchMock.mock.calls[1][0])).toContain('cursor=second-cursor');
+  expect(elements.get('feed-container')!.fragments).toHaveLength(2);
+  expect(observer.disconnect).toHaveBeenCalled();
+  observer.enter(false);
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+test('automatic failures suspend observation until a successful manual retry with the same cursor', async () => {
+  const observer = intersectionObserver();
+  new WishlistFeedHandler('her');
+  fetchMock.mockRejectedValueOnce(new Error('offline'));
+  observer.enter();
+  await tick();
+  const button = elements.get('load-more-btn')!;
+  expect(observer.disconnect).toHaveBeenCalledTimes(1);
+  expect(button.textContent).toBe('Retry');
+  expect(button.classes.has('hidden')).toBe(false);
+  expect(elements.get('feed-status')!.textContent).toContain('could not be loaded');
+  observer.enter(false);
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  fetchMock.mockResolvedValueOnce(
+    new Response('<article>Recovered</article>', {
+      headers: { 'X-Next-Cursor': 'recovered-cursor' },
+    })
+  );
+  button.dispatchEvent(new Event('click'));
+  button.dispatchEvent(new Event('click'));
+  await tick();
+  expect(fetchMock.mock.calls[0][0]).toBe(fetchMock.mock.calls[1][0]);
+  expect(observer.observe).toHaveBeenCalledTimes(2);
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(button.getAttribute('data-cursor')).toBe('recovered-cursor');
+});
+
+test('empty pages with advancing cursors never drain the feed while the sentinel stays visible', async () => {
+  const observer = intersectionObserver();
+  new WishlistFeedHandler();
+  fetchMock.mockResolvedValueOnce(new Response('', { headers: { 'X-Next-Cursor': 'next' } }));
+  observer.enter();
+  await tick();
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(elements.get('load-more-btn')!.classes.has('hidden')).toBe(false);
+  expect(elements.get('empty-message')!.classes.has('hidden')).toBe(true);
+});
+
+test('a repeated cursor is rejected before appending duplicate cards', async () => {
+  new WishlistFeedHandler();
+  fetchMock.mockResolvedValueOnce(
+    new Response('<article>Duplicate</article>', {
+      headers: { 'X-Next-Cursor': 'original-cursor' },
+    })
+  );
+  elements.get('load-more-btn')!.dispatchEvent(new Event('click'));
+  await tick();
+  expect(elements.get('feed-container')!.fragments).toHaveLength(0);
+  expect(elements.get('load-more-btn')!.textContent).toBe('Retry');
+  expect(elements.get('load-more-btn')!.getAttribute('data-cursor')).toBe('original-cursor');
+});
+
+test('history suspension aborts pending requests without consuming a cursor and restores observation', async () => {
+  const observer = intersectionObserver();
+  new WishlistFeedHandler();
+  let resolve!: (response: Response) => void;
+  fetchMock.mockReturnValueOnce(
+    new Promise((done) => {
+      resolve = done;
+    })
+  );
+  observer.enter();
+  const signal = fetchMock.mock.calls[0][1]?.signal;
+  browser.dispatchEvent(new Event('pagehide'));
+  expect(signal?.aborted).toBe(true);
+  resolve(new Response('<article>Stale</article>', { headers: { 'X-Next-Cursor': 'stale' } }));
+  await tick();
+  expect(elements.get('feed-container')!.fragments).toHaveLength(0);
+  expect(elements.get('load-more-btn')!.getAttribute('data-cursor')).toBe('original-cursor');
+  browser.dispatchEvent(new Event('pageshow'));
+  expect(observer.observe).toHaveBeenCalledTimes(2);
+  observer.enter();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test('invalid cursors offer a deliberate refresh through Retry', async () => {
+  const observer = intersectionObserver();
+  new WishlistFeedHandler();
+  fetchMock.mockResolvedValueOnce(new Response('{}', { status: 400 }));
+  observer.enter();
+  await tick();
+  const button = elements.get('load-more-btn')!;
+  expect(button.textContent).toBe('Retry');
+  button.dispatchEvent(new Event('click'));
+  expect(browser.location.reload).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test('initially exhausted feeds do not observe or request', () => {
+  const observer = intersectionObserver();
+  elements.get('load-more-btn')!.removeAttribute('data-cursor');
+  new WishlistFeedHandler();
+  expect(observer.observe).not.toHaveBeenCalled();
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(elements.get('empty-message')!.classes.has('hidden')).toBe(false);
+});
+
+test('manual recovery keeps keyboard focus until the pagination button is left', async () => {
+  const observer = intersectionObserver();
+  new WishlistFeedHandler();
+  fetchMock.mockRejectedValueOnce(new Error('offline'));
+  observer.enter();
+  await tick();
+  const button = elements.get('load-more-btn')!;
+  const body = new TestElement();
+  Object.assign(doc, { activeElement: button, body });
+  fetchMock.mockResolvedValueOnce(
+    new Response('<article>Recovered</article>', {
+      headers: { 'X-Next-Cursor': 'recovered' },
+    })
+  );
+  button.dispatchEvent(new Event('click'));
+  // Disabling a focused native button moves focus to the document body.
+  Object.assign(doc, { activeElement: body });
+  await tick();
+  expect(button.focused).toBe(true);
+  observer.enter(false);
+  expect(button.classes.has('hidden')).toBe(false);
+  Object.assign(doc, { activeElement: null });
+  button.dispatchEvent(new Event('focusout'));
+  expect(button.classes.has('hidden')).toBe(true);
 });
 
 for (const owner of ['me', 'her'] as const) {

@@ -3,7 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
 import { Asterisk } from '@lucide/astro';
-import HeartLoader from '@/components/HeartLoader.astro';
+import WishlistFeedPagination from '@/modules/wishlist/components/WishlistFeedPagination.astro';
 import { WishlistService } from '@/modules/wishlist/wishlist.service';
 
 const { items, nextCursor } = await WishlistService.getItems();
@@ -33,23 +33,7 @@ const { items, nextCursor } = await WishlistService.getItems();
       </p>
     </section>
 
-    <div class="flex items-center justify-center gap-3 py-12">
-      <span id="feed-loader" class="hidden">
-        <HeartLoader />
-      </span>
-      {nextCursor && (
-        <button
-          id="load-more-btn"
-          class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"
-          data-cursor={nextCursor}
-        >
-          Load More
-        </button>
-      )}
-      <p id="end-message" class="hidden font-mono text-xs uppercase opacity-40">
-        No more items
-      </p>
-    </div>
+    <WishlistFeedPagination nextCursor={nextCursor} />
 
     <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
       <Button

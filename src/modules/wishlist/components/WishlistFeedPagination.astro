@@ -1,0 +1,36 @@
+---
+import HeartLoader from '@/components/HeartLoader.astro';
+
+interface Props {
+  nextCursor: string | null;
+}
+const { nextCursor } = Astro.props;
+---
+
+<div id="feed-sentinel" class="h-px" aria-hidden="true"></div>
+<div class="flex min-h-33 flex-col items-center justify-center gap-3 py-12">
+  <span id="feed-loader" class="hidden" aria-hidden="true">
+    <HeartLoader />
+  </span>
+  <p
+    id="feed-status"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    class="sr-only text-center text-xs"
+  ></p>
+  {nextCursor && (
+    <button
+      id="load-more-btn"
+      type="button"
+      aria-controls="feed-container"
+      class="min-h-9 border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-30 motion-reduce:transition-none"
+      data-cursor={nextCursor}
+    >
+      Load More
+    </button>
+  )}
+  <p id="end-message" tabindex="-1" class="hidden min-h-9 font-mono text-xs uppercase opacity-40">
+    No more items
+  </p>
+</div>
