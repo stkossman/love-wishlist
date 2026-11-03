@@ -14,7 +14,7 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
 
 <article
   data-wishlist-item-id={item.id}
-  class="wish-card group relative min-w-0 focus-within:z-10 has-[[aria-expanded=true]]:z-20 wishlist-list:grid wishlist-list:grid-cols-[minmax(0,1fr)_8rem] wishlist-list:gap-6 wishlist-list:border-theme-border wishlist-list:border-t wishlist-list:py-6 wishlist-list:first:border-t-0 wishlist-list:max-[400px]:grid-cols-[minmax(0,1fr)_5rem] wishlist-list:max-[400px]:gap-3"
+  class="wish-card group relative min-w-0 focus-within:z-10 has-[[aria-expanded=true]]:z-20 [[data-masonry]_&]:pb-11 wishlist-list:grid wishlist-list:grid-cols-[minmax(0,1fr)_8rem] wishlist-list:gap-6 wishlist-list:border-theme-border wishlist-list:border-t wishlist-list:py-6 wishlist-list:first:border-t-0 wishlist-list:max-[400px]:grid-cols-[minmax(0,1fr)_5rem] wishlist-list:max-[400px]:gap-3"
 >
   <div class="wish-media relative min-w-0 wishlist-list:col-start-2 wishlist-list:row-start-1 wishlist-list:self-start">
     <WishlistItemActions itemId={item.id} itemName={item.name} />

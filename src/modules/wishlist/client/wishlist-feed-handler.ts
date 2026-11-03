@@ -1,5 +1,6 @@
 import type { OccasionFilters, OwnerFilter } from '@/modules/wishlist/wishlist.types';
 import { ApiError, checkResponse } from './wishlist-auth-client';
+import { initWishlistMasonry } from './wishlist-masonry';
 
 export class WishlistFeedHandler {
   private static readonly FRAGMENT_URL = '/api/items/fragment';
@@ -22,6 +23,7 @@ export class WishlistFeedHandler {
 
     this.container?.addEventListener('wishlist:item-deleted', () => this.updateEmptyState());
     if (this.container) {
+      initWishlistMasonry(this.container);
       this.init();
     }
   }
