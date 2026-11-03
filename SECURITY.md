@@ -69,12 +69,20 @@ Create/update bodies are JSON objects with explicit field allowlists. Unknown fi
 
 Reference URLs are empty or absolute HTTP(S) URLs. Specs must contain only non-empty string `label`/`value` pairs. Existing form payloads remain supported, including empty optional fields and `description: null` normalized to an empty string. Updates may omit unchanged fields but cannot be empty.
 
-New image payloads require a matching HTTPS Cloudinary URL and `wishlist/` public ID in the configured account; optional dimensions/format/bytes must be valid. Image removal on update accepts null URL and public ID, with any supplied metadata also null; the server clears all six image fields. Mixed null/replacement metadata is rejected. These checks validate reference shape; they do not attest asset existence or ownership within the shared account.
+New image payloads require a matching HTTPS Cloudinary URL and `wishlist/` public ID in the configured account; optional dimensions/format/bytes must be valid. Image removal on update accepts null URL and public ID, with any supplied metadata also null; the server clears all six image fields. Mixed null/replacement metadata is rejected. New attachments also require a server-registered upload in the media ledger; matching a prefix alone does not establish ownership. The server uses the registered metadata. Image changes carry the edit form's image version, while untracked legacy assets are retained for manual review.
 
-JSON bodies are bounded at 64 KiB (login and image deletion at 1 KiB). Multipart uploads are bounded before parsing, allow one non-empty JPEG/PNG/WebP file up to 5 MiB, and still rely on Cloudinary to decode the image. Status codes: 400 invalid input, 401 invalid/missing/expired session or credentials, 403 origin failure, 413 oversized body, 415 unsupported content type, 429 throttled login, 503 unavailable configuration, and safe generic 500 for unexpected failures.
+JSON bodies are bounded at 64 KiB (login and image deletion at 1 KiB). Multipart uploads are bounded before parsing, allow one non-empty JPEG/PNG/WebP file up to 5 MiB, compare content headers with the declared MIME type, and rely on Cloudinary to fully decode the image. Status codes: 400 invalid input, 401 invalid/missing/expired session or credentials, 403 origin failure, 409 stale/conflicting image state, 410 retired direct image deletion, 413 oversized body, 415 unsupported content type, 428 missing image version, 429 throttled login, 502 unconfirmed upload, 503 unavailable configuration, and safe generic 500 for unexpected failures.
 
 ## Verification and deferred work
 
 Run `bun run test`, `bun run typecheck`, `bun run check`, and `bun run build`. Tests stub persistence and external providers; they never exercise production services. A successful build does not verify deployed rules, IAM, WAF, credentials, or an external provider.
 
 Stage 2 remains deferred: timestamp cursor precision, full legacy-document decoding, media cleanup across navigation/partial commits, background notification completion, and broader frontend refactoring. Read privacy remains an explicit product decision. No production settings, data, deployments, or credentials were changed here.
+
+## Stage 4 media lifecycle
+
+Read [the media lifecycle and recovery guide](docs/media-lifecycle.md) before operating media cleanup. `wishlistImages` is a server-only auxiliary ownership ledger; the existing deny-all client rules cover it, but deployed rules and IAM must still be verified. Existing `items` documents require no migration.
+
+The generic image delete route is retired: authorized, valid requests return 410 without touching Cloudinary. Newly attached images must be registered uploads, and image-changing PUTs require `X-Wishlist-Image-Version` (428 if missing, 409 if stale). Item fields and nullable removal semantics remain compatible. MIME/header checks and validated provider metadata supplement Cloudinary decoding. Do not use old client code or uncoordinated direct writes with the new ledger.
+
+Cleanup after item persistence is internal, awaited, and failure-isolated. Recovery defaults to dry-run inspection with a 24-hour grace period and requires an explicit public ID for application. Neither production reconciliation nor provider inventory was run during implementation. Historic untracked assets are retained for manual review.

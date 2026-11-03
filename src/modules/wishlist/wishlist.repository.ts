@@ -1,3 +1,7 @@
+import { HttpError } from '@/lib/server/http';
+import { WishlistMediaRepository } from './wishlist-media.repository';
+import { imageVersion } from './wishlist-image-version';
+import { mapImageMetadata } from './utils/image';
 import { getDatabase } from '@/lib/server/firebase';
 import {
   FieldPath,
@@ -106,17 +110,86 @@ export class WishlistRepository {
   }
 
   static async create(data: CreateItemDTO): Promise<string> {
-    const docRef = await getDatabase()
-      .collection(COLLECTION_NAME)
-      .add({ ...data, createdAt: FieldValue.serverTimestamp() });
-    return docRef.id;
+    if (!data.imagePublicId) {
+      const ref = await getDatabase()
+        .collection(COLLECTION_NAME)
+        .add({ ...data, createdAt: FieldValue.serverTimestamp() });
+      return ref.id;
+    }
+    const publicId = data.imagePublicId;
+    const ref = getDatabase().collection(COLLECTION_NAME).doc();
+    return getDatabase().runTransaction(async (transaction) => {
+      const record = await WishlistMediaRepository.attachment(transaction, publicId);
+      if (data.imageUrl !== record.image.secureUrl)
+        throw new HttpError(409, 'Image does not match its upload');
+      const payload = { ...data, ...mapImageMetadata(record.image) };
+      if (record.state === 'attached') {
+        if (typeof record.itemId !== 'string') throw new HttpError(409, 'Image is already in use');
+        const saved = await transaction.get(
+          getDatabase().collection(COLLECTION_NAME).doc(record.itemId)
+        );
+        if (saved.exists && this.matchesUpdate(saved.data() ?? {}, payload)) return saved.id;
+        throw new HttpError(409, 'Image was already saved. Refresh the wishlist before retrying.');
+      }
+      transaction.create(ref, { ...payload, createdAt: FieldValue.serverTimestamp() });
+      WishlistMediaRepository.attach(transaction, publicId, ref.id);
+      return ref.id;
+    });
+  }
+
+  private static matchesUpdate(current: Record<string, unknown>, data: UpdateItemDTO): boolean {
+    return Object.entries(data).every(([key, value]) =>
+      value === null && IMAGE_FIELD_KEYS.some((field) => field === key)
+        ? current[key] == null
+        : JSON.stringify(current[key]) === JSON.stringify(value)
+    );
+  }
+
+  static async replaceImage(
+    id: string,
+    data: UpdateItemDTO,
+    expectedVersion?: string
+  ): Promise<{ cleanupImageId: string | null } | null> {
+    if (!expectedVersion)
+      throw new HttpError(428, 'Refresh the edit page before changing the image');
+    const ref = getDatabase().collection(COLLECTION_NAME).doc(id);
+    return getDatabase().runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(ref);
+      const current = snapshot.data();
+      if (!current) return null;
+      if (imageVersion(current) !== expectedVersion) {
+        if (this.matchesUpdate(current, data)) return { cleanupImageId: null };
+        throw new HttpError(409, 'The image changed in another request. Refresh the edit page.');
+      }
+      const newId = typeof data.imagePublicId === 'string' ? data.imagePublicId : null;
+      const image = newId ? await WishlistMediaRepository.attachment(transaction, newId) : null;
+      if (
+        image &&
+        (data.imageUrl !== image.image.secureUrl ||
+          (image.state === 'attached' && image.itemId !== id))
+      ) {
+        throw new HttpError(409, 'Image is already in use or does not match its upload');
+      }
+      const cleanupImageId =
+        current.imagePublicId !== newId
+          ? await WishlistMediaRepository.retirement(transaction, current.imagePublicId, id)
+          : null;
+      const update: DocumentData = image
+        ? { ...data, ...mapImageMetadata(image.image) }
+        : { ...data };
+      if (!newId) for (const key of IMAGE_FIELD_KEYS) update[key] = FieldValue.delete();
+      transaction.update(ref, update);
+      if (newId) WishlistMediaRepository.attach(transaction, newId, id);
+      if (cleanupImageId) WishlistMediaRepository.retire(transaction, cleanupImageId);
+      return { cleanupImageId };
+    });
   }
 
   static async update(id: string, data: UpdateItemDTO): Promise<boolean> {
-    const updateData: DocumentData = { ...data };
-    for (const field of IMAGE_FIELD_KEYS) {
-      if (data[field] === null) updateData[field] = FieldValue.delete();
+    if (IMAGE_FIELD_KEYS.some((key) => Object.hasOwn(data, key))) {
+      throw new Error('Image updates require the transactional media path');
     }
+    const updateData: DocumentData = { ...data };
     try {
       await getDatabase().collection(COLLECTION_NAME).doc(id).update(updateData);
       return true;
@@ -132,7 +205,23 @@ export class WishlistRepository {
     }
   }
 
-  static async delete(id: string): Promise<void> {
-    await getDatabase().collection(COLLECTION_NAME).doc(id).delete();
+  static async delete(
+    id: string
+  ): Promise<{ item: WishlistItem; cleanupImageId: string | null } | null> {
+    const ref = getDatabase().collection(COLLECTION_NAME).doc(id);
+    return getDatabase().runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(ref);
+      const data = snapshot.data();
+      if (!data) return null;
+      const item = this.toItem(snapshot.id, data);
+      const cleanupImageId = await WishlistMediaRepository.retirement(
+        transaction,
+        data.imagePublicId,
+        id
+      );
+      transaction.delete(ref);
+      if (cleanupImageId) WishlistMediaRepository.retire(transaction, cleanupImageId);
+      return { item, cleanupImageId };
+    });
   }
 }

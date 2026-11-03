@@ -12,6 +12,9 @@ export const DELETE: APIRoute = withMutationAuth(async ({ params }) => {
 
 export const PUT: APIRoute = withMutationAuth(async ({ params, request }) => {
   const id = parseItemId(params.id);
-  await WishlistService.updateItem(id, parseUpdateItem(await readJson(request)));
+  const data = parseUpdateItem(await readJson(request));
+  const version = request.headers.get('X-Wishlist-Image-Version');
+  if (version !== null) await WishlistService.updateItem(id, data, version);
+  else await WishlistService.updateItem(id, data);
   return jsonResponse({ message: 'Item updated' }, 200);
 });

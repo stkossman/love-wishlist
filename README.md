@@ -29,3 +29,5 @@ Use Node.js 22+ and Bun. Install with `bun install`, configure the private varia
 Run `bun run test`, `bun run typecheck`, `bun run check`, and `bun run build` for verification.
 
 Read [SECURITY.md](SECURITY.md) before enabling production writes. It documents secret rotation, Admin SDK credentials, the mutation endpoint inventory, proposed Firestore rules, required shared login rate limiting, and manual verification steps. Read routes remain unauthenticated at the application level. No production rules are deployed automatically.
+
+Media ownership, upload retries, and dry-run recovery are documented in [the media lifecycle guide](docs/media-lifecycle.md).

@@ -1,4 +1,4 @@
-import { deleteWishlistImage, isWishlistImagePublicId } from '@/lib/server/cloudinary';
+import { WishlistMediaService } from './wishlist-media.service';
 import { WishlistRepository } from './wishlist.repository';
 import type {
   CreateItemDTO,
@@ -99,23 +99,27 @@ export class WishlistService {
   }
 
   static async deleteItem(id: string): Promise<void> {
-    const item = await WishlistRepository.findById(id);
-    if (!item) throw new HttpError(404, 'Item not found');
-    await WishlistRepository.delete(id);
+    const result = await WishlistRepository.delete(id);
+    if (!result) throw new HttpError(404, 'Item not found');
     await Promise.all([
-      this.sendTelegramDeleteNotification(item),
-      isWishlistImagePublicId(item.imagePublicId)
-        ? deleteWishlistImage(item.imagePublicId).catch((error: unknown) => {
-            console.error(
-              'Cloudinary image delete failed after item deletion',
-              error instanceof Error ? error.name : 'Unknown error'
-            );
-          })
+      this.sendTelegramDeleteNotification(result.item),
+      result.cleanupImageId
+        ? WishlistMediaService.cleanup(result.cleanupImageId)
         : Promise.resolve(),
     ]);
   }
 
-  static async updateItem(id: string, data: UpdateItemDTO): Promise<void> {
+  static async updateItem(
+    id: string,
+    data: UpdateItemDTO,
+    expectedImageVersion?: string
+  ): Promise<void> {
+    if (Object.hasOwn(data, 'imageUrl')) {
+      const result = await WishlistRepository.replaceImage(id, data, expectedImageVersion);
+      if (!result) throw new HttpError(404, 'Item not found');
+      if (result.cleanupImageId) await WishlistMediaService.cleanup(result.cleanupImageId);
+      return;
+    }
     if (!(await WishlistRepository.update(id, data))) throw new HttpError(404, 'Item not found');
   }
 }

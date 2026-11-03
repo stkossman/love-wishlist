@@ -133,6 +133,7 @@ function fixture(mode: 'create' | 'update' = 'create', existing = false) {
   form.matches.set('[data-image-field]', image);
   form.matches.set('[data-specs-field]', specs);
   form.matches.set('[name="topic"]', topic);
+  image.dataset.imageVersion = 'test-image-version';
   image.matches.set('input', input);
   image.matches.set('img', preview);
   image.matches.set('[data-image-placeholder]', placeholder);
@@ -195,7 +196,6 @@ beforeEach(() => {
   spyOn(URL, 'createObjectURL').mockImplementation(() => `blob:test-${++url}`);
   spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   spyOn(WishlistImageClient, 'upload').mockResolvedValue(metadata);
-  spyOn(WishlistImageClient, 'delete').mockResolvedValue(undefined);
   spyOn(WishlistClient, 'create').mockResolvedValue({ message: 'Created', id: 'created-id' });
   spyOn(WishlistClient, 'update').mockResolvedValue({ message: 'Item updated' });
 });
@@ -412,7 +412,7 @@ test('failed uploads and persistence leave image selection retryable and restore
   spyOn(WishlistClient, 'create').mockRejectedValueOnce(new ApiError(503, 'Try again'));
   submit(f.form);
   await settle();
-  expect(WishlistImageClient.delete).toHaveBeenCalledWith('wishlist/new');
+  expect(WishlistImageClient.upload).toHaveBeenCalledTimes(2);
   expect(f.submit.disabled).toBe(false);
   expect(f.preview.src).toBe('blob:test-1');
   submit(f.form);
@@ -421,6 +421,7 @@ test('failed uploads and persistence leave image selection retryable and restore
     expect.objectContaining(mapImageMetadata(metadata))
   );
   expect(browser.location.href).toBe('/andrii');
+  expect(WishlistImageClient.upload).toHaveBeenCalledTimes(2);
 });
 
 test('image-removal updates retain null semantics and duplicate submits do not repeat persistence', async () => {
@@ -447,9 +448,10 @@ test('image-removal updates retain null semantics and duplicate submits do not r
       imageHeight: null,
       imageFormat: null,
       imageBytes: null,
-    })
+    }),
+    'test-image-version'
   );
   resolve({ message: 'Item updated' });
   await settle();
-  expect(WishlistImageClient.delete).toHaveBeenCalledWith('wishlist/old');
+  expect(WishlistImageClient.upload).not.toHaveBeenCalled();
 });

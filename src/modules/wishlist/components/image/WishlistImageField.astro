@@ -1,4 +1,5 @@
 ---
+import { imageVersion } from '../../wishlist-image-version';
 import { WISHLIST_IMAGE_ACCEPT } from '@/modules/wishlist/constants/image';
 
 interface Props {
@@ -19,6 +20,7 @@ const hasImage = Boolean(imageUrl);
 <div
   id="image-upload-field"
   data-image-field
+  data-image-version={imageVersion({ imagePublicId, imageUrl })}
   class="flex flex-col items-start gap-3"
   data-initial-image-url={imageUrl ?? ''}
   data-initial-image-public-id={imagePublicId ?? ''}

@@ -6,7 +6,12 @@ import { initImageField, mapImageMetadata } from './wishlist-image-field';
 import { getSpecsFromForm, initSpecsField } from './specs';
 import { getOwnerPath, isOwner } from '../wishlist.utils';
 import { getDescriptionValidationError, normalizeDescription } from '../utils/description';
-import type { CreateItemDTO, UpdateItemDTO, WishlistSpec } from '../wishlist.types';
+import type {
+  CreateItemDTO,
+  UpdateItemDTO,
+  WishlistSpec,
+  WishlistImageMetadata,
+} from '../wishlist.types';
 
 export function serializeWishlistForm(data: FormData, specs: WishlistSpec[]): CreateItemDTO {
   const text = (name: string) => {
@@ -27,14 +32,6 @@ export function serializeWishlistForm(data: FormData, specs: WishlistSpec[]): Cr
     description,
     specs,
   };
-}
-
-async function cleanupImage(publicId: string): Promise<void> {
-  try {
-    await WishlistImageClient.delete(publicId);
-  } catch (error) {
-    console.error('Image cleanup failed:', error);
-  }
 }
 
 const initialized = new WeakSet<HTMLElement>();
@@ -62,6 +59,7 @@ export function initWishlistForm(root: HTMLElement): void {
   const access = initFormAccess(root, form);
   let submitting = false;
   let redirecting = false;
+  let uploaded: { file: File; image: WishlistImageMetadata } | null = null;
   const label = submit.textContent;
   const setLoading = (loading: boolean) => {
     submitting = loading;
@@ -79,14 +77,16 @@ export function initWishlistForm(root: HTMLElement): void {
       return;
     }
     setLoading(true);
-    let uploadedPublicId = '';
     try {
       const payload = serializeWishlistForm(new FormData(form), getSpecsFromForm(form));
       const selection = image.getSelection();
-      const imageFields = selection.file
-        ? mapImageMetadata(await WishlistImageClient.upload(selection.file))
-        : {};
-      uploadedPublicId = imageFields.imagePublicId ?? '';
+      if (selection.file && uploaded?.file !== selection.file) {
+        uploaded = {
+          file: selection.file,
+          image: await WishlistImageClient.upload(selection.file),
+        };
+      }
+      const imageFields = selection.file && uploaded ? mapImageMetadata(uploaded.image) : {};
       if (mode === 'create') {
         await WishlistClient.create({ ...payload, ...imageFields });
       } else {
@@ -103,15 +103,13 @@ export function initWishlistForm(root: HTMLElement): void {
         }
         const id = form.dataset.id;
         if (!id) throw new Error('Missing item ID');
-        await WishlistClient.update(id, update);
-        if (selection.initialPublicId && (selection.file || selection.removeExisting)) {
-          void cleanupImage(selection.initialPublicId);
-        }
+        const version =
+          selection.file || selection.removeExisting ? imageRoot.dataset.imageVersion : undefined;
+        await WishlistClient.update(id, update, version);
       }
       redirecting = true;
       window.location.href = getOwnerPath(payload.owner);
     } catch (error) {
-      if (uploadedPublicId) void cleanupImage(uploadedPublicId);
       if (error instanceof ApiError && error.status === 401) {
         access.lock('Session expired. Enter Access Code');
       } else {

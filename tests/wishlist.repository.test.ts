@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test';
+import { imageVersion } from '../src/modules/wishlist/wishlist-image-version';
 import { FieldPath, FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 const saved = {
@@ -30,7 +31,21 @@ const query = {
   add,
 };
 const collection = mock((_name: string) => query);
-mock.module('../src/lib/server/firebase', () => ({ getDatabase: () => ({ collection }) }));
+const transaction = {
+  get: async (ref: ReturnType<typeof document>) => ref.get(),
+  delete: (ref: ReturnType<typeof document>) => {
+    void ref.delete();
+  },
+  update: (ref: ReturnType<typeof document>, data: unknown) => {
+    void ref.update(data);
+  },
+};
+mock.module('../src/lib/server/firebase', () => ({
+  getDatabase: () => ({
+    collection,
+    runTransaction: async (action: (tx: typeof transaction) => unknown) => action(transaction),
+  }),
+}));
 const { WishlistRepository } = await import('../src/modules/wishlist/wishlist.repository');
 
 afterEach(() => mock.restore());
@@ -75,11 +90,15 @@ test('Admin create retains server timestamps and the existing payload', async ()
 });
 
 test('nullable image removal uses Firestore field deletion, not stored nulls', async () => {
-  await WishlistRepository.update('item-id', {
-    name: 'Updated',
-    imageUrl: null,
-    imagePublicId: null,
-  });
+  await WishlistRepository.replaceImage(
+    'item-id',
+    {
+      name: 'Updated',
+      imageUrl: null,
+      imagePublicId: null,
+    },
+    imageVersion({ imageUrl: undefined })
+  );
   expect(document).toHaveBeenCalledWith('item-id');
   const payload = updateDocument.mock.calls[0][0] as Record<string, unknown>;
   expect(payload.name).toBe('Updated');

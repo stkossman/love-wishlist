@@ -1,8 +1,11 @@
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
+import { HttpError } from './http';
+import { isWishlistImagePublicId } from '@/modules/wishlist/constants/image';
+import { parseUpdateItem } from '@/modules/wishlist/wishlist.validation';
+import { mapImageMetadata } from '@/modules/wishlist/utils/image';
 import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
 export { isWishlistImagePublicId } from '@/modules/wishlist/constants/image';
 
-const WISHLIST_IMAGE_FOLDER = 'wishlist';
 const THUMBNAIL_TRANSFORMATION = {
   width: 768,
   height: 768,
@@ -12,7 +15,7 @@ const THUMBNAIL_TRANSFORMATION = {
 } as const;
 
 function getRequiredEnv(name: string) {
-  const value = import.meta.env[name];
+  const value = process.env[name] ?? import.meta.env[name];
 
   if (!value) {
     throw new Error(`Missing required Cloudinary environment variable: ${name}`);
@@ -30,24 +33,43 @@ function configureCloudinary() {
   });
 }
 
-function toImageMetadata(result: UploadApiResponse): WishlistImageMetadata {
-  return {
-    secureUrl: result.secure_url,
+export function toImageMetadata(
+  result: UploadApiResponse,
+  publicId: string
+): WishlistImageMetadata {
+  if (
+    result.public_id !== publicId ||
+    result.resource_type !== 'image' ||
+    result.type !== 'upload'
+  ) {
+    throw new Error('Unexpected image provider identity');
+  }
+  const image = {
+    secureUrl: new URL(result.secure_url).href,
     publicId: result.public_id,
     width: result.width,
     height: result.height,
-    format: result.format,
+    format: result.format === 'jpeg' ? 'jpg' : result.format,
     bytes: result.bytes,
   };
+  parseUpdateItem(mapImageMetadata(image));
+  return image;
 }
 
-export async function uploadWishlistImage(buffer: Buffer): Promise<WishlistImageMetadata> {
+export async function uploadWishlistImage(
+  buffer: Buffer,
+  publicId: string
+): Promise<WishlistImageMetadata> {
+  if (!isWishlistImagePublicId(publicId)) throw new HttpError(400, 'Invalid wishlist image ID');
   configureCloudinary();
 
   const result = await new Promise<UploadApiResponse>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: WISHLIST_IMAGE_FOLDER,
+        public_id: publicId,
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        tags: ['love-wishlist-managed'],
+        timeout: 10000,
         resource_type: 'image',
         overwrite: false,
         use_filename: false,
@@ -67,10 +89,11 @@ export async function uploadWishlistImage(buffer: Buffer): Promise<WishlistImage
     uploadStream.end(buffer);
   });
 
-  return toImageMetadata(result);
+  return toImageMetadata(result, publicId);
 }
 
-export async function deleteWishlistImage(publicId: string) {
+export async function deleteWishlistImage(publicId: string): Promise<void> {
+  if (!isWishlistImagePublicId(publicId)) throw new HttpError(400, 'Invalid wishlist image ID');
   configureCloudinary();
 
   const options = {
@@ -78,7 +101,14 @@ export async function deleteWishlistImage(publicId: string) {
     invalidate: true,
     timeout: 3000,
   };
-  return cloudinary.uploader.destroy(publicId, options);
+  const result: unknown = await cloudinary.uploader.destroy(publicId, options);
+  if (
+    !result ||
+    typeof result !== 'object' ||
+    !('result' in result) ||
+    (result.result !== 'ok' && result.result !== 'not found')
+  )
+    throw new Error('Image deletion was not confirmed');
 }
 
 export function getWishlistThumbnailUrl(publicId: string) {

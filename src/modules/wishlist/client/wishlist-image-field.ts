@@ -1,16 +1,5 @@
 import { WISHLIST_IMAGE_MAX_SIZE_BYTES, WISHLIST_IMAGE_TYPES } from '../constants/image';
-import type { WishlistImageFields, WishlistImageMetadata } from '../wishlist.types';
-
-export function mapImageMetadata(image: WishlistImageMetadata): WishlistImageFields {
-  return {
-    imageUrl: image.secureUrl,
-    imagePublicId: image.publicId,
-    imageWidth: image.width,
-    imageHeight: image.height,
-    imageFormat: image.format,
-    imageBytes: image.bytes,
-  };
-}
+export { mapImageMetadata } from '../utils/image';
 
 export function initImageField(root: HTMLElement) {
   const input = root.querySelector('input');

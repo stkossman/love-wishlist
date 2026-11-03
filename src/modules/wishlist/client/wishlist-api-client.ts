@@ -34,11 +34,16 @@ export class WishlistClient {
     return res.json();
   }
 
-  static async update(id: string, data: UpdateItemDTO): Promise<MutationResult> {
+  static async update(
+    id: string,
+    data: UpdateItemDTO,
+    imageVersion?: string
+  ): Promise<MutationResult> {
     const res = await fetch(`${this.BASE_URL}/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        ...(imageVersion ? { 'X-Wishlist-Image-Version': imageVersion } : {}),
       },
       body: JSON.stringify(data),
     });

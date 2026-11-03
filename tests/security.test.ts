@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { APIContext, APIRoute } from 'astro';
 import { createContext } from 'astro/middleware';
+import * as cloudinary from '../src/lib/server/cloudinary';
+import { WishlistMediaService } from '../src/modules/wishlist/wishlist-media.service';
 import { WishlistService } from '../src/modules/wishlist/wishlist.service';
 import type { CreateItemDTO } from '../src/modules/wishlist/wishlist.types';
 import {
@@ -13,7 +15,6 @@ import {
 import { HttpError } from '../src/lib/server/http';
 import { LoginRateLimiter } from '../src/lib/server/login-rate-limit';
 import { parseCreateItem, parseUpdateItem } from '../src/modules/wishlist/wishlist.validation';
-import { isWishlistImagePublicId } from '../src/modules/wishlist/constants/image';
 
 const config = { pin: '2468', secret: 'test-only-signing-secret-'.repeat(3) };
 process.env.SECRET_PIN = config.pin;
@@ -34,12 +35,6 @@ const metadata = {
 };
 const uploadImage = mock(async (_buffer: Buffer) => metadata);
 const deleteImage = mock(async (_id: string) => ({ result: 'ok' }));
-
-mock.module('../src/lib/server/cloudinary', () => ({
-  uploadWishlistImage: uploadImage,
-  deleteWishlistImage: deleteImage,
-  isWishlistImagePublicId,
-}));
 
 const items = await import('../src/pages/api/items');
 const item = await import('../src/pages/api/items/[id]');
@@ -113,6 +108,11 @@ function signed() {
 afterEach(() => mock.restore());
 
 beforeEach(() => {
+  spyOn(cloudinary, 'uploadWishlistImage').mockImplementation(uploadImage);
+  spyOn(cloudinary, 'deleteWishlistImage').mockImplementation(async (id) => {
+    await deleteImage(id);
+  });
+  spyOn(WishlistMediaService, 'upload').mockImplementation(async (buffer) => uploadImage(buffer));
   spyOn(WishlistService, 'createItem').mockImplementation(createItem);
   spyOn(WishlistService, 'updateItem').mockImplementation(updateItem);
   spyOn(WishlistService, 'deleteItem').mockImplementation(deleteItem);
@@ -269,7 +269,7 @@ const mutations = [
     path: '/api/images/delete',
     method: 'DELETE',
     body: { publicId: 'wishlist/test' },
-    status: 200,
+    status: 410,
     stub: deleteImage,
   },
   {
@@ -303,7 +303,7 @@ describe('all mutation boundaries', () => {
         expect(entry.stub).not.toHaveBeenCalled();
       }
     });
-    test(`${entry.name}: signed session permits exactly one operation`, async () => {
+    test(`${entry.name}: signed session reaches the expected mutation boundary`, async () => {
       expect(
         (
           await invoke(
@@ -312,7 +312,7 @@ describe('all mutation boundaries', () => {
           )
         ).status
       ).toBe(entry.status);
-      expect(entry.stub).toHaveBeenCalledTimes(1);
+      expect(entry.stub).toHaveBeenCalledTimes(entry.name === 'image delete' ? 0 : 1);
     });
     test(`${entry.name}: cross-origin or missing Origin fails with a valid session`, async () => {
       for (const origin of [

@@ -2,7 +2,6 @@ import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
 import { checkResponse } from './wishlist-auth-client';
 
 const IMAGE_UPLOAD_URL = '/api/images/upload';
-const IMAGE_DELETE_URL = '/api/images/delete';
 
 export class WishlistImageClient {
   static async upload(file: File): Promise<WishlistImageMetadata> {
@@ -18,17 +17,5 @@ export class WishlistImageClient {
 
     const data = (await res.json()) as { image: WishlistImageMetadata };
     return data.image;
-  }
-
-  static async delete(publicId: string) {
-    const res = await fetch(IMAGE_DELETE_URL, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ publicId }),
-    });
-
-    await checkResponse(res);
   }
 }

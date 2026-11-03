@@ -6,7 +6,7 @@ import {
   WISHLIST_IMAGE_TYPES,
 } from '@/modules/wishlist/constants/image';
 import { jsonResponse } from '@/modules/wishlist/utils/api';
-import { uploadWishlistImage } from '@/lib/server/cloudinary';
+import { WishlistMediaService } from '@/modules/wishlist/wishlist-media.service';
 
 export const POST: APIRoute = withMutationAuth(async ({ request }) => {
   const contentType = request.headers.get('content-type') ?? '';
@@ -27,6 +27,9 @@ export const POST: APIRoute = withMutationAuth(async ({ request }) => {
     throw new HttpError(400, 'Unsupported or empty image');
   if (image.size > WISHLIST_IMAGE_MAX_SIZE_BYTES)
     throw new HttpError(413, 'Image file is too large');
-  const metadata = await uploadWishlistImage(Buffer.from(await image.arrayBuffer()));
+  const metadata = await WishlistMediaService.upload(
+    Buffer.from(await image.arrayBuffer()),
+    image.type
+  );
   return jsonResponse({ image: metadata }, 201);
 });
