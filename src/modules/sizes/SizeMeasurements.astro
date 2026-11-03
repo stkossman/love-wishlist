@@ -1,0 +1,109 @@
+---
+import type { Measurement, Person } from '@/data/sizes';
+import { MAX_MEASUREMENT_LENGTH, MEASUREMENT_PATTERN } from './sizes.validation';
+
+interface Props {
+  person: Person;
+  measurements: Measurement[];
+  unavailable: boolean;
+}
+
+const { person, measurements, unavailable } = Astro.props;
+const name = person === 'andrii' ? 'Andrii' : 'Juliette';
+---
+
+<section
+  data-sizes-person={person}
+  aria-labelledby={`${person}-title`}
+  class:list={['flex flex-col gap-6', person === 'andrii' ? 'text-[#1a1a1a]' : 'text-[#234f1e]']}
+>
+  <div class="mb-4 flex items-center gap-4">
+    <span class="h-2 w-2 rounded-full bg-current"></span>
+    <h2 id={`${person}-title`} class="font-serif text-3xl italic">
+      {name}
+    </h2>
+    <button
+      data-sizes-edit
+      type="button"
+      aria-label={`Edit ${name}'s measurements`}
+      aria-expanded="false"
+      aria-controls={`${person}-measurements`}
+      disabled={unavailable}
+      class="ml-auto min-h-10 cursor-pointer px-2 font-mono text-[10px] tracking-widest uppercase underline decoration-current/30 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-50"
+    >
+      Edit
+    </button>
+  </div>
+
+  <form id={`${person}-measurements`} data-sizes-form aria-label={`${name}'s measurements`}>
+    <fieldset class="min-w-0 border-t border-current">
+      <legend class="sr-only">{name}'s measurement values</legend>
+      {measurements.map((item) => (
+        <div
+          class:list={[
+            'group flex items-end justify-between gap-3 border-b border-current/10 px-2 py-3 transition-colors motion-reduce:transition-none',
+            person === 'andrii' ? 'hover:bg-gray-50' : 'hover:bg-green-50/30',
+          ]}
+        >
+          <label
+            for={`${person}-${item.key}`}
+            class="font-mono text-[10px] tracking-widest text-current/60 uppercase md:text-xs"
+          >
+            {item.label}
+          </label>
+          <div class="flex shrink-0 items-baseline gap-1">
+            <span data-sizes-value class="font-serif text-xl">
+              {item.value}
+            </span>
+            <input
+              id={`${person}-${item.key}`}
+              name={item.key}
+              value={item.value}
+              type="text"
+              autocomplete="off"
+              required
+              maxlength={MAX_MEASUREMENT_LENGTH}
+              pattern={MEASUREMENT_PATTERN}
+              title="Use a positive number or ascending range up to 300, e.g. 17.5-18"
+              aria-describedby={`${person}-help`}
+              hidden
+              disabled
+              class="w-24 border-b border-current/40 bg-transparent px-1 text-right font-serif text-xl focus-visible:outline-2 focus-visible:outline-offset-2"
+            />
+            {item.unit && <span class="font-mono text-[10px] text-current/40">{item.unit}</span>}
+          </div>
+        </div>
+      ))}
+    </fieldset>
+    <div data-sizes-controls hidden class="mt-5">
+      <p id={`${person}-help`} class="font-mono text-[10px] leading-relaxed text-current/70">
+        Numbers or ranges, e.g. 17.5-18. Keep the units shown.
+      </p>
+      <div class="mt-4 flex gap-5">
+        <button
+          type="submit"
+          class="min-h-10 cursor-pointer border border-current px-4 font-mono text-[10px] tracking-widest uppercase hover:bg-current/5 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-50"
+        >
+          Save
+        </button>
+        <button
+          data-sizes-cancel
+          type="button"
+          class="min-h-10 cursor-pointer px-2 font-mono text-[10px] tracking-widest uppercase underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-50"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </form>
+  <p
+    data-sizes-status
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    class="font-mono text-[10px] leading-relaxed empty:hidden"
+  >
+    {unavailable &&
+      'Saved measurements could not be loaded. Showing reference values. Reload to try again.'}
+  </p>
+</section>
