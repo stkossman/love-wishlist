@@ -1,60 +1,84 @@
-# Media lifecycle
+# Cloudinary recovery
 
-## Design
+## What the app guarantees
 
-An auxiliary `wishlistImages` collection records server-generated, non-overwriting uploads and their lifecycle. Existing `items` documents retain their schema. The ledger is necessary to atomically prevent attaching an asset after cleanup begins; a reference check alone cannot provide that protection.
-
-### Ownership and ordering
-
-Each upload reserves a server-generated `wishlist/<uuid>` public ID **before** contacting Cloudinary. Uploads use `overwrite: false`. The ledger stores version 1, intended Cloudinary account, public ID, state, creation/update timestamps, canonical upload metadata, and an attached item ID when applicable. It contains no credentials. State transitions are:
+Uploads reserve a new `wishlist/<uuid>` ID in Firestore's `wishlistImages` ledger
+before contacting Cloudinary, with `overwrite: false`. The ledger records the
+Cloudinary account, metadata, item attachment, and timestamps. Normal states are:
 
 `uploading -> ready -> attached -> retired -> deleting -> deleted`
 
-Old abandoned `uploading`/`ready` entries and interrupted `deleting` entries can also enter recovery after the grace period. Deleted entries remain as tombstones; do not remove them or restore their IDs for reuse.
+Item creation/changes and ledger attachment/retirement commit together in
+Firestore. Cloudinary deletion happens afterward, only after an account/state
+check and reference queries on public ID and canonical URL. Attachments reject
+retired/deleting/deleted records. Keep deleted records as tombstones; do not
+TTL-delete them or reuse their public IDs.
 
-Creating an image-bearing item atomically attaches its upload. Replacing/removing an image or deleting an item atomically changes the item and retires its previous **tracked** asset. The server awaits cleanup after that commit. A cleanup transaction verifies the configured Cloudinary account and checks references by public ID and canonical URL, then marks the asset `deleting`. Every application attachment reads the same ledger document and rejects retired/deleting/deleted assets. This closes the application check-then-delete race without a cross-provider transaction.
+Legacy images without ledger records still display and can be removed/replaced
+on items, but their Cloudinary assets are retained. No migration or automatic
+adoption/deletion runs. A `wishlist/` prefix or managed tag alone does not prove
+ownership. `DELETE /api/images/delete` is retired and returns 410 after validation;
+cleanup happens internally or through the operator tool below.
 
-Image changes on PUT carry `X-Wishlist-Image-Version`, rendered into the edit form from the current image identity. Missing versions return 428; stale versions return 409. Unrelated-field updates need no image version. Successful image changes can be retried with the old version only when all supplied fields already match the saved state. New metadata comes from the registered upload rather than client assertions.
+## Failed requests and retries
 
-The browser retains an upload result while retrying the same selected `File`. A repeated create with that upload and identical saved fields returns the existing item ID. A conflicting reuse fails with 409. General exactly-once item creation is not promised: a reload loses the in-memory upload cache, and creates without images retain their previous request semantics. Telegram delivery is best-effort and is not deduplicated by the media ledger.
+- Image-changing item PUTs require `X-Wishlist-Image-Version`: 428 means missing,
+  409 means stale/conflicting. Refresh the form before making a new image change.
+  A retry with the old version succeeds only if all supplied fields already match
+  the saved state. Unrelated-field updates need no image version.
+- While the same file remains selected, the browser caches its upload for save
+  retries. Creating with that upload and identical fields returns the existing
+  item ID; conflicting reuse returns 409. Reloading loses the cache. Creates
+  without images are not deduplicated.
+- Uploads time out after 10 seconds; unconfirmed outcomes return 502 and retain
+  their reservation. A retry may allocate another ID. Inspect old reservations
+  rather than assuming no provider asset exists.
+- Deletion times out after three seconds. Item success is still returned if later
+  cleanup fails; the ledger retains the pending work. Look for
+  `Wishlist image upload incomplete` or `Wishlist image cleanup deferred` in server
+  logs. Do not publish inventories or credentials when troubleshooting.
 
-### Compatibility and deletion boundary
+## Operator recovery
 
-The item schema, owner values, routes, upload response shape, supported JPEG/PNG/WebP formats, 5 MiB limit, and nullable removal DTO remain unchanged. The auxiliary collection is the only new persistence schema. No migration or automatic adoption of old assets runs.
+The tool uses the configured Firebase and Cloudinary environment. Identify the
+intended project/account first; start in isolated staging. There is no scheduled
+cleanup job. Verify [deployment/security precautions](../SECURITY.md) and stop if
+older deployments or other writers can bypass the ledger.
 
-Legacy images without ledger records can be replaced, removed, or have their items deleted. Their Cloudinary assets are retained because a prefix alone does not establish ownership. Their URLs/public IDs need manual inventory and review before any future adoption or deletion. Older in-flight uploads are similarly untracked and cannot be newly attached; refresh/reselect the file.
+```sh
+# Read-only inspection of the Firestore ledger and item references.
+bun scripts/reconcile-images.ts --dry-run
 
-`DELETE /api/images/delete` retains the Stage 1 session, origin, body-size, and input checks, but valid requests now return **410 Gone** without provider calls. It cannot delete a currently referenced image or any arbitrary shared-account asset. All application cleanup is internal to the media service.
+# After reviewing one candidate, apply only its explicit ID.
+bun scripts/reconcile-images.ts --apply --public-id wishlist/ID
+```
 
-### Validation and errors
+1. Review the dry-run output against a read-only Firestore view/export and
+   Cloudinary inventory. It does not list Cloudinary assets or discover untracked
+   legacy files. Check account ownership, public IDs, canonical URLs, and URL-only
+   item references. For uncertain uploads, inspect the provider inventory too.
+2. A recovery candidate must have both creation and last update at least **24 hours
+   old**. `attached` and `deleted` records are excluded. Retain anything marked
+   `referenced: true`. The inspector reads the full ledger; paginate it if needed
+   as the project grows.
+3. Apply only a reviewed ID. The tool rechecks account, age, state, and references
+   transactionally; a dry run is not a guarantee that the asset is still unused.
+   Results are `deleted`, `retained`, or `failed`; failure exits nonzero.
+4. Keep failed/deleting records and inspect again after the grace period.
+   Cloudinary `not found` counts as successful cleanup, so a crash after provider
+   deletion but before marking the ledger `deleted` can be retried safely.
 
-Upload checks compare declared MIME with PNG/JPEG/WebP header structure and size. Header checks are not a complete decoder: Cloudinary still decodes the image, with an explicit format allowlist. Returned public ID, account URL, resource/delivery type, format, dimensions, and byte count are validated before the ledger becomes ready. Metadata mapping is shared between browser and server.
+If ownership is unclear, references cannot be checked, the configured account has
+changed, or the ledger schema is unexpected, retain the asset and investigate.
+Never force an `attached` record into cleanup because its item appears missing;
+never edit states, erase tombstones, or recreate IDs to force a retry. Untracked
+legacy assets need a separately reviewed ownership/reference check before any
+manual deletion; they are not candidates for this tool.
 
-SDK timeouts are 10 seconds for upload and 3 seconds for deletion. Persistence errors propagate through existing API error responses. Upload outcomes that cannot be confirmed return a safe 502; the reservation remains for inspection. Item persistence success followed by cleanup failure still returns item success. Cleanup logs identify the asset and operation without dumping credentials or provider responses. Failed cleanup leaves a durable ledger record.
-
-### Operator recovery
-
-The tool uses configured server credentials and can affect the configured environment. No live reconciliation, provider scan, database write, or asset deletion was executed during implementation.
-
-Before any recovery, identify the intended environment/account privately. Use an operator-provided, read-only Firestore view/export of `items` and `wishlistImages` and a read-only Cloudinary console inventory to compare public IDs, canonical URLs, account ownership, and references. Check URL-only legacy records as well as `imagePublicId`. A `wishlist/` prefix or managed tag alone does not prove historical ownership. Do not print credentials or publish item inventories. The reconciliation tool does not inventory Cloudinary or discover untracked legacy assets.
-
-1. In an explicitly selected staging environment, inspect old records with `bun scripts/reconcile-images.ts --dry-run`. It only reads the application's Firestore ledger and reference queries, not a Cloudinary asset listing.
-2. Review the output. Candidates must be at least **24 hours old**, with no ledger update in the last 24 hours. Entries marked `referenced: true` must be retained. The small-app inspector reads the complete ledger; paginate it if the application grows substantially.
-3. After reviewing a specific candidate, apply **one explicit ID** with `bun scripts/reconcile-images.ts --apply --public-id wishlist/ID`. Applying rechecks age, state and references transactionally; a prior dry run does not authorize deleting an asset that has since been attached. Results are `deleted`, `retained`, or `failed`; failure sets a nonzero exit code.
-4. Keep failed/deleting records and rerun inspection after the grace period. Provider `not found` is a successful idempotent cleanup outcome. A crash after provider deletion but before marking `deleted` is therefore recoverable.
-
-For `uploading` candidates, compare provider inventory with the reservation before review; an uncertain upload is not evidence that no asset exists. Never force an `attached` record into cleanup because its item appears missing: investigate inconsistent/manual writes first. The tool intentionally excludes attached and deleted records. A blocked reference check, unexpected ledger schema, changed Cloudinary account, or unclear ownership means retain and investigate. Do not edit states, erase tombstones, or recreate public IDs to force a retry. Stop if older deployments can still write.
-
-Untracked legacy assets have no candidates in this dry-run. Preserve working references and retain unreferenced historical files until a separate, explicitly reviewed operator action establishes ownership and safety. No automatic migration/adoption is required. Invalid command-line options exit nonzero without loading provider or database modules.
-
-There is no scheduled job or new infrastructure. Recovery is an explicit operator action. Keep ledger access server-only under the existing deny-all client rules and verify deployed rules/IAM before enabling writes. No new composite index is required by these equality reference checks.
-
-### Cross-provider limits
-
-Firestore and Cloudinary cannot commit atomically. A crash after item commit and before cleanup leaves a retired asset for recovery. A crash or response loss during upload leaves a reservation; a late provider completion beyond the recovery grace period could leave an unassociated asset even after an earlier `not found` result. The tool cannot discover historic/unregistered assets or guarantee complete orphan recovery.
-
-The safety guarantee applies to writes through this application and its ledger. Direct database edits, permissive deployed client rules, other deployments running pre-ledger code, independent Cloudinary overwrites/deletes, or manual recreation of a retired public ID can bypass those invariants. Reference queries cover public IDs and the canonical URL written by this application, not arbitrary transformed URLs written outside it. Coordinate rollout and retire old writers; do not claim a universal cross-provider guarantee.
-
-## Verification
-
-Provider operations were mocked. Tests cover transaction rollback, lost commit responses, idempotent image retries, stale/concurrent replacements, attachment-versus-cleanup ordering, duplicate recovery claims, referenced-image retention, provider failures, upload validation, and dry-run/grace-period safety. Browser verification uses an in-memory Firestore substitute and mocked Cloudinary SDK with the actual Astro routes, services, repositories, and provider wrapper. The temporary browser harness is not part of CI; these tests do not verify real Firestore contention/retries or Cloudinary timing. See [production readiness](production-readiness.md) for release gates.
+Firestore and Cloudinary cannot commit atomically. An interrupted save may leave
+a retired asset; a very late upload can leave an unassociated asset even after a
+prior `not found` result. Recovery cannot guarantee discovery of all orphans.
+Reference checks cover canonical URLs written by this app, not arbitrary
+transformed URLs from other writers. Direct database/provider edits, permissive
+client rules, or pre-ledger deployments can bypass these safeguards. If rollback
+is necessary, preserve the ledger and use an Admin/ledger-compatible build.
