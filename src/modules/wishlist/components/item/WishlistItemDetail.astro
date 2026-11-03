@@ -15,7 +15,7 @@ const ownerName = getOwnerName(item.owner);
 const ownerPath = getOwnerPath(item.owner);
 ---
 
-<main class="mx-auto w-full max-w-4xl">
+<main class="mx-auto w-full max-w-6xl">
   <header class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-20">
     <div>
       <Button href={ownerPath} variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
@@ -39,7 +39,7 @@ const ownerPath = getOwnerPath(item.owner);
   <article
     class:list={[
       'grid grid-cols-1 gap-10 md:gap-16',
-      item.imageUrl ? 'md:grid-cols-[minmax(0,1fr)_18rem]' : 'md:grid-cols-1',
+      item.imageUrl ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : 'md:grid-cols-1',
     ]}
   >
     <section class="flex flex-col gap-8">
@@ -53,7 +53,7 @@ const ownerPath = getOwnerPath(item.owner);
       </div>
 
       <div class="flex flex-col gap-3">
-        <h1 class="text-theme-text font-serif text-4xl leading-tight font-light italic md:text-6xl">
+        <h1 class="text-theme-text font-serif text-4xl leading-tight break-words font-light italic md:text-6xl">
           {item.name}
         </h1>
 

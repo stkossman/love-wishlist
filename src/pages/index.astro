@@ -9,33 +9,26 @@ const { items, nextCursor } = await WishlistService.getItems();
 ---
 
 <Layout title="WISHLIST / INDEX">
-  <main class="mx-auto w-full max-w-2xl">
-    <nav class="relative mb-12 flex items-center justify-center gap-4 pt-10 md:mb-20">
-      <Button href="/andrii" variant="outline">
-        Andrii
-      </Button>
-      <Button href="/juliette" variant="outline">
-        Juliette
-      </Button>
-      <Button href="/sizes" variant="outline">
-        Sizes
-      </Button>
-    </nav>
-
-    <header class="mb-12 text-center md:mb-24">
-      <h1 class="font-serif text-4xl text-[var(--color-theme-text)] italic opacity-80 md:text-6xl">
-        Latest Additions
-      </h1>
+  <main class="collection-shell">
+    <header class="collection-heading">
+      <h1>Latest Additions</h1>
+      <p>Andrii & Juliette / Our collection of wishes</p>
     </header>
 
-    <section id="feed-container" class="flex min-h-[20vh] flex-col">
+    <section id="feed-container" class="wishlist-feed" aria-label="Our wishes">
       {items.map((item) => (
         <WishlistItemComponent item={item} />
       ))}
+      <p
+        id="empty-message"
+        class:list={['py-10 text-center opacity-70', items.length > 0 && 'hidden']}
+      >
+        No wishes yet. Add the first one.
+      </p>
     </section>
 
     <div class="flex justify-center py-12">
-      {items.length >= 6 && (
+      {nextCursor && (
         <button
           id="load-more-btn"
           class="border-b border-[var(--color-theme-text)] pb-1 font-mono text-xs tracking-widest uppercase transition-opacity hover:opacity-60 disabled:opacity-30"

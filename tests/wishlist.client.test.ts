@@ -24,6 +24,16 @@ class TestElement extends EventTarget {
   };
   matches = new Map<string, TestElement>();
   article: TestElement | null = null;
+  nextElementSibling: TestElement | null = null;
+  previousElementSibling: TestElement | null = null;
+  actions: TestElement[] = [];
+  focused = false;
+  focus() {
+    this.focused = true;
+  }
+  querySelectorAll() {
+    return this.actions;
+  }
   fragments: string[] = [];
   closest(selector: string) {
     return this.matches.get(selector) ?? null;
@@ -53,14 +63,18 @@ class TestElement extends EventTarget {
 
 const originalDocument = globalThis.document;
 const originalElement = globalThis.Element;
+const originalHTMLElement = globalThis.HTMLElement;
 const originalConfirm = globalThis.confirm;
 const originalAlert = globalThis.alert;
 let elements: Map<string, TestElement>;
 let doc: EventTarget;
+let menuButtons: TestElement[];
 let fetchMock: ReturnType<typeof spyOn<typeof globalThis, 'fetch'>>;
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 beforeEach(() => {
+  Reflect.set(WishlistCardEvents, 'initialized', false);
+  menuButtons = [];
   elements = new Map(
     ['load-more-btn', 'feed-container', 'end-message', 'empty-message'].map((id) => [
       id,
@@ -71,10 +85,11 @@ beforeEach(() => {
   elements.get('empty-message')!.classes.add('hidden');
   doc = Object.assign(new EventTarget(), {
     getElementById: (id: string) => elements.get(id) ?? null,
-    querySelectorAll: () => [],
+    querySelectorAll: (selector: string) => (selector === '.menu-btn' ? menuButtons : []),
   });
   globalThis.document = doc as unknown as Document;
   globalThis.Element = TestElement as unknown as typeof Element;
+  globalThis.HTMLElement = TestElement as unknown as typeof HTMLElement;
   globalThis.confirm = () => true;
   globalThis.alert = mock(() => {});
   fetchMock = spyOn(globalThis, 'fetch');
@@ -85,6 +100,7 @@ afterEach(() => {
   mock.restore();
   globalThis.document = originalDocument;
   globalThis.Element = originalElement;
+  globalThis.HTMLElement = originalHTMLElement;
   globalThis.confirm = originalConfirm;
   globalThis.alert = originalAlert;
 });
@@ -210,4 +226,50 @@ test('browser API updates preserve nullable image fields and GET checks error st
     status: 400,
     message: 'Invalid cursor',
   });
+});
+
+test('delegated menus keep one disclosure open and support arrows, Escape, outside clicks and focus', () => {
+  WishlistCardEvents.init();
+  const makeMenu = () => {
+    const button = new TestElement();
+    const panel = new TestElement();
+    button.nextElementSibling = panel;
+    panel.previousElementSibling = button;
+    button.matches.set('.menu-btn', button);
+    panel.matches.set('.menu-dropdown', panel);
+    panel.classes.add('hidden');
+    const edit = new TestElement();
+    const remove = new TestElement();
+    edit.matches.set('.menu-dropdown', panel);
+    panel.actions = [edit, remove];
+    menuButtons.push(button);
+    return { button, panel, edit, remove };
+  };
+  const first = makeMenu();
+  const second = makeMenu();
+  const dispatch = (type: string, target: TestElement, key?: string) => {
+    const event = new Event(type, { cancelable: true });
+    Object.defineProperties(event, { target: { value: target }, key: { value: key } });
+    doc.dispatchEvent(event);
+  };
+  dispatch('click', first.button);
+  expect(first.button.getAttribute('aria-expanded')).toBe('true');
+  expect(first.panel.classes.has('hidden')).toBe(false);
+  dispatch('click', second.button);
+  expect(first.button.getAttribute('aria-expanded')).toBe('false');
+  expect(first.panel.classes.has('hidden')).toBe(true);
+  dispatch('keydown', first.button, 'ArrowDown');
+  expect(first.edit.focused).toBe(true);
+  expect(second.panel.classes.has('hidden')).toBe(true);
+  dispatch('keydown', first.button, 'ArrowUp');
+  expect(first.remove.focused).toBe(true);
+  dispatch('keydown', first.edit, 'Escape');
+  expect(first.panel.classes.has('hidden')).toBe(true);
+  expect(first.button.focused).toBe(true);
+  dispatch('click', first.button);
+  dispatch('focusin', new TestElement());
+  expect(first.button.getAttribute('aria-expanded')).toBe('false');
+  dispatch('click', first.button);
+  dispatch('click', new TestElement());
+  expect(first.panel.classes.has('hidden')).toBe(true);
 });

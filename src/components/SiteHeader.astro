@@ -1,0 +1,44 @@
+---
+import { Heart } from '@lucide/astro';
+const path = Astro.url.pathname;
+const owner = path.startsWith('/andrii')
+  ? '/andrii'
+  : path.startsWith('/juliette')
+    ? '/juliette'
+    : null;
+---
+
+<header class="site-header">
+  <a class="site-identity" href="/" aria-current={path === '/' ? 'page' : undefined}>
+    Love Wishlist
+    <Heart size={14} stroke-width={1.5} aria-hidden="true" />
+  </a>
+  <div class="site-navigation">
+    <nav aria-label="Collections" class="owner-navigation">
+      <a href="/andrii" aria-current={owner === '/andrii' ? 'page' : undefined}>
+        Andrii
+      </a>
+      <span aria-hidden="true">/</span>
+      <a href="/juliette" aria-current={owner === '/juliette' ? 'page' : undefined}>
+        Juliette
+      </a>
+    </nav>
+    <nav aria-label="Personal reference" class="utility-navigation">
+      <a href="/sizes" aria-current={path === '/sizes' ? 'page' : undefined}>
+        Sizes
+      </a>
+      <span aria-hidden="true">/</span>
+      <a href="/settings" aria-current={path === '/settings' ? 'page' : undefined}>
+        Settings
+      </a>
+    </nav>
+    <nav aria-label="Collection view" class="collection-navigation">
+      <a href={owner ?? '/'} aria-current={path === (owner ?? '/') ? 'page' : undefined}>
+        All
+      </a>
+      <span aria-disabled="true">
+        For occasions <small>Coming later</small>
+      </span>
+    </nav>
+  </div>
+</header>

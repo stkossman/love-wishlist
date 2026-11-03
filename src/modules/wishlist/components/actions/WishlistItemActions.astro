@@ -3,31 +3,27 @@ import { Ellipsis } from '@lucide/astro';
 
 interface Props {
   itemId: string;
+  itemName?: string;
   redirectTo?: string;
   alwaysVisible?: boolean;
   class?: string;
 }
 
-const {
-  itemId,
-  redirectTo,
-  alwaysVisible = false,
-  class: className = 'absolute top-4 right-0 z-20',
-} = Astro.props;
+const { itemId, itemName, redirectTo, class: className = 'card-actions' } = Astro.props;
 ---
 
 <div class={className}>
   <button
-    class:list={[
-      'menu-btn text-theme-text hover:bg-theme-text hover:text-theme-bg active:bg-theme-text active:text-theme-bg flex h-8 w-8 cursor-pointer items-center justify-center rounded-full opacity-100 transition-opacity duration-300',
-      !alwaysVisible && 'lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100',
-    ]}
-    aria-label="Options"
+    class="menu-btn"
+    type="button"
+    aria-label={itemName ? `Options for ${itemName}` : 'Item options'}
+    aria-expanded="false"
+    aria-controls={`item-actions-${itemId}`}
   >
     <Ellipsis class="h-4 w-4" />
   </button>
 
-  <div class="menu-dropdown absolute right-0 z-30 mt-2 hidden w-32 border border-[#1a1a1a] bg-white py-1 shadow-xl">
+  <div id={`item-actions-${itemId}`} class="menu-dropdown hidden" aria-label="Item actions">
     <a
       href={`/edit/${itemId}`}
       class="block w-full px-4 py-3 text-left font-mono text-sm tracking-widest text-[#1a1a1a] uppercase transition-colors hover:bg-[#1a1a1a] hover:text-white md:py-2 md:text-xs"

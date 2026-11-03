@@ -1,7 +1,7 @@
 ---
 import WishlistItemComponent from '@/components/WishListItem.astro';
 import Button from '@/components/ui/Button.astro';
-import { ArrowLeft, Asterisk } from '@lucide/astro';
+import { Asterisk } from '@lucide/astro';
 import type { Owner, WishlistPage } from '../wishlist.types';
 import { getOwnerName } from '../wishlist.utils';
 interface Props extends WishlistPage {
@@ -10,22 +10,13 @@ interface Props extends WishlistPage {
 const { owner, items, nextCursor } = Astro.props;
 ---
 
-<main data-owner-feed={owner} class="mx-auto w-full max-w-2xl">
-  <header class="border-theme-accent mt-4 mb-12 flex items-end justify-between border-b pb-4 md:mt-10 md:mb-24">
-    <div>
-      <Button href="/" variant="outline" class="border-opacity-30 mb-6 px-3 py-1 text-xs">
-        <ArrowLeft class="mr-1 h-4 w-4" /> Back
-      </Button>
-      <h1 class="text-theme-accent font-serif text-4xl italic md:text-6xl">
-        {getOwnerName(owner)}
-      </h1>
-    </div>
-    <p class="font-mono text-xs opacity-50">
-      {owner === 'me' ? 'HIS COLLECTION' : 'HER COLLECTION'}
-    </p>
+<main data-owner-feed={owner} class="collection-shell">
+  <header class="collection-heading">
+    <h1>{getOwnerName(owner)}</h1>
+    <p>{owner === 'me' ? 'His collection of wishes' : 'Her collection of wishes'}</p>
   </header>
 
-  <section id="feed-container" class="flex flex-col">
+  <section id="feed-container" class="wishlist-feed" aria-label={`${getOwnerName(owner)}’s wishes`}>
     {items.map((item) => (
       <WishlistItemComponent item={item} />
     ))}

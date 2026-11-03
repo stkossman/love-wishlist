@@ -1,84 +1,62 @@
 ---
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
-import { getOwnerInitial, getOwnerItemPath } from '@/modules/wishlist/wishlist.utils';
+import { getOwnerName, getOwnerItemPath } from '@/modules/wishlist/wishlist.utils';
 import WishlistItemActions from '@/modules/wishlist/components/actions/WishlistItemActions.astro';
-import { ArrowUpRight } from '@lucide/astro';
+import { ArrowUpRight, Heart } from '@lucide/astro';
 
 interface Props {
   item: WishlistItem;
 }
-
 const { item } = Astro.props;
-const ownerLabel = getOwnerInitial(item.owner);
 const itemPath = getOwnerItemPath(item.owner, item.id);
 ---
 
-<article
-  class:list={[
-    'group relative flex flex-col gap-6 py-8 transition-opacity duration-500 ease-out md:py-10',
-    item.imageUrl && 'md:min-h-48 md:pr-44',
-  ]}
->
-  <div class="bg-theme-border group-hover:bg-theme-text absolute top-0 left-0 h-px w-full opacity-20 transition-opacity duration-300 group-hover:opacity-100"></div>
-
-  <WishlistItemActions itemId={item.id} />
-
-  <div class="flex items-center gap-3">
-    <span class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50">
-      {ownerLabel}
-    </span>
-
-    <span class="text-theme-text font-mono text-[10px] tracking-[0.15em] uppercase opacity-40">
-      {item.topic}
-    </span>
-  </div>
-
-  <div class="flex flex-col gap-1">
-    <h2 class="text-theme-text font-serif text-3xl leading-tight font-light italic md:text-4xl">
-      <a href={itemPath} class="hover:text-theme-accent transition-colors duration-300">
-        {item.name}
-      </a>
-      {item.url && (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open reference"
-          class="group/link hover:text-theme-accent transition-colors duration-300"
-        >
-          <ArrowUpRight class="mb-2 ml-0.5 inline-block h-4 w-4 stroke-[1.5] transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-        </a>
-      )}
-    </h2>
-
-    {item.price && (
-      <p class="text-theme-text mt-1 font-mono text-xs tracking-wide opacity-60">{item.price}</p>
-    )}
-  </div>
-
-  {item.specs && item.specs.length > 0 && (
-    <div class="mt-2 flex flex-wrap gap-x-8 gap-y-4 opacity-70 transition-opacity lg:opacity-50 lg:group-hover:opacity-100">
-      {item.specs.map((spec) => (
-        <div class="flex flex-col gap-1">
-          <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
-            {spec.label}
-          </span>
-          <span class="text-theme-text font-mono text-xs">{spec.value}</span>
-        </div>
-      ))}
-    </div>
-  )}
-
-  {item.imageUrl && (
-    <div class="border-theme-border bg-theme-text/5 mt-1 flex h-44 w-full items-center justify-center overflow-hidden border p-3 opacity-100 transition-opacity md:absolute md:top-1/2 md:right-0 md:mt-0 md:h-36 md:w-36 md:-translate-y-1/2 lg:opacity-75 lg:group-hover:opacity-100">
+<article class="wish-card group">
+  <WishlistItemActions itemId={item.id} itemName={item.name} />
+  <a href={itemPath} class="wish-image" aria-label={`View ${item.name}`}>
+    {item.imageUrl ? (
       <img
         src={item.imageUrl}
-        alt={item.name}
+        alt=""
         width={item.imageWidth}
         height={item.imageHeight}
         loading="lazy"
-        class="h-full w-full object-contain"
       />
+    ) : (
+      <span class="wish-image-fallback" aria-hidden="true">
+        <Heart size={48} stroke-width={1} />A wish, still taking shape.
+      </span>
+    )}
+  </a>
+  <div class="wish-copy">
+    <div class="wish-meta">
+      <span>{item.topic}</span>
+      <span class="wish-owner">{getOwnerName(item.owner)}</span>
     </div>
-  )}
+    <h2>
+      <a href={itemPath}>{item.name}</a>
+    </h2>
+    {item.price && <p class="wish-price">{item.price}</p>}
+    {item.specs && item.specs.length > 0 && (
+      <dl class="wish-specs">
+        {item.specs.map((spec) => (
+          <div>
+            <dt>{spec.label}</dt>
+            <dd>{spec.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+    {item.url && (
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="wish-reference"
+        aria-label={`Open reference for ${item.name} (new tab)`}
+      >
+        Reference <ArrowUpRight size={14} />
+      </a>
+    )}
+  </div>
 </article>
