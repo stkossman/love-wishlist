@@ -1,0 +1,30 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import WishlistOwnerFeed from '@/modules/wishlist/components/WishlistOwnerFeed.astro';
+import { WishlistService } from '@/modules/wishlist/wishlist.service';
+import { parseOccasionFilters } from '@/modules/wishlist/wishlist.validation';
+import { errorResponse } from '@/lib/server/http';
+const params = new URLSearchParams(Astro.url.searchParams);
+params.set('collection', 'occasions');
+let filters;
+let page;
+try {
+  filters = parseOccasionFilters(params);
+  page = await WishlistService.getItems('me', undefined, filters);
+} catch (error) {
+  return errorResponse(error);
+}
+---
+
+<Layout title="ANDRII / OCCASIONS">
+  <style slot="head">
+    :root {
+      --color-theme-bg: #1a1a1a;
+      --color-theme-text: #f5f5f5;
+      --color-theme-accent: #c02026;
+      --color-theme-border: rgba(245, 245, 245, 0.2);
+    }
+  </style>
+
+  <WishlistOwnerFeed owner="me" filters={filters} {...page} />
+</Layout>

@@ -1,4 +1,5 @@
 import { HttpError } from '@/lib/server/http';
+import { readOccasion, readOccasionFilters } from './occasion';
 import { getServerEnv } from '@/lib/server/env';
 import { isWishlistImagePublicId, WISHLIST_IMAGE_MAX_SIZE_BYTES } from './constants/image';
 import { getDescriptionValidationError, normalizeDescription } from './utils/description';
@@ -21,6 +22,7 @@ const ITEM_FIELDS = [
   'url',
   'description',
   'specs',
+  'occasion',
   ...IMAGE_FIELDS,
 ];
 
@@ -157,7 +159,27 @@ function parseFields(input: unknown, update: boolean): UpdateItemDTO {
     result.description = normalizeDescription(body.description) ?? '';
   }
   if (Object.hasOwn(body, 'specs')) result.specs = parseSpecs(body.specs);
+  if (Object.hasOwn(body, 'occasion')) {
+    if (update && body.occasion === null) result.occasion = null;
+    else {
+      const occasion = readOccasion(body.occasion);
+      if (!occasion)
+        throw new HttpError(
+          400,
+          'Invalid occasion: choose a type, year and desire from 1 to 5; Other requires a label'
+        );
+      result.occasion = occasion;
+    }
+  }
   return { ...result, ...parseImage(body, update) };
+}
+
+export function parseOccasionFilters(params: URLSearchParams) {
+  try {
+    return readOccasionFilters(params);
+  } catch (error) {
+    throw new HttpError(400, error instanceof Error ? error.message : 'Invalid occasion filters');
+  }
 }
 
 export function parseCreateItem(input: unknown): CreateItemDTO {

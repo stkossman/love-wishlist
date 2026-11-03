@@ -1,4 +1,5 @@
 ---
+import WishlistOccasionField from './WishlistOccasionField.astro';
 import Button from '@/components/ui/Button.astro';
 import WishlistDescriptionField from '../description/WishlistDescriptionField.astro';
 import WishlistOwnerSelector from './WishlistOwnerSelector.astro';
@@ -117,6 +118,8 @@ const { mode, item } = Astro.props;
             class="w-full min-w-0 border-b border-neutral-400 bg-transparent py-2 font-sans text-sm text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none"
           />
         </div>
+
+        <WishlistOccasionField occasion={item?.occasion} />
 
         <WishlistSpecsField
           specs={item?.specs}

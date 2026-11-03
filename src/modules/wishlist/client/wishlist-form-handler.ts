@@ -1,3 +1,4 @@
+import { readOccasion } from '../occasion';
 import { WishlistImageClient } from './wishlist-image-client';
 import { WishlistClient } from './wishlist-api-client';
 import { ApiError } from './wishlist-auth-client';
@@ -23,7 +24,21 @@ export function serializeWishlistForm(data: FormData, specs: WishlistSpec[]): Cr
   const description = normalizeDescription(data.get('description')) ?? '';
   const error = getDescriptionValidationError(description);
   if (error) throw new Error(error);
+  const type = text('occasionType');
+  const occasion = type
+    ? readOccasion({
+        type,
+        year: Number(text('occasionYear')),
+        desire: Number(text('occasionDesire')),
+        ...(type === 'other' ? { customLabel: text('occasionLabel') } : {}),
+      })
+    : undefined;
+  if (type && !occasion)
+    throw new Error(
+      'Choose an occasion, a valid year and 1 to 5 hearts. Other requires a celebration name.'
+    );
   return {
+    ...(occasion ? { occasion } : {}),
     owner,
     topic: text('topic'),
     name: text('name'),
@@ -90,7 +105,11 @@ export function initWishlistForm(root: HTMLElement): void {
       if (mode === 'create') {
         await WishlistClient.create({ ...payload, ...imageFields });
       } else {
-        const update: UpdateItemDTO = { ...payload, ...imageFields };
+        const update: UpdateItemDTO = {
+          ...payload,
+          ...imageFields,
+          occasion: payload.occasion ?? null,
+        };
         if (!selection.file && selection.removeExisting) {
           Object.assign(update, {
             imageUrl: null,

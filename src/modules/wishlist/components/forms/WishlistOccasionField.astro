@@ -1,0 +1,129 @@
+---
+import { OCCASIONS, MIN_OCCASION_YEAR, MAX_OCCASION_YEAR } from '../../occasion';
+import { Heart } from '@lucide/astro';
+import type { WishlistOccasion } from '../../wishlist.types';
+interface Props {
+  occasion?: WishlistOccasion;
+}
+const { occasion } = Astro.props;
+const inputClass =
+  'w-full min-w-0 border-b border-neutral-400 bg-transparent py-2 text-sm text-[#1a1a1a] focus:border-[#1a1a1a] focus:outline-none';
+---
+
+<fieldset data-occasion-field class="min-w-0 text-[#1a1a1a]">
+  <legend class="font-serif text-2xl italic">
+    For an occasion <span class="ml-2 font-sans text-xs not-italic opacity-70">Optional</span>
+  </legend>
+  <p id="occasion-help" class="mt-2 mb-5 text-xs leading-relaxed opacity-70">
+    Give this wish a celebration. Choose “No occasion” to remove the association and keep the wish.
+  </p>
+  <label for="occasion-type" class="mb-1 block text-xs">
+    Occasion
+  </label>
+  <select
+    id="occasion-type"
+    name="occasionType"
+    aria-describedby="occasion-help"
+    class={inputClass}
+  >
+    <option value="">No occasion</option>
+    {Object.entries(OCCASIONS).map(([type, label]) => (
+      <option value={type} selected={occasion?.type === type}>
+        {label}
+      </option>
+    ))}
+  </select>
+  <div data-occasion-details hidden={!occasion} class="mt-5 space-y-5">
+    <div data-custom-occasion hidden={occasion?.type !== 'other'}>
+      <label for="occasion-label" class="mb-1 block text-xs">
+        Celebration name
+      </label>
+      <input
+        id="occasion-label"
+        name="occasionLabel"
+        type="text"
+        maxlength="80"
+        value={occasion?.customLabel}
+        disabled={occasion?.type !== 'other'}
+        required={occasion?.type === 'other'}
+        class={inputClass}
+      />
+    </div>
+    <div>
+      <label for="occasion-year" class="mb-1 block text-xs">
+        Year
+      </label>
+      <input
+        id="occasion-year"
+        name="occasionYear"
+        type="number"
+        min={MIN_OCCASION_YEAR}
+        max={MAX_OCCASION_YEAR}
+        step="1"
+        value={occasion?.year ?? new Date().getFullYear()}
+        required
+        disabled={!occasion}
+        class={inputClass}
+      />
+    </div>
+    <fieldset>
+      <legend class="mb-2 text-xs">How much would you love it?</legend>
+      <div data-desire-rating class="inline-flex items-center">
+        {[1, 2, 3, 4, 5].map((level) => (
+          <label
+            data-desire-option
+            class="relative flex size-10 shrink-0 cursor-pointer items-center justify-center pointer-coarse:size-11"
+          >
+            <input
+              type="radio"
+              name="occasionDesire"
+              value={level}
+              checked={(occasion?.desire ?? 1) === level}
+              disabled={!occasion}
+              required
+              class="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
+            />
+            <span
+              class="flex size-8 items-center justify-center peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#1a1a1a]"
+              aria-hidden="true"
+            >
+              <Heart
+                data-desire-heart
+                data-filled={level <= (occasion?.desire ?? 1) ? 'true' : 'false'}
+                size={21}
+                stroke-width={1.5}
+                class="fill-transparent data-[filled=true]:fill-current"
+              />
+            </span>
+            <span class="sr-only">{level} out of 5 hearts</span>
+          </label>
+        ))}
+        <span data-desire-counter aria-hidden="true" class="ml-3 text-xs tabular-nums opacity-70">
+          {occasion?.desire ?? 1}/5
+        </span>
+      </div>
+    </fieldset>
+  </div>
+</fieldset>
+<script>
+  import { initDesireRating } from '../../client/wishlist-desire-rating';
+  document.querySelectorAll<HTMLElement>('[data-occasion-field]').forEach((root) => {
+    const rating = root.querySelector<HTMLElement>('[data-desire-rating]');
+    if (rating) initDesireRating(rating);
+    const select = root.querySelector('select')!;
+    const details = root.querySelector<HTMLElement>('[data-occasion-details]')!;
+    const custom = root.querySelector<HTMLElement>('[data-custom-occasion]')!;
+    const sync = () => {
+      details.hidden = !select.value;
+      details.querySelectorAll('input').forEach((input) => {
+        input.disabled = !select.value;
+      });
+      custom.hidden = select.value !== 'other';
+      const label = custom.querySelector('input')!;
+      label.disabled = select.value !== 'other';
+      label.required = select.value === 'other';
+    };
+    select.addEventListener('change', sync);
+    sync();
+  });
+</script>

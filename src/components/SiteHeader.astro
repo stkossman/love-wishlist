@@ -1,6 +1,7 @@
 ---
 import { Heart } from '@lucide/astro';
-const path = Astro.url.pathname;
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const occasions = path.endsWith('/occasions');
 const owner = path.startsWith('/andrii')
   ? '/andrii'
   : path.startsWith('/juliette')
@@ -27,13 +28,19 @@ const owner = path.startsWith('/andrii')
       aria-label="Collections"
       class="owner-navigation flex flex-wrap items-baseline gap-3 font-serif text-[1.75rem]"
     >
-      <a href="/andrii" aria-current={owner === '/andrii' ? 'page' : undefined}>
+      <a
+        href={occasions ? '/andrii/occasions' : '/andrii'}
+        aria-current={owner === '/andrii' ? 'page' : undefined}
+      >
         Andrii
       </a>
       <span aria-hidden="true" class="opacity-65">
         /
       </span>
-      <a href="/juliette" aria-current={owner === '/juliette' ? 'page' : undefined}>
+      <a
+        href={occasions ? '/juliette/occasions' : '/juliette'}
+        aria-current={owner === '/juliette' ? 'page' : undefined}
+      >
         Juliette
       </a>
     </nav>
@@ -58,9 +65,9 @@ const owner = path.startsWith('/andrii')
       <a href={owner ?? '/'} aria-current={path === (owner ?? '/') ? 'page' : undefined}>
         All
       </a>
-      <span aria-disabled="true" class="opacity-65">
-        For occasions <small class="ml-1.5 text-[.625rem]">Coming later</small>
-      </span>
+      <a href={`${owner ?? ''}/occasions`} aria-current={occasions ? 'page' : undefined}>
+        For occasions
+      </a>
     </nav>
   </div>
 </header>

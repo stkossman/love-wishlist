@@ -1,4 +1,5 @@
 ---
+import OccasionSummary from '@/modules/wishlist/components/OccasionSummary.astro';
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
 import { getOwnerName, getOwnerItemPath } from '@/modules/wishlist/wishlist.utils';
 import WishlistItemActions from '@/modules/wishlist/components/actions/WishlistItemActions.astro';
@@ -48,6 +49,7 @@ const itemPath = getOwnerItemPath(item.owner, item.id);
         {item.name}
       </a>
     </h2>
+    <OccasionSummary occasion={item.occasion} />
     {item.price && <p class="wish-price mt-3 text-[.8125rem] opacity-80">{item.price}</p>}
     {item.specs && item.specs.length > 0 && (
       <dl class="wish-specs mt-5 flex flex-wrap gap-x-8 gap-y-4 text-xs">

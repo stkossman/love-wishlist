@@ -1,4 +1,4 @@
-import type { OwnerFilter } from '@/modules/wishlist/wishlist.types';
+import type { OccasionFilters, OwnerFilter } from '@/modules/wishlist/wishlist.types';
 import { ApiError, checkResponse } from './wishlist-auth-client';
 
 export class WishlistFeedHandler {
@@ -11,7 +11,10 @@ export class WishlistFeedHandler {
   private loading = false;
   private refreshRequired = false;
 
-  constructor(ownerFilter: OwnerFilter = null) {
+  constructor(
+    ownerFilter: OwnerFilter = null,
+    private filters: OccasionFilters = {}
+  ) {
     this.loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement;
     this.container = document.getElementById('feed-container');
     this.endMessage = document.getElementById('end-message');
@@ -44,6 +47,9 @@ export class WishlistFeedHandler {
     try {
       const params = new URLSearchParams();
       if (this.ownerFilter) params.append('owner', this.ownerFilter);
+      if (this.filters.occasions) params.set('collection', 'occasions');
+      if (this.filters.type) params.set('occasion', this.filters.type);
+      if (this.filters.year) params.set('year', String(this.filters.year));
       params.append('cursor', cursor);
 
       const res = await fetch(`${WishlistFeedHandler.FRAGMENT_URL}?${params.toString()}`);

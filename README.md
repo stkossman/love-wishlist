@@ -51,6 +51,8 @@ The Bun suite covers API/security contracts, cursor precision, repository behavi
 
 ## Production and recovery
 
+For the optional occasion model, routes, query filters, required composite indexes, and rollout steps, see [For occasions](docs/occasions.md).
+
 Read [SECURITY.md](SECURITY.md), [media lifecycle and operator recovery](docs/media-lifecycle.md), and [production readiness and rollout](docs/production-readiness.md) before enabling writes. Deployed rules, IAM, indexes, WAF, provider permissions, and environment isolation require manual verification. The upgraded adapter authenticates internal path overrides; distributed login throttling still needs external verification. See [dependency versions, migration and residual advisories](docs/dependency-update.md).
 
 Legacy image records continue to work without migration. Untracked historical assets are retained; no automatic adoption or deletion is performed. Firestore and Cloudinary cannot commit atomically, so interrupted operations need conservative recovery.

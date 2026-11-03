@@ -1,3 +1,4 @@
+import { OCCASIONS, readOccasion } from './occasion';
 import { HttpError } from '@/lib/server/http';
 import { WishlistMediaRepository } from './wishlist-media.repository';
 import { imageVersion } from './wishlist-image-version';
@@ -14,6 +15,7 @@ import { decodeCursor, encodeCursor } from './wishlist.cursor';
 import { isOwner, getSafeHttpUrl } from './wishlist.utils';
 import type {
   CreateItemDTO,
+  OccasionFilters,
   Owner,
   UpdateItemDTO,
   WishlistImageFields,
@@ -34,13 +36,21 @@ const IMAGE_FIELD_KEYS = [
 ] as const satisfies readonly (keyof WishlistImageFields)[];
 
 export class WishlistRepository {
-  static async findAll(owner?: Owner, cursorStr?: string): Promise<WishlistPage> {
-    const cursor = cursorStr === undefined ? undefined : decodeCursor(cursorStr, owner);
+  static async findAll(
+    owner?: Owner,
+    cursorStr?: string,
+    filters: OccasionFilters = {}
+  ): Promise<WishlistPage> {
+    const cursor = cursorStr === undefined ? undefined : decodeCursor(cursorStr, owner, filters);
     let query: Query = getDatabase()
       .collection(COLLECTION_NAME)
       .orderBy('createdAt', 'desc')
       .orderBy(FieldPath.documentId(), 'desc');
     if (owner) query = query.where('owner', '==', owner);
+    if (filters.type) query = query.where('occasion.type', '==', filters.type);
+    else if (filters.occasions || filters.year)
+      query = query.where('occasion.type', 'in', Object.keys(OCCASIONS));
+    if (filters.year) query = query.where('occasion.year', '==', filters.year);
     if (cursor) query = query.startAfter(cursor.timestamp, cursor.id);
     const snapshot = await query.limit(PAGE_SIZE).get();
     const items = snapshot.docs.map((doc) => this.toItem(doc.id, doc.data()));
@@ -49,7 +59,7 @@ export class WishlistRepository {
     if (snapshot.docs.length === PAGE_SIZE && last) {
       const timestamp: unknown = last.data().createdAt;
       if (!(timestamp instanceof Timestamp)) throw new Error('Invalid stored pagination timestamp');
-      nextCursor = encodeCursor(timestamp, last.id, owner);
+      nextCursor = encodeCursor(timestamp, last.id, owner, filters);
     }
     return { items, nextCursor };
   }
@@ -100,6 +110,8 @@ export class WishlistRepository {
         return [{ label: spec.label, value: spec.value }];
       });
     }
+    const occasion = readOccasion(data.occasion);
+    if (occasion) item.occasion = occasion;
     return item;
   }
 
@@ -139,7 +151,7 @@ export class WishlistRepository {
 
   private static matchesUpdate(current: Record<string, unknown>, data: UpdateItemDTO): boolean {
     return Object.entries(data).every(([key, value]) =>
-      value === null && IMAGE_FIELD_KEYS.some((field) => field === key)
+      value === null && (key === 'occasion' || IMAGE_FIELD_KEYS.some((field) => field === key))
         ? current[key] == null
         : JSON.stringify(current[key]) === JSON.stringify(value)
     );
@@ -178,6 +190,7 @@ export class WishlistRepository {
         ? { ...data, ...mapImageMetadata(image.image) }
         : { ...data };
       if (!newId) for (const key of IMAGE_FIELD_KEYS) update[key] = FieldValue.delete();
+      if (data.occasion === null) update.occasion = FieldValue.delete();
       transaction.update(ref, update);
       if (newId) WishlistMediaRepository.attach(transaction, newId, id);
       if (cleanupImageId) WishlistMediaRepository.retire(transaction, cleanupImageId);
@@ -190,6 +203,7 @@ export class WishlistRepository {
       throw new Error('Image updates require the transactional media path');
     }
     const updateData: DocumentData = { ...data };
+    if (data.occasion === null) updateData.occasion = FieldValue.delete();
     try {
       await getDatabase().collection(COLLECTION_NAME).doc(id).update(updateData);
       return true;

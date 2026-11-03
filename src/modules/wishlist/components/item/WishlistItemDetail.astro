@@ -1,4 +1,5 @@
 ---
+import OccasionSummary from '../OccasionSummary.astro';
 import Button from '@/components/ui/Button.astro';
 import WishlistItemActions from '@/modules/wishlist/components/actions/WishlistItemActions.astro';
 import WishlistDescription from '@/modules/wishlist/components/description/WishlistDescription.astro';
@@ -62,6 +63,7 @@ const ownerPath = getOwnerPath(item.owner);
         )}
       </div>
 
+      <OccasionSummary occasion={item.occasion} />
       <WishlistDescription description={item.description} />
 
       {item.specs && item.specs.length > 0 && (

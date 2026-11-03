@@ -3,6 +3,7 @@ import { getServerEnv } from '@/lib/server/env';
 import { WishlistRepository } from './wishlist.repository';
 import type {
   CreateItemDTO,
+  OccasionFilters,
   Owner,
   UpdateItemDTO,
   WishlistItem,
@@ -91,8 +92,12 @@ export class WishlistService {
     return id;
   }
 
-  static async getItems(owner?: Owner, cursor?: string): Promise<WishlistPage> {
-    return await WishlistRepository.findAll(owner, cursor);
+  static async getItems(
+    owner?: Owner,
+    cursor?: string,
+    filters: OccasionFilters = {}
+  ): Promise<WishlistPage> {
+    return await WishlistRepository.findAll(owner, cursor, filters);
   }
 
   static async getItem(id: string): Promise<WishlistItem | null> {

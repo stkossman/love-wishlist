@@ -72,6 +72,22 @@ let menuButtons: TestElement[];
 let fetchMock: ReturnType<typeof spyOn<typeof globalThis, 'fetch'>>;
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+test('dynamic cards retain occasion, year and owner filters', async () => {
+  new WishlistFeedHandler('her', { occasions: true, type: 'birthday', year: 2027 });
+  fetchMock.mockResolvedValueOnce(new Response('<article>Birthday 2027</article>'));
+  elements.get('load-more-btn')!.dispatchEvent(new Event('click'));
+  await tick();
+  const url = new URL(String(fetchMock.mock.calls[0][0]), 'https://wishlist.test');
+  expect(Object.fromEntries(url.searchParams)).toEqual({
+    owner: 'her',
+    collection: 'occasions',
+    occasion: 'birthday',
+    year: '2027',
+    cursor: 'original-cursor',
+  });
+  expect(elements.get('feed-container')!.fragments).toEqual(['<article>Birthday 2027</article>']);
+});
+
 beforeEach(() => {
   Reflect.set(WishlistCardEvents, 'initialized', false);
   menuButtons = [];
