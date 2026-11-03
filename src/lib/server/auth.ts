@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { APIRoute, AstroCookies } from 'astro';
 import { errorResponse, HttpError } from './http';
+import { getServerEnv } from './env';
 
 export const SESSION_COOKIE = 'wishlist_session';
 export const SESSION_TTL_SECONDS = 8 * 60 * 60;
@@ -11,8 +12,8 @@ export interface AuthConfig {
 }
 
 export function getAuthConfig(): AuthConfig {
-  const pin = process.env.SECRET_PIN;
-  const secret = process.env.SESSION_SECRET;
+  const pin = getServerEnv('SECRET_PIN');
+  const secret = getServerEnv('SESSION_SECRET');
   if (!pin || !/^\d{4}$/.test(pin) || !secret || Buffer.byteLength(secret) < 32) {
     throw new HttpError(503, 'Authentication is unavailable');
   }

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { getServerEnv } from '@/lib/server/env';
 import { HttpError } from '@/lib/server/http';
 import { uploadWishlistImage, deleteWishlistImage } from '@/lib/server/cloudinary';
 import { WishlistMediaRepository } from './wishlist-media.repository';
@@ -40,7 +41,7 @@ export function validateImageContents(buffer: Buffer, mime: string): void {
 
 export class WishlistMediaService {
   private static cloudName(): string {
-    const name = process.env.CLOUDINARY_CLOUD_NAME;
+    const name = getServerEnv('CLOUDINARY_CLOUD_NAME');
     if (!name) throw new HttpError(503, 'Image configuration is unavailable');
     return name;
   }

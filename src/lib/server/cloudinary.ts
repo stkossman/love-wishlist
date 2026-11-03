@@ -1,5 +1,6 @@
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 import { HttpError } from './http';
+import { getServerEnv } from './env';
 import { isWishlistImagePublicId } from '@/modules/wishlist/constants/image';
 import { parseUpdateItem } from '@/modules/wishlist/wishlist.validation';
 import { mapImageMetadata } from '@/modules/wishlist/utils/image';
@@ -14,7 +15,7 @@ const THUMBNAIL_TRANSFORMATION = {
 } as const;
 
 function getRequiredEnv(name: string) {
-  const value = process.env[name];
+  const value = getServerEnv(name);
 
   if (!value) {
     throw new Error(`Missing required Cloudinary environment variable: ${name}`);

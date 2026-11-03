@@ -1,4 +1,5 @@
 import { WishlistMediaService } from './wishlist-media.service';
+import { getServerEnv } from '@/lib/server/env';
 import { WishlistRepository } from './wishlist.repository';
 import type {
   CreateItemDTO,
@@ -12,8 +13,8 @@ import { escapeHtml, getOwnerTelegramLabel, getSafeHttpUrl } from './wishlist.ut
 
 export class WishlistService {
   private static getTelegramConfig() {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+    const token = getServerEnv('TELEGRAM_BOT_TOKEN');
+    const chatId = getServerEnv('TELEGRAM_CHAT_ID');
     if (!token || !chatId) return null;
     return { token, chatId };
   }

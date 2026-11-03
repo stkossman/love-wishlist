@@ -22,7 +22,7 @@ Server-only configuration:
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Image upload/deletion in the intended account                                |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`                               | Optional; notifications are disabled unless both are set                     |
 
-Server code reads configuration from runtime `process.env`; Bun loads `.env` for local commands. Never prefix credentials with `PUBLIC_`. Development and Preview must not use production credentials or media. See [.env.example](.env.example).
+Server code uses `getServerEnv()` to read runtime `process.env` first, with an Astro `.env` fallback only in development. Bun loads `.env` for standalone scripts and tests. Production builds do not embed the fallback values. On Vercel, configure the variables above in the project settings for each target environment (Production and Preview), then redeploy after changes. Never prefix credentials with `PUBLIC_`. Development and Preview must not use production credentials or media. See [.env.example](.env.example).
 
 ## Architecture
 
