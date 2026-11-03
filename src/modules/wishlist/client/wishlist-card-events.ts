@@ -1,4 +1,5 @@
 import { WishlistClient } from './wishlist-api-client';
+import { requestMutationAccess } from './wishlist-auth-client';
 
 export class WishlistCardEvents {
   static init() {
@@ -43,6 +44,8 @@ export class WishlistCardEvents {
       }
 
       try {
+        deleteBtn.disabled = true;
+        if (!(await requestMutationAccess())) return;
         await WishlistClient.delete(id);
         if (redirectTo) {
           window.location.href = redirectTo;
@@ -53,7 +56,9 @@ export class WishlistCardEvents {
       } catch (error) {
         console.error('Error deleting:', error);
         alert('Error deleting item');
-        if (card) {
+      } finally {
+        deleteBtn.disabled = false;
+        if (card?.isConnected) {
           card.style.opacity = '1';
           card.style.pointerEvents = 'auto';
         }

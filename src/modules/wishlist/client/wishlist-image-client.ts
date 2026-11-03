@@ -1,37 +1,34 @@
 import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
+import { checkResponse } from './wishlist-auth-client';
 
 const IMAGE_UPLOAD_URL = '/api/images/upload';
 const IMAGE_DELETE_URL = '/api/images/delete';
 
 export class WishlistImageClient {
-  static async upload(file: File, pin: string): Promise<WishlistImageMetadata> {
+  static async upload(file: File): Promise<WishlistImageMetadata> {
     const formData = new FormData();
     formData.append('image', file);
 
     const res = await fetch(IMAGE_UPLOAD_URL, {
       method: 'POST',
-      headers: {
-        'x-auth-pin': pin,
-      },
       body: formData,
     });
 
-    if (!res.ok) throw new Error('Failed to upload image');
+    await checkResponse(res);
 
     const data = (await res.json()) as { image: WishlistImageMetadata };
     return data.image;
   }
 
-  static async delete(publicId: string, pin: string) {
+  static async delete(publicId: string) {
     const res = await fetch(IMAGE_DELETE_URL, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'x-auth-pin': pin,
       },
       body: JSON.stringify({ publicId }),
     });
 
-    if (!res.ok) throw new Error('Failed to delete image');
+    await checkResponse(res);
   }
 }

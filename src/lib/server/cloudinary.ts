@@ -1,5 +1,6 @@
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 import type { WishlistImageMetadata } from '@/modules/wishlist/wishlist.types';
+export { isWishlistImagePublicId } from '@/modules/wishlist/constants/image';
 
 const WISHLIST_IMAGE_FOLDER = 'wishlist';
 const THUMBNAIL_TRANSFORMATION = {
@@ -38,10 +39,6 @@ function toImageMetadata(result: UploadApiResponse): WishlistImageMetadata {
     format: result.format,
     bytes: result.bytes,
   };
-}
-
-export function isWishlistImagePublicId(value: unknown): value is string {
-  return typeof value === 'string' && /^wishlist\/[A-Za-z0-9_.-]+$/.test(value);
 }
 
 export async function uploadWishlistImage(buffer: Buffer): Promise<WishlistImageMetadata> {

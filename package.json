@@ -7,7 +7,10 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check": "astro check",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "@astrojs/vercel": "^9.0.2",
@@ -15,13 +18,17 @@
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.5",
     "cloudinary": "^2.10.0",
-    "firebase": "^12.6.0",
+    "firebase-admin": "^14.5.0",
     "tailwindcss": "^4.1.18",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/bun": "^1.4.4",
+    "@types/node": "^22",
     "prettier": "^3.7.4",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.7.2"
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "typescript": "^5.9.3"
   }
 }

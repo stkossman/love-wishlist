@@ -19,5 +19,13 @@ A minimalist, dual-user wishlist. Designed for sharing and managing desired item
 - **Telegram Notifications:** Real-time alerts sent to a private group upon item creation or deletion, powered by a server-side bot service.
 - **Dynamic Theming:** Context-aware design system that adapts color palettes based on the active user profile.
 - **Cursor-Based Pagination:** Efficient "Load More" functionality for managing large lists.
-- **Secure Input System:** PIN-protected interface for creating and editing items to prevent unauthorized changes.
+- **Mutation authorization:** Server-verified PIN with signed HttpOnly sessions for item and media changes.
 - **Full CRUD:** Create, Read, Update, and Delete capabilities with a custom UI menu.
+
+## Development and security setup
+
+Use Node.js 22+ and Bun. Install with `bun install`, configure the private variables in `.env.example`, then run `bun run dev`.
+
+Run `bun run test`, `bun run typecheck`, `bun run check`, and `bun run build` for verification.
+
+Read [SECURITY.md](SECURITY.md) before enabling production writes. It documents secret rotation, Admin SDK credentials, the mutation endpoint inventory, proposed Firestore rules, required shared login rate limiting, and manual verification steps. Read routes remain unauthenticated at the application level. No production rules are deployed automatically.

@@ -1,4 +1,5 @@
 import type { CreateItemDTO, Owner, UpdateItemDTO } from '@/modules/wishlist/wishlist.types';
+import { checkResponse } from './wishlist-auth-client';
 
 export class WishlistClient {
   private static BASE_URL = '/api/items';
@@ -12,36 +13,34 @@ export class WishlistClient {
     return res.json();
   }
 
-  static async create(data: CreateItemDTO, pin: string) {
+  static async create(data: CreateItemDTO) {
     const res = await fetch(this.BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-auth-pin': pin,
       },
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error('Failed to create');
+    await checkResponse(res);
     return res.json();
   }
 
-  static async update(id: string, data: UpdateItemDTO, pin: string) {
+  static async update(id: string, data: UpdateItemDTO) {
     const res = await fetch(`${this.BASE_URL}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'x-auth-pin': pin,
       },
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error('Failed to update');
+    await checkResponse(res);
     return res.json();
   }
 
   static async delete(id: string) {
     const res = await fetch(`${this.BASE_URL}/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to delete');
+    await checkResponse(res);
   }
 }

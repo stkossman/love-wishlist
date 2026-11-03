@@ -1,6 +1,6 @@
 import { deleteWishlistImage, isWishlistImagePublicId } from '@/lib/server/cloudinary';
 import { WishlistRepository } from './wishlist.repository';
-import type { CreateItemDTO, Owner, WishlistItem } from './wishlist.types';
+import type { CreateItemDTO, Owner, UpdateItemDTO, WishlistItem } from './wishlist.types';
 import { escapeHtml, getOwnerTelegramLabel, getSafeHttpUrl } from './wishlist.utils';
 import { Telegraf } from 'telegraf';
 
@@ -78,7 +78,7 @@ export class WishlistService {
     }
   }
 
-  static async updateItem(id: string, data: Partial<CreateItemDTO>) {
+  static async updateItem(id: string, data: UpdateItemDTO) {
     return await WishlistRepository.update(id, data);
   }
 }
