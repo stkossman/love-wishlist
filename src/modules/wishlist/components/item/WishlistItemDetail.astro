@@ -49,6 +49,7 @@ const ownerPath = getOwnerPath(item.owner);
     <section class="flex min-w-0 flex-col gap-8">
       <div class="flex items-center gap-3">
         <svg
+          data-detail-mark
           class:list={[
             'text-theme-text size-6 shrink-0 opacity-70',
             item.owner === 'her' && 'rotate-180',
@@ -59,7 +60,8 @@ const ownerPath = getOwnerPath(item.owner);
           stroke-width="1.25"
           aria-hidden="true"
         >
-          <path d="M8 8v13h13M27 27h13v13" />
+          <path d="M8 8v13h13" />
+          <path d="M27 27h13v13" />
         </svg>
         <span class="text-theme-text font-mono text-[10px] tracking-[0.15em] uppercase opacity-40">
           {item.topic}

@@ -71,15 +71,15 @@ const { owner, items, nextCursor, filters = {} } = Astro.props;
     <WishlistFeedPagination nextCursor={nextCursor} />
   </div>
 
-  <div class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
+  <div data-add-entry class="fixed right-6 bottom-6 z-50 md:right-10 md:bottom-10">
     <Button
       href="/add"
       class:list={[
-        '!bg-theme-accent flex h-14 w-14 items-center justify-center rounded-full border-none !p-0 text-xl shadow-2xl',
+        'group/add !bg-theme-accent focus-visible:outline-theme-text! flex h-14 w-14 items-center justify-center rounded-full border-none !p-0 text-xl shadow-2xl',
         owner === 'me' ? '!text-white shadow-red-900/20' : '!text-theme-bg',
       ]}
     >
-      <Asterisk class="h-6 w-6" />
+      <Asterisk class="h-6 w-6 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-safe:group-focus-visible/add:group-not-active/add:rotate-30 motion-safe:group-active/add:scale-90 motion-safe:group-active/add:rotate-90 motion-safe:group-data-[pressed=true]/add:scale-90 motion-safe:group-data-[pressed=true]/add:rotate-90! motion-safe:[@media(hover:hover)]:group-hover/add:group-not-active/add:rotate-30" />
       <span class="sr-only">Add wishlist item</span>
     </Button>
   </div>
@@ -87,8 +87,10 @@ const { owner, items, nextCursor, filters = {} } = Astro.props;
 
 <script>
   import { WishlistFeedHandler } from '../client/wishlist-feed-handler';
+  import { initAddRitual } from '../client/wishlist-add-ritual';
   import { isOwner } from '../wishlist.utils';
   import { readOccasionFilters } from '../occasion';
+  document.querySelectorAll<HTMLAnchorElement>('[data-add-entry] a').forEach(initAddRitual);
   const root = document.querySelector('[data-wishlist-feed-root]');
   const owner = root instanceof HTMLElement ? root.dataset.ownerFeed : undefined;
   const params = new URLSearchParams(window.location.search);
