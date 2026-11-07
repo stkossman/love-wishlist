@@ -1,5 +1,6 @@
 export type Owner = 'me' | 'her';
 export type OwnerFilter = Owner | null;
+export type DescriptionFormat = 'plain' | 'markdown';
 
 export type OccasionType =
   'new-year' | 'birthday' | 'christmas' | 'valentines-day' | 'anniversary' | 'other';
@@ -47,6 +48,7 @@ export interface WishlistItem extends WishlistImageFields {
   price?: string;
   url?: string;
   description?: string;
+  descriptionFormat?: DescriptionFormat;
   specs?: WishlistSpec[];
   createdAt: string;
 }
@@ -59,6 +61,7 @@ export interface CreateItemDTO extends WishlistImageFields {
   price?: string;
   url?: string;
   description?: string;
+  descriptionFormat?: DescriptionFormat;
   specs?: WishlistSpec[];
 }
 

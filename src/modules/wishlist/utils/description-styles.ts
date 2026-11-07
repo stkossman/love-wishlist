@@ -1,0 +1,3 @@
+// Shared by server details and the live editor preview.
+export const descriptionClasses =
+  'text-theme-text max-w-[68ch] font-serif text-lg leading-relaxed wrap-anywhere [&_p+p]:mt-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_li]:mt-1 [&_ul]:my-4 [&_ol]:my-4 [&_a]:underline [&_a]:decoration-current/40 [&_a]:underline-offset-4 [&_a:hover]:text-theme-accent [&_section]:mt-8 [&_section]:border-t [&_section]:border-theme-border [&_section]:pt-5 [&_h3]:font-mono [&_h3]:text-xs [&_h3]:tracking-widest [&_h3]:uppercase [&_section_ul]:list-none [&_section_ul]:pl-0 [&_section_ul]:font-sans [&_section_ul]:text-sm';

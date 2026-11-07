@@ -100,7 +100,10 @@ const { mode, item } = Astro.props;
           />
         </div>
 
-        <WishlistDescriptionField value={item?.description} />
+        <WishlistDescriptionField
+          value={item?.description}
+          format={mode === 'create' ? 'markdown' : (item.descriptionFormat ?? 'plain')}
+        />
 
         <div class="group min-w-0">
           <label

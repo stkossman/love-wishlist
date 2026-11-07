@@ -5,7 +5,7 @@ import WishlistItemActions from '@/modules/wishlist/components/actions/WishlistI
 import WishlistDescription from '@/modules/wishlist/components/description/WishlistDescription.astro';
 import type { WishlistItem } from '@/modules/wishlist/wishlist.types';
 import { getOwnerName, getOwnerPath } from '@/modules/wishlist/wishlist.utils';
-import { ArrowLeft, ArrowUpRight } from '@lucide/astro';
+import { ArrowLeft } from '@lucide/astro';
 
 interface Props {
   item: WishlistItem;
@@ -42,15 +42,25 @@ const ownerPath = getOwnerPath(item.owner);
 
   <article
     class:list={[
-      'grid grid-cols-1 gap-8 md:gap-10',
+      'grid grid-cols-1 items-start gap-8 md:gap-10',
       item.imageUrl ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : 'md:grid-cols-1',
     ]}
   >
-    <section class="flex flex-col gap-8">
+    <section class="flex min-w-0 flex-col gap-8">
       <div class="flex items-center gap-3">
-        <span class="border-theme-text text-theme-text flex h-5 w-5 items-center justify-center rounded-full border font-serif text-[10px] italic opacity-50">
-          {ownerName[0]}
-        </span>
+        <svg
+          class:list={[
+            'text-theme-text size-6 shrink-0 opacity-70',
+            item.owner === 'her' && 'rotate-180',
+          ]}
+          viewBox="0 0 48 48"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.25"
+          aria-hidden="true"
+        >
+          <path d="M8 8v13h13M27 27h13v13" />
+        </svg>
         <span class="text-theme-text font-mono text-[10px] tracking-[0.15em] uppercase opacity-40">
           {item.topic}
         </span>
@@ -67,44 +77,37 @@ const ownerPath = getOwnerPath(item.owner);
       </div>
 
       <OccasionSummary occasion={item.occasion} />
-      <WishlistDescription description={item.description} />
+      <WishlistDescription
+        description={item.description}
+        format={item.descriptionFormat}
+        referenceUrl={item.url}
+      />
 
       {item.specs && item.specs.length > 0 && (
-        <div class="grid grid-cols-1 gap-x-10 gap-y-5 pt-4 sm:grid-cols-2">
-          {item.specs.map((spec) => (
-            <div class="flex flex-col gap-1">
-              <span class="text-theme-text font-mono text-[9px] tracking-widest uppercase opacity-40">
-                {spec.label}
-              </span>
-              <span class="text-theme-text font-mono text-sm">{spec.value}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {item.url && (
-        <div class="pt-2">
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-theme-text hover:text-theme-accent inline-flex items-center font-mono text-xs tracking-widest uppercase transition-colors"
-          >
-            Open reference
-            <ArrowUpRight class="ml-1 h-4 w-4 stroke-[1.5]" />
-          </a>
-        </div>
+        <section aria-label="Specifications" class="border-theme-border border-t pt-6">
+          <h2 class="mb-5 font-mono text-xs tracking-widest uppercase">Specifications</h2>
+          <dl class="grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
+            {item.specs.map((spec) => (
+              <div class="flex flex-col gap-1">
+                <dt class="text-theme-text font-mono text-[10px] tracking-widest uppercase opacity-70">
+                  {spec.label}
+                </dt>
+                <dd class="text-theme-text font-sans text-sm wrap-anywhere">{spec.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       )}
     </section>
 
     {item.imageUrl && (
-      <aside class="order-first flex min-h-56 items-center justify-center overflow-hidden md:order-last md:min-h-80">
+      <aside class="order-first flex items-start justify-center overflow-hidden md:order-last">
         <img
           src={item.imageUrl}
           alt={item.name}
           width={item.imageWidth}
           height={item.imageHeight}
-          class="max-h-[55dvh] w-full object-contain"
+          class="h-auto max-h-[65dvh] w-full object-contain"
         />
       </aside>
     )}

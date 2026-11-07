@@ -45,6 +45,7 @@ export function serializeWishlistForm(data: FormData, specs: WishlistSpec[]): Cr
     price: text('price'),
     url: text('url'),
     description,
+    descriptionFormat: data.get('descriptionFormat') === 'markdown' ? 'markdown' : 'plain',
     specs,
   };
 }
