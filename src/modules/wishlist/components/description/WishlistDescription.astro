@@ -1,29 +1,21 @@
 ---
-import { parseDescriptionSegments } from '@/modules/wishlist/utils/description';
-
+import { renderDescription } from '../../utils/description-renderer';
+import type { DescriptionFormat } from '../../wishlist.types';
+import { descriptionClasses } from '../../utils/description-styles';
 interface Props {
   description?: string;
+  format?: DescriptionFormat;
+  referenceUrl?: string;
 }
-
-const description = Astro.props.description?.trim();
-const segments = description ? parseDescriptionSegments(description) : [];
+const { description, format, referenceUrl } = Astro.props;
+const html = renderDescription(description, format, referenceUrl);
 ---
 
-{description && (
-  <p class="text-theme-text max-w-2xl font-serif text-xl leading-relaxed wrap-anywhere whitespace-pre-wrap italic opacity-75 md:text-2xl">
-    {segments.map((segment) =>
-      segment.type === 'link' ? (
-        <a
-          href={segment.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hover:text-theme-accent underline decoration-current/30 underline-offset-4 transition-colors"
-        >
-          {segment.value}
-        </a>
-      ) : (
-        segment.value
-      )
+{html && (
+  <section aria-label="Personal notes" class="min-w-0">
+    {description?.trim() && (
+      <h2 class="mb-4 font-mono text-xs tracking-widest uppercase opacity-70">Personal notes</h2>
     )}
-  </p>
+    <div class={descriptionClasses} set:html={html} />
+  </section>
 )}

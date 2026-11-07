@@ -1,0 +1,42 @@
+---
+import type { Owner } from '../wishlist.types';
+import { getOwnerName } from '../wishlist.utils';
+
+interface Props {
+  owner: Owner;
+}
+
+const { owner } = Astro.props;
+---
+
+<header
+  class:list={[
+    'mb-7 grid grid-cols-[minmax(0,1fr)_2.5rem] items-center gap-5 text-[color-mix(in_srgb,var(--color-theme-accent)_78%,var(--color-theme-text))] xl:mb-0 xl:flex xl:flex-col xl:items-start xl:gap-8 xl:self-start',
+    owner === 'her' && 'xl:col-start-2 xl:row-start-1 xl:items-end',
+  ]}
+>
+  <svg
+    class:list={[
+      'col-start-2 row-start-2 size-10 shrink-0 xl:size-12',
+      owner === 'her' && 'rotate-180',
+    ]}
+    viewBox="0 0 48 48"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.25"
+    aria-hidden="true"
+  >
+    <path d="M8 8v13h13M27 27h13v13" />
+  </svg>
+  <h1
+    class:list={[
+      'col-span-full row-start-1 border-b border-current pb-5 font-serif text-[clamp(3.5rem,16vw,5rem)] leading-none font-normal tracking-[-.025em] wrap-anywhere not-italic xl:border-0 xl:p-0 xl:text-8xl xl:[writing-mode:vertical-rl]',
+      owner === 'me' ? 'text-right xl:rotate-180' : 'text-left',
+    ]}
+  >
+    {getOwnerName(owner)}
+  </h1>
+  <p class="text-theme-text col-start-1 row-start-2 text-xs leading-relaxed xl:max-w-[10ch]">
+    A collection of wishes
+  </p>
+</header>

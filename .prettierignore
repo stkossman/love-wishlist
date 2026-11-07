@@ -3,3 +3,4 @@ node_modules
 .astro
 .vercel
 package-lock.json
+.agents/skills/

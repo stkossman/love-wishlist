@@ -21,6 +21,7 @@ const ITEM_FIELDS = [
   'price',
   'url',
   'description',
+  'descriptionFormat',
   'specs',
   'occasion',
   ...IMAGE_FIELDS,
@@ -152,6 +153,11 @@ function parseFields(input: unknown, update: boolean): UpdateItemDTO {
     const safeUrl = getSafeHttpUrl(value);
     if (value && !safeUrl) throw new HttpError(400, 'Reference URL must use HTTP or HTTPS');
     result.url = safeUrl;
+  }
+  if (Object.hasOwn(body, 'descriptionFormat')) {
+    if (body.descriptionFormat !== 'plain' && body.descriptionFormat !== 'markdown')
+      throw new HttpError(400, 'Invalid description format');
+    result.descriptionFormat = body.descriptionFormat;
   }
   if (Object.hasOwn(body, 'description')) {
     const error = getDescriptionValidationError(body.description);

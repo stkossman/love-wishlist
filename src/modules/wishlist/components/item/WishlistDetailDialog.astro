@@ -31,6 +31,31 @@ import HeartLoader from '@/components/HeartLoader.astro';
   </template>
 </dialog>
 
+<style>
+  /* The loaded wish registers its two corner marks; the dialog itself never waits. */
+  @media (prefers-reduced-motion: no-preference) {
+    #wishlist-detail-dialog :global([data-detail-mark] path) {
+      animation: register-corner 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #wishlist-detail-dialog :global([data-detail-mark] path:first-child) {
+      --corner-offset: -5px;
+    }
+    #wishlist-detail-dialog :global([data-detail-mark] path:last-child) {
+      --corner-offset: 5px;
+    }
+  }
+  @keyframes register-corner {
+    from {
+      transform: translate(var(--corner-offset), var(--corner-offset));
+      opacity: 0.35;
+    }
+    to {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+  }
+</style>
+
 <script>
   import { initWishlistDetailDialog } from '../../client/wishlist-detail-dialog';
   initWishlistDetailDialog();

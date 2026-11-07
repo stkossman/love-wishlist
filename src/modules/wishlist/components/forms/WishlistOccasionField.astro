@@ -84,7 +84,7 @@ const inputClass =
               class="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
             />
             <span
-              class="flex size-8 items-center justify-center peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#1a1a1a]"
+              class="relative flex size-8 items-center justify-center peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#1a1a1a]"
               aria-hidden="true"
             >
               <Heart
@@ -92,8 +92,22 @@ const inputClass =
                 data-filled={level <= (occasion?.desire ?? 1) ? 'true' : 'false'}
                 size={21}
                 stroke-width={1.5}
-                class="fill-transparent data-[filled=true]:fill-current"
+                class="origin-center fill-transparent data-[filled=true]:fill-current"
               />
+              {level === 5 && (
+                <svg
+                  data-desire-rays
+                  class="pointer-events-none absolute inset-0 size-8 opacity-0"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M24 5V2M9 10 7 8M4 23H1M39 10l2-2M44 23h3M11 37l-2 2M37 37l2 2M24 42v3" />
+                </svg>
+              )}
             </span>
             <span class="sr-only">{level} out of 5 hearts</span>
           </label>

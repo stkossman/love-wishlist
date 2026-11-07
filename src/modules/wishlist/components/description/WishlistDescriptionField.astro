@@ -1,75 +1,94 @@
 ---
-import { WISHLIST_DESCRIPTION_MAX_LENGTH } from '@/modules/wishlist/utils/description';
-
+import { WISHLIST_DESCRIPTION_MAX_LENGTH } from '../../utils/description';
+import type { DescriptionFormat } from '../../wishlist.types';
+import { descriptionClasses } from '../../utils/description-styles';
 interface Props {
   value?: string;
+  format?: DescriptionFormat;
 }
-
-const { value = '' } = Astro.props;
-const currentLength = value.length;
+const { value = '', format = 'markdown' } = Astro.props;
+const control =
+  'cursor-pointer px-2 py-2 font-mono text-xs text-[#1a1a1a] underline-offset-4 hover:underline aria-pressed:underline';
 ---
 
-<div
-  class="group"
-  data-description-field
-  data-description-max-length={WISHLIST_DESCRIPTION_MAX_LENGTH}
->
+<div class="min-w-0" data-description-field>
   <div class="mb-2 flex items-center justify-between gap-4">
     <label
       for="description"
-      class="block font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-60"
+      class="font-mono text-xs tracking-widest text-[#1a1a1a] uppercase opacity-70"
     >
       Description / Notes
     </label>
-    <span
-      data-description-counter
-      class="font-mono text-[10px] tracking-widest text-[#1a1a1a] uppercase opacity-40"
-    >
-      {currentLength} / {WISHLIST_DESCRIPTION_MAX_LENGTH}
+    <span data-description-counter class="font-mono text-[10px] text-[#1a1a1a] opacity-70">
+      {value.length} / {WISHLIST_DESCRIPTION_MAX_LENGTH}
     </span>
   </div>
-
+  <div class="mb-2 flex flex-wrap items-center justify-between gap-x-4 border-b border-neutral-400">
+    <div role="group" aria-label="Description mode">
+      <button
+        type="button"
+        class={control}
+        data-description-mode="write"
+        aria-pressed="true"
+        aria-controls="description"
+      >
+        Write
+      </button>
+      <button
+        type="button"
+        class={control}
+        data-description-mode="preview"
+        aria-pressed="false"
+        aria-controls="description-preview"
+      >
+        Preview
+      </button>
+    </div>
+    <div data-description-toolbar role="group" aria-label="Markdown formatting">
+      {(['bold', 'italic', 'list', 'link'] as const).map((action) => (
+        <button type="button" class={control} data-description-action={action}>
+          {action[0].toUpperCase() + action.slice(1)}
+        </button>
+      ))}
+    </div>
+  </div>
   <textarea
     id="description"
     name="description"
-    aria-describedby="description-error"
+    aria-describedby="description-hint description-error"
     maxlength={WISHLIST_DESCRIPTION_MAX_LENGTH}
-    rows="6"
+    rows="7"
     placeholder="Optional details, sizing notes, or preferences"
-    class="min-h-40 w-full resize-y border-b border-neutral-400 bg-transparent py-2 font-sans text-sm leading-relaxed text-[#1a1a1a] transition-colors placeholder:text-neutral-400 focus:border-[#1a1a1a] focus:outline-none md:min-h-44"
+    class="min-h-44 w-full resize-y border-b border-neutral-400 bg-transparent py-2 font-sans text-sm leading-relaxed text-[#1a1a1a] placeholder:text-neutral-500 focus:border-[#1a1a1a] focus:outline-none"
   >{value}</textarea>
-
+  <div
+    id="description-preview"
+    data-description-preview
+    hidden
+    class:list={['min-h-44 py-2', descriptionClasses]}
+  ></div>
+  <label class="mt-3 flex items-center gap-2 font-sans text-xs text-[#1a1a1a]">
+    <input
+      type="checkbox"
+      name="descriptionFormat"
+      value="markdown"
+      checked={format === 'markdown'}
+      class="accent-[#1a1a1a]"
+    />
+    Use Markdown formatting
+  </label>
+  <p id="description-hint" class="mt-2 font-sans text-xs leading-relaxed text-[#1a1a1a] opacity-70">
+    Use **bold**, *italic*, lists, or [label](https://example.com). Plain URLs work too. Turn off
+    Markdown to keep text literal.
+  </p>
   <p
     id="description-error"
     data-description-error
     aria-live="polite"
-    class="mt-2 min-h-4 font-mono text-[10px] tracking-widest text-red-700 uppercase opacity-0 transition-opacity"
-  >
-    {currentLength > WISHLIST_DESCRIPTION_MAX_LENGTH ? 'Description is too long' : ''}
-  </p>
+    class="mt-2 min-h-4 font-sans text-xs text-red-700"
+  ></p>
 </div>
-
 <script>
-  document.querySelectorAll('[data-description-field]').forEach((field) => {
-    const textarea = field.querySelector('textarea');
-    const counter = field.querySelector('[data-description-counter]');
-    const error = field.querySelector('[data-description-error]');
-    const maxLength = Number(field.getAttribute('data-description-max-length'));
-
-    if (!(textarea instanceof HTMLTextAreaElement) || !counter || !error || !maxLength) return;
-
-    const updateDescriptionState = () => {
-      const length = textarea.value.length;
-      const isOverLimit = length > maxLength;
-
-      counter.textContent = `${length} / ${maxLength}`;
-      error.textContent = isOverLimit ? 'Description is too long' : '';
-      textarea.setAttribute('aria-invalid', String(isOverLimit));
-      error.classList.toggle('opacity-0', !isOverLimit);
-      error.classList.toggle('opacity-100', isOverLimit);
-    };
-
-    textarea.addEventListener('input', updateDescriptionState);
-    updateDescriptionState();
-  });
+  import { initDescriptionEditor } from '../../client/wishlist-description-editor';
+  document.querySelectorAll<HTMLElement>('[data-description-field]').forEach(initDescriptionEditor);
 </script>

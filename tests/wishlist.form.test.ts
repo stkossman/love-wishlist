@@ -242,6 +242,7 @@ test('serialization trims text, preserves both owners and validates description 
       price: '10 EUR',
       url: 'https://example.test',
       description: 'Notes',
+      descriptionFormat: 'plain',
       specs: [{ label: 'Size', value: 'M' }],
     });
     data.set('description', 'x'.repeat(1025));

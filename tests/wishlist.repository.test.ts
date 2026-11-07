@@ -345,3 +345,30 @@ test('Telegram timeout aborts the request while retaining successful persistence
     else process.env.TELEGRAM_CHAT_ID = previousChat;
   }
 });
+
+test('description source and format survive persistence without converting legacy records', async () => {
+  const source = '**Notes** <script>literal</script>';
+  const payload = {
+    owner: 'me' as const,
+    topic: 'Collection',
+    name: 'Wish',
+    description: source,
+    descriptionFormat: 'markdown' as const,
+  };
+  await WishlistRepository.create(payload);
+  expect(add).toHaveBeenCalledWith(expect.objectContaining(payload));
+  readDocument.mockResolvedValueOnce({ id: 'markdown', data: () => ({ ...saved, ...payload }) });
+  expect(await WishlistRepository.findById('markdown')).toMatchObject(payload);
+  await WishlistRepository.update('markdown', { description: source, descriptionFormat: 'plain' });
+  expect(updateDocument).toHaveBeenCalledWith({ description: source, descriptionFormat: 'plain' });
+  readDocument.mockResolvedValueOnce({
+    id: 'legacy',
+    data: () => ({ ...saved, description: '*literal*' }),
+  });
+  expect(await WishlistRepository.findById('legacy')).not.toHaveProperty('descriptionFormat');
+  readDocument.mockResolvedValueOnce({
+    id: 'unknown',
+    data: () => ({ ...saved, description: '*literal*', descriptionFormat: 'html' }),
+  });
+  expect(await WishlistRepository.findById('unknown')).not.toHaveProperty('descriptionFormat');
+});

@@ -110,6 +110,8 @@ export class WishlistRepository {
         return [{ label: spec.label, value: spec.value }];
       });
     }
+    if (data.descriptionFormat === 'markdown' || data.descriptionFormat === 'plain')
+      item.descriptionFormat = data.descriptionFormat;
     const occasion = readOccasion(data.occasion);
     if (occasion) item.occasion = occasion;
     return item;
